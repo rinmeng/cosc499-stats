@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
   ArrowRight,
-  ArrowUpRight,
+  ExternalLink,
   CalendarDays,
   CircleDot,
   FileCode2,
@@ -162,7 +162,7 @@ export default async function PersonPage({ params }: PageProps<'/u/[login]'>) {
           rel='noreferrer'
           className='inline-flex items-center gap-1 underline-offset-2 hover:underline'
         >
-          @{p.login} <ArrowUpRight className='size-3.5' />
+          @{p.login} <ExternalLink className='size-3.5' />
         </a>
         {' · '}
         {n === 1 ? '1 capstone' : `${n} capstones`}:{' '}

@@ -63,7 +63,7 @@ Personal pages (`/u/<login>`) show only that person's own output: no ranks, team
 
 ## Links
 
-Any link or link-style button that takes you to another page ends with a lucide arrow: `ArrowRight` for pages on this site, `ArrowUpRight` for external sites (GitHub, docs). Back links use a leading `ArrowLeft`. Names inside lists and tables (team names, people) don't need one.
+Any link or link-style button that takes you to another page ends with a lucide icon: `ArrowRight` for pages on this site, `ExternalLink` (box with the up-right arrow) for anything that leaves the site (GitHub, docs), including names that link to GitHub. Back links use a leading `ArrowLeft`. Internal names inside lists and tables (team names) don't need one.
 
 ## Charts
 

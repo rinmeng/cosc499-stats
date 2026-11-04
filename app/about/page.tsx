@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import {
   ArrowRight,
-  ArrowUpRight,
+  ExternalLink,
   Award,
   Ghost,
   Archive,
@@ -148,10 +148,10 @@ export default function AboutPage() {
             rel='noreferrer'
             className={linkClass}
           >
-            Add your cohort <ArrowUpRight className='size-4' />
+            Add your cohort <ExternalLink className='size-4' />
           </a>
           <a href={issuesUrl} target='_blank' rel='noreferrer' className={linkClass}>
-            Ask for your page to be removed <ArrowUpRight className='size-4' />
+            Ask for your page to be removed <ExternalLink className='size-4' />
           </a>
         </p>
       </Reason>

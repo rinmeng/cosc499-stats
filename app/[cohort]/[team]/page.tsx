@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import {
   ArrowLeft,
   Clock,
-  ArrowUpRight,
+  ExternalLink,
   GitMerge,
   GitPullRequest,
   Lock,
@@ -107,7 +107,7 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
               >
                 {r.isPrivate && <Lock className='size-3' />}
                 {r.name}
-                <ArrowUpRight className='size-3' />
+                <ExternalLink className='size-3' />
               </a>
             ))}
             <span>Last activity {fmtDate(t.lastActivity)}</span>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { ExternalLink } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -100,10 +101,12 @@ export function TopList({
                   href={`https://github.com/${e.login}`}
                   target='_blank'
                   rel='noreferrer'
-                  className='truncate text-sm font-medium hover:underline'
+                  className='inline-flex min-w-0 items-center gap-1 text-sm font-medium
+                    hover:underline'
                   title={e.login}
                 >
-                  {e.name}
+                  <span className='truncate'>{e.name}</span>
+                  <ExternalLink className='size-3 shrink-0 text-muted-foreground' />
                 </a>
               ) : (
                 <span className='truncate text-sm font-medium'>{e.name}</span>
