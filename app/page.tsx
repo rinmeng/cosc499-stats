@@ -42,8 +42,8 @@ import {
   trendSeries,
 } from '@/lib/views';
 
-/** Cohort cards shown before "Show more years": this many start years, newest first. */
-const RECENT_COHORT_YEARS = 3;
+/** Cohort cards shown before "Show more": one full row of the 4-column grid, newest first. */
+const RECENT_COHORT_CARDS = 4;
 
 export const metadata = {
   ...pageMetadata(overviewSeo()),
@@ -143,12 +143,10 @@ export default function Overview() {
     },
   ];
 
-  // Newest first. Only the latest few years (summer bundled with its year) show up front.
+  // Newest first. Only the first row shows up front; the rest sit behind "Show more".
   const byNewest = [...s.cohorts].sort(byTermStart).reverse();
-  const recentFrom = s.currentYear - (RECENT_COHORT_YEARS - 1);
-  const recentCohorts = byNewest.filter((c) => c.year >= recentFrom);
-  const olderCohorts = byNewest.filter((c) => c.year < recentFrom);
-  const olderYears = new Set(olderCohorts.map((c) => c.year)).size;
+  const recentCohorts = byNewest.slice(0, RECENT_COHORT_CARDS);
+  const olderCohorts = byNewest.slice(RECENT_COHORT_CARDS);
   const cohortGrid = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-4';
   const cohortCard = (c: (typeof s.cohorts)[number]) => (
     <Link key={c.slug} href={`/${c.slug}`} className='group'>
@@ -254,8 +252,8 @@ export default function Overview() {
         <div className={cohortGrid}>{recentCohorts.map(cohortCard)}</div>
         {olderCohorts.length > 0 && (
           <ShowMore
-            more={`Show ${olderYears} more ${olderYears === 1 ? 'year' : 'years'}`}
-            less='Show fewer years'
+            more={`Show ${olderCohorts.length} more ${olderCohorts.length === 1 ? 'cohort' : 'cohorts'}`}
+            less='Show fewer cohorts'
           >
             <div className={cohortGrid}>{olderCohorts.map(cohortCard)}</div>
           </ShowMore>
