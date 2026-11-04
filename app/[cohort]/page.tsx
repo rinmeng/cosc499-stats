@@ -8,7 +8,6 @@ import {
   CalendarDays,
   CircleCheckBig,
   Flag,
-  Flame,
   Languages,
   MessagesSquare,
   Moon,
@@ -188,16 +187,6 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         label: t.name,
         href: teamHref(c.slug, t),
         value: fmt(t.finishCommits ?? 0),
-      })),
-    },
-    {
-      icon: Flame,
-      title: 'Longest streak',
-      description: 'Most weeks in a row with at least one commit',
-      items: topTeams(c, (t) => t.longestStreak + t.commits / 1e6, 3).map((t) => ({
-        label: t.name,
-        href: teamHref(c.slug, t),
-        value: `${t.longestStreak} wks`,
       })),
     },
     {
