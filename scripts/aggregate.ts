@@ -244,6 +244,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
           lines: 0,
           prsOpened: 0,
           prsMerged: 0,
+          prsClosed: 0,
           reviews: 0,
           issuesOpened: 0,
           issuesClosed: 0,
@@ -335,6 +336,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
           p.prsOpened++;
           p.weeks.add(weekOf(pr.createdAt));
           if (pr.mergedAt && inWindow(pr.mergedAt)) p.prsMerged++;
+          if (pr.state === 'CLOSED' && !pr.mergedAt) p.prsClosed++;
         }
         if (pr.mergedAt && inWindow(pr.mergedAt)) {
           wp(weekOf(pr.mergedAt)).prs++;

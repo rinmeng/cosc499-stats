@@ -31,36 +31,53 @@ const toLink = (c: (typeof cohorts)[number]) => ({
   live: cohortSlug(c) === currentCohort,
 });
 
-/** Navbar tab for a year-long cohort: "2024–25" → "24–25" to keep the bar short. */
-const toTab = (c: (typeof cohorts)[number]) => ({
-  ...toLink(c),
-  label: `${String(c.year).slice(2)}–${String(c.year + 1).slice(2)}`,
-  title: c.label,
-});
-
 type NavLink = ReturnType<typeof toLink>;
 
-/** Year-long cohorts shown as their own tab; older ones go under "More years". */
+/** Year-long cohorts in the "Past 5 years" dropdown; older ones go under "More years". */
 const RECENT_YEARS = 5;
 
 const winter = cohorts
   .filter((c) => c.session !== 'summer')
   .sort((a, b) => b.year - a.year);
-const links = [
+const current = cohorts.find((c) => cohortSlug(c) === currentCohort);
+
+/** Tabs: the overview and the cohort that's running now (with the live dot). */
+const links: NavLink[] = [
   { href: '/', label: 'Overview', live: false },
-  ...winter.slice(0, RECENT_YEARS).reverse().map(toTab),
+  ...(current ? [toLink(current)] : []),
 ];
+const recentLinks = winter.slice(0, RECENT_YEARS).map(toLink);
 const olderLinks = winter.slice(RECENT_YEARS).map(toLink);
 const summerLinks = cohorts
   .filter((c) => c.session === 'summer')
   .sort((a, b) => b.year - a.year)
   .map(toLink);
+const aboutLinks: NavLink[] = [{ href: '/about', label: 'About', live: false }];
 
 /** Dropdowns after the tabs (desktop) and labelled sections (mobile menu). */
 const groups = [
+  {
+    key: 'recent',
+    label: `Past ${RECENT_YEARS} years`,
+    heading: `Past ${RECENT_YEARS} years`,
+    links: recentLinks,
+  },
   { key: 'older', label: 'More years', heading: 'Earlier years', links: olderLinks },
   { key: 'summer', label: 'Summer', heading: 'Summer sessions', links: summerLinks },
 ].filter((g) => g.links.length > 0);
+
+/** Pulsing dot marking the cohort that's still in progress. */
+function LiveDot() {
+  return (
+    <span className='relative ml-1 flex size-2' aria-label='in progress'>
+      <span
+        className='absolute inline-flex size-full animate-ping rounded-full bg-chart-1
+          opacity-60'
+      />
+      <span className='relative inline-flex size-2 rounded-full bg-chart-1' />
+    </span>
+  );
+}
 
 function NavDropdown({
   label,
@@ -82,6 +99,7 @@ function NavDropdown({
         {links.map((l) => (
           <DropdownMenuItem key={l.href} render={<Link href={l.href} />}>
             {l.label}
+            {l.live && <LiveDot />}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
@@ -117,25 +135,10 @@ export function Navbar() {
         size='sm'
         className={className}
         nativeButton={false}
-        render={
-          <Link
-            href={l.href}
-            onClick={onClick}
-            title={'title' in l ? l.title : undefined}
-          />
-        }
+        render={<Link href={l.href} onClick={onClick} />}
       >
-        {/* Short "24–25" tabs on desktop; the mobile menu (onClick set) has room for "2024–25". */}
-        {onClick && 'title' in l ? l.title : l.label}
-        {l.live && (
-          <span className='relative ml-1 flex size-2'>
-            <span
-              className='absolute inline-flex size-full animate-ping rounded-full
-                bg-chart-1 opacity-60'
-            />
-            <span className='relative inline-flex size-2 rounded-full bg-chart-1' />
-          </span>
-        )}
+        {l.label}
+        {l.live && <LiveDot />}
       </Button>
     ));
 
@@ -156,6 +159,7 @@ export function Navbar() {
               active={g.links.some((l) => isActive(l.href))}
             />
           ))}
+          {items(undefined, undefined, aboutLinks)}
           <PeopleSearch />
           <ModeToggle />
         </div>
@@ -185,6 +189,9 @@ export function Navbar() {
                     {items(() => setOpen(false), 'w-full justify-center', g.links)}
                   </Fragment>
                 ))}
+                <div className='mt-2 w-full border-t pt-2'>
+                  {items(() => setOpen(false), 'w-full justify-center', aboutLinks)}
+                </div>
                 <ModeToggle />
               </div>
             </SheetContent>

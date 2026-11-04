@@ -82,6 +82,8 @@ export interface PersonStats {
   lines: number;
   prsOpened: number;
   prsMerged: number;
+  /** PRs they opened that were closed without being merged */
+  prsClosed: number;
   reviews: number;
   issuesOpened: number;
   issuesClosed: number;

@@ -20,6 +20,13 @@ export const overviewSeo = (): PageSeo => ({
   path: '/',
 });
 
+export const aboutSeo = (): PageSeo => ({
+  title: 'About',
+  description:
+    'Why this site exists: so current and future UBCO COSC 499 cohorts can benchmark themselves against past ones, and so the work behind every capstone, from top contributors to 3 am commits, gets recognized.',
+  path: '/about',
+});
+
 export function cohortSeo(c: CohortStats): PageSeo {
   const kind = c.session === 'summer' ? 'summer session' : 'year-long cohort';
   return {

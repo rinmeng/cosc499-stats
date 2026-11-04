@@ -3,6 +3,7 @@ import {
   ArrowRight,
   Calendar,
   GitPullRequest,
+  GitPullRequestClosed,
   Ghost,
   Moon,
   Sunrise,
@@ -148,6 +149,14 @@ export default function Overview() {
       description: 'Most commits on holidays and breaks',
       items: top3(people, (p) => p.m.holidayCommits).map((p) =>
         personItem(p, fmt(p.m.holidayCommits), 'commits')
+      ),
+    },
+    {
+      icon: GitPullRequestClosed,
+      title: 'Back to the drawing board',
+      description: 'Most pull requests opened and then closed without merging',
+      items: top3(people, (p) => p.m.prsClosed ?? 0).map((p) =>
+        personItem(p, fmt(p.m.prsClosed ?? 0), 'closed PRs')
       ),
     },
   ];
