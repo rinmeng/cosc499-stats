@@ -14,11 +14,8 @@ const WORDS = [
   'Ignoring that 5,000 line commit ...',
 ];
 
-/**
- * Long enough for the first (random) phrase to animate in fully (its characters stagger in at
- * 15 ms each plus a 200 ms fade, about 0.7 s) and be read before the next one starts.
- */
-const MIN_VISIBLE_MS = 1800;
+/** Only show the overlay if the page takes longer than this, so instant switches don't flash. */
+const SHOW_AFTER_MS = 150;
 const shuffle = <T,>(list: T[]) => {
   const a = [...list];
   for (let i = a.length - 1; i > 0; i--) {
@@ -33,22 +30,33 @@ const MAX_VISIBLE_MS = 10_000;
 
 /**
  * Full-page loading screen shown only while switching pages (link clicks and
- * back/forward). It never shows on the first page load.
+ * back/forward), for as long as the new page takes to load. It never shows on the
+ * first page load, and stays hidden if the switch finishes within SHOW_AFTER_MS.
  */
 export function RouteLoader() {
   const pathname = usePathname();
   const [visible, setVisible] = useState(false);
   const [words, setWords] = useState(WORDS);
-  const startedAt = useRef(0);
   const fromPath = useRef(pathname);
+  const pending = useRef(false);
+  const showTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const maxTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Start: internal link clicks to a different page, and browser back/forward.
   useEffect(() => {
     const start = () => {
-      startedAt.current = Date.now();
       fromPath.current = window.location.pathname;
+      pending.current = true;
       setWords(shuffle(WORDS));
-      setVisible(true);
+      if (showTimer.current) clearTimeout(showTimer.current);
+      if (maxTimer.current) clearTimeout(maxTimer.current);
+      showTimer.current = setTimeout(() => {
+        if (pending.current) setVisible(true);
+      }, SHOW_AFTER_MS);
+      maxTimer.current = setTimeout(() => {
+        pending.current = false;
+        setVisible(false);
+      }, MAX_VISIBLE_MS);
     };
 
     const onClick = (e: MouseEvent) => {
@@ -71,23 +79,20 @@ export function RouteLoader() {
     return () => {
       document.removeEventListener('click', onClick, true);
       window.removeEventListener('popstate', onPopState);
+      if (showTimer.current) clearTimeout(showTimer.current);
+      if (maxTimer.current) clearTimeout(maxTimer.current);
     };
   }, []);
 
-  // Finish: once the new page is in place, but not before the minimum time.
+  // Finish: as soon as the new page is in place.
   useEffect(() => {
-    if (!visible) return;
-    const arrived = pathname !== fromPath.current;
-    const elapsed = Date.now() - startedAt.current;
-    const wait = arrived
-      ? Math.max(0, MIN_VISIBLE_MS - elapsed)
-      : Math.max(0, MAX_VISIBLE_MS - elapsed);
-    const t = setTimeout(() => {
-      fromPath.current = pathname;
-      setVisible(false);
-    }, wait);
-    return () => clearTimeout(t);
-  }, [pathname, visible]);
+    if (!pending.current || pathname === fromPath.current) return;
+    pending.current = false;
+    fromPath.current = pathname;
+    if (showTimer.current) clearTimeout(showTimer.current);
+    if (maxTimer.current) clearTimeout(maxTimer.current);
+    setVisible(false);
+  }, [pathname]);
 
   return (
     <AnimatePresence>
