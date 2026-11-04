@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { CountUp } from '@/components/CountUp';
 
 export function PageHeader({
   eyebrow,
@@ -54,7 +55,13 @@ export function StatTile({
           {Icon && <Icon className='size-3.5' />}
           {label}
         </div>
-        <div className='font-mono text-2xl font-semibold tabular-nums'>{value}</div>
+        <div className='font-mono text-2xl font-semibold tabular-nums'>
+          {typeof value === 'string' || typeof value === 'number' ? (
+            <CountUp value={value} />
+          ) : (
+            value
+          )}
+        </div>
         {hint && <div className='text-xs text-muted-foreground'>{hint}</div>}
       </CardContent>
     </Card>
@@ -143,7 +150,9 @@ export function Highlight({ title, description, icon: Icon, items }: HighlightPr
                   </div>
                 )}
               </div>
-              <span className='shrink-0 font-mono tabular-nums'>{it.value}</span>
+              <span className='shrink-0 font-mono tabular-nums'>
+                <CountUp value={it.value} />
+              </span>
             </li>
           ))}
         </ol>

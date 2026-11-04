@@ -40,6 +40,7 @@ import {
   currentWeek,
   trendSeries,
 } from '@/lib/views';
+import { CountUp } from '@/components/CountUp';
 
 export const metadata = {
   ...pageMetadata(overviewSeo()),
@@ -175,6 +176,35 @@ export default function Overview() {
         />
       </Grid>
 
+      <CohortTrendChart
+        title={current ? `How ${current.label} is tracking` : 'Cohorts through the year'}
+        description='Average cumulative commits per team by week of term (week 0 = first week of September, or of May for summer sessions; summer is dashed). Click a cohort to bring it forward.'
+        series={trendSeries(s)}
+        currentWeek={current ? currentWeek(current) : undefined}
+      />
+
+      <Grid className='lg:grid-cols-5'>
+        <MetricBarChart
+          title='Cohorts side by side'
+          description={
+            current
+              ? `Average per team; header shows all-time totals. ${current.label} is still in progress.`
+              : 'Average per team; header shows all-time totals.'
+          }
+          {...cohortBars(s)}
+          height='h-72'
+          className='lg:col-span-3'
+        />
+        <div className='lg:col-span-2'>
+          <LanguageDonut
+            languages={[...languages]
+              .map(([name, bytes]) => ({ name, bytes }))
+              .sort((a, b) => b.bytes - a.bytes)}
+            description='Share of code across every team repository'
+          />
+        </div>
+      </Grid>
+
       <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
         {[...s.cohorts]
           .sort(byTermStart)
@@ -208,19 +238,19 @@ export default function Overview() {
                 <CardContent className='grid grid-cols-3 gap-2 text-sm'>
                   <div>
                     <div className='font-mono font-semibold tabular-nums'>
-                      {c.totals.teams}
+                      <CountUp value={c.totals.teams} />
                     </div>
                     <div className='text-xs text-muted-foreground'>teams</div>
                   </div>
                   <div>
                     <div className='font-mono font-semibold tabular-nums'>
-                      {fmtCompact(c.totals.commits)}
+                      <CountUp value={fmtCompact(c.totals.commits)} />
                     </div>
                     <div className='text-xs text-muted-foreground'>commits</div>
                   </div>
                   <div>
                     <div className='font-mono font-semibold tabular-nums'>
-                      {fmt(c.totals.prsMerged)}
+                      <CountUp value={fmt(c.totals.prsMerged)} />
                     </div>
                     <div className='text-xs text-muted-foreground'>PRs</div>
                   </div>
@@ -295,35 +325,6 @@ export default function Overview() {
           />
         </Grid>
       </div>
-
-      <CohortTrendChart
-        title={current ? `How ${current.label} is tracking` : 'Cohorts through the year'}
-        description='Average cumulative commits per team by week of term (week 0 = first week of September, or of May for summer sessions; summer is dashed). Click a cohort to bring it forward.'
-        series={trendSeries(s)}
-        currentWeek={current ? currentWeek(current) : undefined}
-      />
-
-      <Grid className='lg:grid-cols-5'>
-        <MetricBarChart
-          title='Cohorts side by side'
-          description={
-            current
-              ? `Average per team; header shows all-time totals. ${current.label} is still in progress.`
-              : 'Average per team; header shows all-time totals.'
-          }
-          {...cohortBars(s)}
-          height='h-72'
-          className='lg:col-span-3'
-        />
-        <div className='lg:col-span-2'>
-          <LanguageDonut
-            languages={[...languages]
-              .map(([name, bytes]) => ({ name, bytes }))
-              .sort((a, b) => b.bytes - a.bytes)}
-            description='Share of code across every team repository'
-          />
-        </div>
-      </Grid>
 
       <p className='text-xs text-muted-foreground'>
         Counts cover the default branch (merge commits excluded), pull requests and issues

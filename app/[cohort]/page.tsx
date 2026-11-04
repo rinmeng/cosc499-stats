@@ -485,18 +485,6 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         />
       )}
 
-      <Section
-        title='Top contributors'
-        description={`“Overall” weighs commits ×${summary.scoreWeights.commits}, merged PRs ×${summary.scoreWeights.prsMerged}, reviews ×${summary.scoreWeights.reviews} and issues ×${summary.scoreWeights.issuesOpened}. Top 10 across the cohort, or the top ${summary.topN} on each team. Switch the measure to rank by just one thing.`}
-      >
-        <TopContributors
-          teams={teamTopViews(c, summary.topN)}
-          cohort={cohortTopView(c, 10)}
-        />
-      </Section>
-
-      <HighlightSections sections={sections} />
-
       <ActivityChart
         data={c.weekly}
         termStart={c.termStart}
@@ -510,6 +498,18 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         {...teamBars(c)}
         sortDesc
       />
+
+      <Section
+        title='Top contributors'
+        description={`“Overall” weighs commits ×${summary.scoreWeights.commits}, merged PRs ×${summary.scoreWeights.prsMerged}, reviews ×${summary.scoreWeights.reviews} and issues ×${summary.scoreWeights.issuesOpened}. Top 10 across the cohort, or the top ${summary.topN} on each team. Switch the measure to rank by just one thing.`}
+      >
+        <TopContributors
+          teams={teamTopViews(c, summary.topN)}
+          cohort={cohortTopView(c, 10)}
+        />
+      </Section>
+
+      <HighlightSections sections={sections} />
 
       <Section
         title='Teams'

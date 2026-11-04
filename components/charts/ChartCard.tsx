@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { CountUp } from '@/components/CountUp';
 
 export interface HeaderMetric<K extends string = string> {
   key: K;
@@ -125,7 +126,7 @@ export function ChartCard<K extends string>({
                     sm:text-2xl group-data-emphasis/metric:text-4xl
                     sm:group-data-emphasis/metric:text-5xl'
                 >
-                  {m.value}
+                  <CountUp value={m.value} />
                 </span>
                 {m.emphasis && m.hint && (
                   <span className='text-xs text-muted-foreground'>{m.hint}</span>

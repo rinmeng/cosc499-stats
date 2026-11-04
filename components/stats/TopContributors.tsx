@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 import type { MetricKey } from '@/lib/types/stats';
+import { CountUp } from '@/components/CountUp';
 
 export interface TopEntryView {
   id: string;
@@ -121,7 +122,7 @@ export function TopList({
                 className='ml-auto shrink-0 font-mono text-xs tabular-nums
                   text-muted-foreground'
               >
-                {e.value.toLocaleString()} {unit}
+                <CountUp value={`${e.value.toLocaleString()} ${unit}`} />
               </span>
             </div>
             <div className='mt-1 h-1 bg-muted'>
