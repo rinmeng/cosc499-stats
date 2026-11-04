@@ -145,9 +145,7 @@ export function Highlight({ title, description, icon: Icon, items }: HighlightPr
                   </div>
                 )}
               </div>
-              <span className='shrink-0 font-mono tabular-nums'>
-                {it.value}
-              </span>
+              <span className='shrink-0 font-mono tabular-nums'>{it.value}</span>
             </li>
           ))}
         </ol>
