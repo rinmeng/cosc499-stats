@@ -15,6 +15,7 @@ import type {
   WeekPoint,
 } from '../lib/types/stats';
 import {
+  cohortDir,
   cohortSlug,
   cohorts,
   currentCohort,
@@ -161,7 +162,7 @@ function loadRaw(org: string): RawRepo[] {
 }
 
 function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | null {
-  const repos = loadRaw(cfg.org);
+  const repos = loadRaw(cohortDir(cfg));
   const summer = cfg.session === 'summer';
   const slug = cohortSlug(cfg);
 
@@ -561,7 +562,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
   const lines = teams.reduce((a, x) => a + x.additions + x.deletions, 0);
 
   return {
-    org: cfg.org,
+    org: cfg.org ?? 'Student-owned team repos',
     slug,
     session: summer ? 'summer' : 'winter',
     year: cfg.year,

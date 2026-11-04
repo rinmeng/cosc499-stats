@@ -20,6 +20,7 @@ import { aggregate } from './aggregate';
 import { progress } from './progress';
 import type { RawCommit, RawIssue, RawPullRequest, RawRepo } from '../lib/types/stats';
 import {
+  cohortDir,
   cohortSlug,
   cohorts,
   currentCohort,
@@ -376,14 +377,14 @@ async function runPool<T>(items: T[], size: number, fn: (item: T) => Promise<voi
 async function main() {
   const targets = cohorts.filter(
     (c) =>
-      (!orgArg || c.org.toLowerCase() === orgArg.toLowerCase()) &&
+      (!orgArg || c.org?.toLowerCase() === orgArg.toLowerCase()) &&
       (!yearArg || cohortSlug(c) === yearArg) &&
       (!onlyCurrent || cohortSlug(c) === currentCohort)
   );
   if (!targets.length) {
     console.error(
       `No cohort matches ${yearArg ?? orgArg ?? '--current'}. ` +
-        `Known: ${cohorts.map((c) => `${cohortSlug(c)} (${c.org})`).join(', ')}. ` +
+        `Known: ${cohorts.map((c) => `${cohortSlug(c)} (${cohortDir(c)})`).join(', ')}. ` +
         'Add new cohorts in sync.config.ts.'
     );
     process.exit(1);
@@ -400,19 +401,21 @@ async function main() {
   const failures: string[] = [];
 
   for (const cohort of targets) {
-    const dir = path.join(RAW_DIR, cohort.org);
+    const dir = path.join(RAW_DIR, cohortDir(cohort));
     mkdirSync(dir, { recursive: true });
     // A single-cohort run (--year / --org) always re-fetches that cohort.
     const refresh =
       force || !!yearArg || !!orgArg || cohortSlug(cohort) === currentCohort;
 
-    const repos = await listOrgRepos(gh, cohort.org);
+    // Cohorts with no course org only have `extraRepos`.
+    const org = cohort.org;
+    const repos = org ? await listOrgRepos(gh, org) : [];
     const selected: { owner: string; name: string; team: number; file: string }[] = repos
       .filter((r) => !repoExclude.some((re) => re.test(r.name)))
       .filter((r) => (r.size ?? 0) >= minRepoSizeKb)
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((r, i) => ({
-        owner: cohort.org,
+        owner: org!,
         name: r.name,
         // Repos with no team number in the name (e.g. a renamed project) still count;
         // they get a number from 100 up and are shown under their repo name.
@@ -427,7 +430,7 @@ async function main() {
     }
 
     console.log(
-      `\n${cohort.org}: ${selected.length} team repos (${repos.length} total)` +
+      `\n${cohortDir(cohort)}: ${selected.length} team repos (${repos.length} total)` +
         (refresh ? '' : ' [cached unless missing]')
     );
 

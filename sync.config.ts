@@ -6,8 +6,11 @@
 export type Session = 'winter' | 'summer';
 
 export interface CohortConfig {
-  /** GitHub organization login */
-  org: string;
+  /**
+   * GitHub organization login. Leave it out for cohorts that had no course org
+   * (2017 and 2019–2022): their teams are listed in `extraRepos` instead.
+   */
+  org?: string;
   /** Start year: winter 2026 = Sept 2026 → Apr 2027, summer 2026 = May → Aug 2026 */
   year: number;
   /** Defaults to 'winter' (the year-long session) */
@@ -23,7 +26,67 @@ export interface CohortConfig {
   extraRepos?: { repo: string; team: number }[];
 }
 
+const NO_ORG_NOTE =
+  'This session had no course GitHub organization. Its teams were found in ' +
+  'students’ own repositories, so it may be missing teams.';
+
 export const cohorts: CohortConfig[] = [
+  {
+    year: 2017,
+    label: '2017–18',
+    note: NO_ORG_NOTE,
+    extraRepos: [
+      { repo: 'kseaman/Capstone3DModelling', team: 1 },
+      { repo: 'CooperHowling/AR_tour', team: 2 },
+    ],
+  },
+  {
+    org: 'UBCO-COSC499-Winter-2018-Term-1-2',
+    year: 2018,
+    label: '2018–19',
+    note: 'Only a few team repositories from this cohort are public, so its totals are partial.',
+  },
+  {
+    year: 2019,
+    label: '2019–20',
+    note: NO_ORG_NOTE,
+    extraRepos: [
+      { repo: 'rosarobert/COSC-499-FDB', team: 1 },
+      { repo: 'dBaiko/COSC-499-Group-1', team: 2 },
+      { repo: 'Chris0728/OmegaR', team: 3 },
+      { repo: 'RaphaelChevallier/Social-Learning-Platform', team: 4 },
+    ],
+  },
+  {
+    year: 2020,
+    label: '2020–21',
+    note: NO_ORG_NOTE,
+    extraRepos: [
+      { repo: 'japser36/COSC-499-Pace-A', team: 1 },
+      { repo: 'Boykoa97/PaceB', team: 2 },
+      { repo: 'jpabadir/pace-c', team: 3 },
+      { repo: 'JadenBalogh/home-together-b', team: 4 },
+      { repo: 'yyht6300a/499Project-Minecraft-C', team: 5 },
+      { repo: 'ctakasaka/Minecraft-Integrated-AI-Dashboard', team: 6 },
+      { repo: 'Nathan-Nesbitt/Minecraft_AI', team: 7 },
+    ],
+  },
+  {
+    year: 2021,
+    label: '2021–22',
+    note: NO_ORG_NOTE,
+    extraRepos: [
+      { repo: 'IRIDIXVdt/2021W-UBCO-COSC-499-Cyclops', team: 1 },
+      { repo: 'cosc-499-EDG1/ethics-dashboard', team: 2 },
+      { repo: 'COSC-499-Woo-Woo-Network/COSC_499_Project_Woo_Woo_Network', team: 3 },
+    ],
+  },
+  {
+    year: 2022,
+    label: '2022–23',
+    note: NO_ORG_NOTE,
+    extraRepos: [{ repo: 'COSC-499-EquiFood-B/EquiFoodApp-B', team: 1 }],
+  },
   { org: 'COSC-499-W2023', year: 2023, label: '2023–24' },
   {
     org: 'COSC-499-W2024',
@@ -35,6 +98,28 @@ export const cohorts: CohortConfig[] = [
   { org: 'COSC-499-W2026', year: 2026, label: '2026–27' },
 
   // Summer sessions (May → August)
+  {
+    year: 2021,
+    session: 'summer',
+    label: 'Summer 2021',
+    note: NO_ORG_NOTE,
+    extraRepos: [
+      { repo: 'COSC499-Group1/canvas-gamification', team: 1 },
+      { repo: 'COSC499-Group1/canvas-gamification-ui', team: 1 },
+    ],
+  },
+  {
+    org: 'UBCO-COSC-499-Summer-2022',
+    year: 2022,
+    session: 'summer',
+    label: 'Summer 2022',
+  },
+  {
+    org: 'UBCO-COSC-499-Summer-2023',
+    year: 2023,
+    session: 'summer',
+    label: 'Summer 2023',
+  },
   {
     org: 'UBCO-COSC499-Summer-2024',
     year: 2024,
@@ -60,6 +145,10 @@ export const cohorts: CohortConfig[] = [
 /** URL slug and CLI name for a cohort: winter "2024", summer "summer-2024". */
 export const cohortSlug = (c: Pick<CohortConfig, 'year' | 'session'>) =>
   c.session === 'summer' ? `summer-${c.year}` : String(c.year);
+
+/** Folder under data/raw/ for a cohort: its org, or `no-org-<slug>` when it had none. */
+export const cohortDir = (c: Pick<CohortConfig, 'org' | 'year' | 'session'>) =>
+  c.org ?? `no-org-${cohortSlug(c)}`;
 
 /** Slug of the cohort that is still in progress. Always re-synced; past cohorts are cached. */
 export const currentCohort = '2026';

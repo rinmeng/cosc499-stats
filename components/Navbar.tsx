@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { BarChart3, ChevronDown, Menu } from 'lucide-react';
@@ -30,15 +30,56 @@ const toLink = (c: (typeof cohorts)[number]) => ({
   live: cohortSlug(c) === currentCohort,
 });
 
-// Year-long cohorts get their own tab; summer sessions live in a dropdown.
+type NavLink = ReturnType<typeof toLink>;
+
+/** Year-long cohorts shown as their own tab; older ones go under "More years". */
+const RECENT_YEARS = 5;
+
+const winter = cohorts
+  .filter((c) => c.session !== 'summer')
+  .sort((a, b) => b.year - a.year);
 const links = [
   { href: '/', label: 'Overview', live: false },
-  ...cohorts.filter((c) => c.session !== 'summer').map(toLink),
+  ...winter.slice(0, RECENT_YEARS).reverse().map(toLink),
 ];
+const olderLinks = winter.slice(RECENT_YEARS).map(toLink);
 const summerLinks = cohorts
   .filter((c) => c.session === 'summer')
   .sort((a, b) => b.year - a.year)
   .map(toLink);
+
+/** Dropdowns after the tabs (desktop) and labelled sections (mobile menu). */
+const groups = [
+  { key: 'older', label: 'More years', heading: 'Earlier years', links: olderLinks },
+  { key: 'summer', label: 'Summer', heading: 'Summer sessions', links: summerLinks },
+].filter((g) => g.links.length > 0);
+
+function NavDropdown({
+  label,
+  links,
+  active,
+}: {
+  label: string;
+  links: NavLink[];
+  active: boolean;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={<Button variant={active ? 'secondary' : 'ghost'} size='sm' />}
+      >
+        {label} <ChevronDown className='size-3.5' />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align='end'>
+        {links.map((l) => (
+          <DropdownMenuItem key={l.href} render={<Link href={l.href} />}>
+            {l.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 function Brand({ onClick }: { onClick?: () => void }) {
   return (
@@ -91,29 +132,14 @@ export function Navbar() {
         <Brand />
         <div className='hidden items-center gap-1 lg:flex'>
           {items()}
-          {summerLinks.length > 0 && (
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button
-                    variant={
-                      summerLinks.some((l) => isActive(l.href)) ? 'secondary' : 'ghost'
-                    }
-                    size='sm'
-                  />
-                }
-              >
-                Summer <ChevronDown className='size-3.5' />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align='end'>
-                {summerLinks.map((l) => (
-                  <DropdownMenuItem key={l.href} render={<Link href={l.href} />}>
-                    {l.label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+          {groups.map((g) => (
+            <NavDropdown
+              key={g.key}
+              label={g.label}
+              links={g.links}
+              active={g.links.some((l) => isActive(l.href))}
+            />
+          ))}
           <ModeToggle />
         </div>
         <div className='lg:hidden'>
@@ -122,25 +148,25 @@ export function Navbar() {
               <Menu className='size-5' />
               <span className='sr-only'>Toggle menu</span>
             </SheetTrigger>
-            <SheetContent side='right' className='w-72'>
+            <SheetContent side='right' className='w-72 overflow-y-auto'>
               <SheetHeader className='items-center px-12 text-center'>
                 <SheetTitle>
                   <Brand onClick={() => setOpen(false)} />
                 </SheetTitle>
               </SheetHeader>
-              <div className={cn('flex flex-col items-center gap-2 px-4')}>
+              <div className={cn('flex flex-col items-center gap-2 px-4 pb-6')}>
                 {items(() => setOpen(false), 'w-full justify-center')}
-                {summerLinks.length > 0 && (
-                  <>
+                {groups.map((g) => (
+                  <Fragment key={g.key}>
                     <p
                       className='mt-2 text-center text-xs font-medium
                         text-muted-foreground'
                     >
-                      Summer sessions
+                      {g.heading}
                     </p>
-                    {items(() => setOpen(false), 'w-full justify-center', summerLinks)}
-                  </>
-                )}
+                    {items(() => setOpen(false), 'w-full justify-center', g.links)}
+                  </Fragment>
+                ))}
                 <ModeToggle />
               </div>
             </SheetContent>
