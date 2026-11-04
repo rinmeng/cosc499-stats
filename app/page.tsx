@@ -26,6 +26,7 @@ import {
   StatTile,
 } from '@/components/stats/Blocks';
 import { isSmallCohort } from '@/components/stats/HelpComplete';
+import { ShowMore } from '@/components/stats/ShowMore';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getSummary } from '@/lib/data';
@@ -40,6 +41,9 @@ import {
   currentWeek,
   trendSeries,
 } from '@/lib/views';
+
+/** Cohort cards shown before "Show more years": this many start years, newest first. */
+const RECENT_COHORT_YEARS = 3;
 
 export const metadata = {
   ...pageMetadata(overviewSeo()),
@@ -139,6 +143,63 @@ export default function Overview() {
     },
   ];
 
+  // Newest first. Only the latest few years (summer bundled with its year) show up front.
+  const byNewest = [...s.cohorts].sort(byTermStart).reverse();
+  const recentFrom = s.currentYear - (RECENT_COHORT_YEARS - 1);
+  const recentCohorts = byNewest.filter((c) => c.year >= recentFrom);
+  const olderCohorts = byNewest.filter((c) => c.year < recentFrom);
+  const olderYears = new Set(olderCohorts.map((c) => c.year)).size;
+  const cohortGrid = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-4';
+  const cohortCard = (c: (typeof s.cohorts)[number]) => (
+    <Link key={c.slug} href={`/${c.slug}`} className='group'>
+      <Card
+        size='sm'
+        className='h-full py-3 transition-colors group-hover:bg-muted/50 md:py-4'
+      >
+        <CardHeader className='px-3 md:px-4'>
+          <CardTitle className='flex items-center gap-2 text-sm md:text-base'>
+            <span
+              className='size-2.5'
+              style={{
+                background: cohortColor(c.year, s.currentYear, c.session),
+              }}
+            />
+            {c.label}
+            {c.isCurrent && <Badge>Week {currentWeek(c)}</Badge>}
+            {c.session === 'summer' && !isSmallCohort(c) && (
+              <Badge variant='secondary'>Summer</Badge>
+            )}
+            {isSmallCohort(c) && <Badge variant='outline'>Help complete</Badge>}
+            <ArrowRight
+              className='ml-auto size-4 text-muted-foreground transition-transform
+                group-hover:translate-x-0.5'
+            />
+          </CardTitle>
+        </CardHeader>
+        <CardContent className='grid grid-cols-3 gap-2 px-3 text-sm md:px-4'>
+          <div>
+            <div className='font-mono text-sm font-semibold tabular-nums md:text-base'>
+              {c.totals.teams.toLocaleString()}
+            </div>
+            <div className='text-[11px] text-muted-foreground md:text-xs'>teams</div>
+          </div>
+          <div>
+            <div className='font-mono text-sm font-semibold tabular-nums md:text-base'>
+              {fmtCompact(c.totals.commits)}
+            </div>
+            <div className='text-[11px] text-muted-foreground md:text-xs'>commits</div>
+          </div>
+          <div>
+            <div className='font-mono text-sm font-semibold tabular-nums md:text-base'>
+              {fmt(c.totals.prsMerged)}
+            </div>
+            <div className='text-[11px] text-muted-foreground md:text-xs'>PRs</div>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+
   return (
     <div className='space-y-8'>
       <PageHeader
@@ -189,74 +250,16 @@ export default function Overview() {
         />
       </Grid>
 
-      <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
-        {[...s.cohorts]
-          .sort(byTermStart)
-          .reverse()
-          .map((c) => (
-            <Link key={c.slug} href={`/${c.slug}`} className='group'>
-              <Card
-                size='sm'
-                className='h-full py-3 transition-colors group-hover:bg-muted/50 md:py-4'
-              >
-                <CardHeader className='px-3 md:px-4'>
-                  <CardTitle className='flex items-center gap-2 text-sm md:text-base'>
-                    <span
-                      className='size-2.5'
-                      style={{
-                        background: cohortColor(c.year, s.currentYear, c.session),
-                      }}
-                    />
-                    {c.label}
-                    {c.isCurrent && <Badge>Week {currentWeek(c)}</Badge>}
-                    {c.session === 'summer' && !isSmallCohort(c) && (
-                      <Badge variant='secondary'>Summer</Badge>
-                    )}
-                    {isSmallCohort(c) && <Badge variant='outline'>Help complete</Badge>}
-                    <ArrowRight
-                      className='ml-auto size-4 text-muted-foreground transition-transform
-                        group-hover:translate-x-0.5'
-                    />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className='grid grid-cols-3 gap-2 px-3 text-sm md:px-4'>
-                  <div>
-                    <div
-                      className='font-mono text-sm font-semibold tabular-nums
-                        md:text-base'
-                    >
-                      {c.totals.teams.toLocaleString()}
-                    </div>
-                    <div className='text-[11px] text-muted-foreground md:text-xs'>
-                      teams
-                    </div>
-                  </div>
-                  <div>
-                    <div
-                      className='font-mono text-sm font-semibold tabular-nums
-                        md:text-base'
-                    >
-                      {fmtCompact(c.totals.commits)}
-                    </div>
-                    <div className='text-[11px] text-muted-foreground md:text-xs'>
-                      commits
-                    </div>
-                  </div>
-                  <div>
-                    <div
-                      className='font-mono text-sm font-semibold tabular-nums
-                        md:text-base'
-                    >
-                      {fmt(c.totals.prsMerged)}
-                    </div>
-                    <div className='text-[11px] text-muted-foreground md:text-xs'>
-                      PRs
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+      <div className='space-y-4'>
+        <div className={cohortGrid}>{recentCohorts.map(cohortCard)}</div>
+        {olderCohorts.length > 0 && (
+          <ShowMore
+            more={`Show ${olderYears} more ${olderYears === 1 ? 'year' : 'years'}`}
+            less='Show fewer years'
+          >
+            <div className={cohortGrid}>{olderCohorts.map(cohortCard)}</div>
+          </ShowMore>
+        )}
       </div>
 
       <CohortTrendChart
