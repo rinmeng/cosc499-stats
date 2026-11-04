@@ -110,13 +110,19 @@ export function teamBars(c: CohortStats): { rows: BarRow[]; metrics: BarMetric[]
 /** Per-cohort bars (average per team) for the overview. */
 export function cohortBars(s: Summary): { rows: BarRow[]; metrics: BarMetric[] } {
   const cohorts = s.cohorts.filter((c) => c.teams.length).sort(byTermStart);
+  // Short axis labels so every cohort fits: "23–24" year-long, "S24" summer.
+  // The tooltip keeps the full label.
+  const short = (c: CohortStats) =>
+    c.session === 'summer'
+      ? `S${String(c.year).slice(2)}`
+      : `${String(c.year).slice(2)}–${String(c.year + 1).slice(2)}`;
   const rows = cohorts.map((c) => ({
-    label: c.label,
+    label: short(c),
     name: `${c.label} · average per team`,
     values: { ...c.avgPerTeam },
   }));
   const all = (k: keyof CohortStats['avgPerTeam']) =>
-    fmt(cohorts.reduce((a, c) => a + c.totals[k], 0));
+    fmtCompact(cohorts.reduce((a, c) => a + c.totals[k], 0));
   return {
     rows,
     metrics: [
@@ -164,12 +170,25 @@ export const byTermStart = (a: CohortStats, b: CohortStats) =>
   a.termStart.localeCompare(b.termStart);
 
 /**
- * Every cohort with data, oldest first. Summer sessions are a shorter term, so their
+ * Cohorts in the trend chart: the latest 4 year-long and 3 summer sessions, as many as
+ * the color ramps (--cohort-1..4, --summer-1..3) can tell apart. Older cohorts would
+ * share a color and crowd the header.
+ */
+const TREND_WINTER_YEARS = 4;
+const TREND_SUMMER_YEARS = 3;
+
+/**
+ * Recent cohorts with data, oldest first. Summer sessions are a shorter term, so their
  * lines simply end earlier; the chart draws them dashed.
  */
 export function trendSeries(s: Summary): TrendSeries[] {
   return s.cohorts
     .filter((c) => c.teams.length)
+    .filter(
+      (c) =>
+        s.currentYear - c.year <
+        (c.session === 'summer' ? TREND_SUMMER_YEARS : TREND_WINTER_YEARS)
+    )
     .sort(byTermStart)
     .map((c) => ({
       slug: c.slug,
