@@ -5,9 +5,17 @@ import {
   GitPullRequest,
   Handshake,
   MessageSquareCode,
+  CalendarDays,
+  CircleCheckBig,
+  Flag,
+  Flame,
+  Languages,
+  MessagesSquare,
   Moon,
+  PackageCheck,
+  Rocket,
+  Trophy,
   Sunrise,
-  UsersRound,
   Sparkles,
   Users,
 } from 'lucide-react';
@@ -21,6 +29,7 @@ import {
   EmptyState,
   Grid,
   Highlight,
+  type HighlightProps,
   PageHeader,
   Section,
   StatTile,
@@ -30,10 +39,12 @@ import {
   isSmallCohort,
   MissingTeam,
 } from '@/components/stats/HelpComplete';
+import { MoreHighlights } from '@/components/stats/MoreHighlights';
 import { TeamTable } from '@/components/stats/TeamTable';
 import { TopContributors } from '@/components/stats/TopContributors';
 import { Badge } from '@/components/ui/badge';
 import { getCohort, getSummary } from '@/lib/data';
+import type { TeamStats } from '@/lib/types/stats';
 import { cohortSeo, pageMetadata } from '@/lib/seo';
 import { fmt, fmtCompact, fmtDate, fmtHours, pct } from '@/lib/format';
 import {
@@ -96,13 +107,6 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     .sort((a, b) => a.medianMergeHours! - b.medianMergeHours!)
     .slice(0, 3);
   const activeThisWeek = topTeams(c, (t) => t.thisWeekCommits, 3);
-  const everyoneReviews = topTeams(
-    c,
-    // ties (often 100%) go to the larger team
-    (t) => t.reviewerShare + t.contributors / 1000,
-    3,
-    (t) => t.contributors >= 3 && t.prsMerged >= 10
-  );
   const earlyBirds = topTeams(
     c,
     (t) => t.earlyBirdShare,
@@ -115,6 +119,123 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     3,
     (t) => t.commits >= 50
   );
+
+  // Second tier, behind "Show more highlights".
+  const enough = (t: TeamStats) => t.commits >= 50;
+  const more: HighlightProps[] = [
+    {
+      icon: PackageCheck,
+      title: 'PRs shipped',
+      description: 'Of the PRs that were closed, the share merged rather than dropped',
+      items: topTeams(
+        c,
+        (t) => t.shipRate + t.prsMerged / 1e6,
+        3,
+        (t) => t.prsMerged >= 10
+      ).map((t) => ({
+        label: t.name,
+        href: teamHref(c.slug, t),
+        value: pct(t.shipRate),
+        sub: `${fmt(t.prsMerged)} merged, ${fmt(t.prsClosedUnmerged)} closed`,
+      })),
+    },
+    {
+      icon: CircleCheckBig,
+      title: 'Closing the loop',
+      description: 'Share of opened issues that are now closed',
+      items: topTeams(
+        c,
+        (t) => t.issueCloseRate + t.issuesTotal / 1e6,
+        3,
+        (t) => t.issuesTotal >= 10
+      ).map((t) => ({
+        label: t.name,
+        href: teamHref(c.slug, t),
+        value: pct(t.issueCloseRate),
+        sub: `${fmt(t.issuesTotal)} issues`,
+      })),
+    },
+    {
+      icon: MessagesSquare,
+      title: 'Deepest discussions',
+      description: 'Average comments and reviews per merged PR',
+      items: topTeams(
+        c,
+        (t) => t.discussionPerPr,
+        3,
+        (t) => t.prsMerged >= 10
+      ).map((t) => ({
+        label: t.name,
+        href: teamHref(c.slug, t),
+        value: t.discussionPerPr.toFixed(1),
+      })),
+    },
+    {
+      icon: Rocket,
+      title: 'Fastest start',
+      description: 'Commits in the first 4 weeks of term',
+      items: topTeams(c, (t) => t.startCommits, 3).map((t) => ({
+        label: t.name,
+        href: teamHref(c.slug, t),
+        value: fmt(t.startCommits),
+      })),
+    },
+    {
+      icon: Flag,
+      title: 'Strongest finish',
+      description: 'Commits in the last 4 weeks of term',
+      items: topTeams(c, (t) => t.finishCommits ?? 0, 3).map((t) => ({
+        label: t.name,
+        href: teamHref(c.slug, t),
+        value: fmt(t.finishCommits ?? 0),
+      })),
+    },
+    {
+      icon: Flame,
+      title: 'Longest streak',
+      description: 'Most weeks in a row with at least one commit',
+      items: topTeams(c, (t) => t.longestStreak + t.commits / 1e6, 3).map((t) => ({
+        label: t.name,
+        href: teamHref(c.slug, t),
+        value: `${t.longestStreak} wks`,
+      })),
+    },
+    {
+      icon: Trophy,
+      title: 'Biggest week',
+      description: 'Most commits in a single week',
+      items: topTeams(c, (t) => t.peakWeek?.commits ?? 0, 3).map((t) => ({
+        label: t.name,
+        href: teamHref(c.slug, t),
+        value: fmt(t.peakWeek?.commits ?? 0),
+        sub: `week ${t.peakWeek?.week}`,
+      })),
+    },
+    {
+      icon: CalendarDays,
+      title: 'Weekend warriors',
+      description: 'Share of commits made on Saturday or Sunday',
+      items: topTeams(c, (t) => t.weekendShare, 3, enough).map((t) => ({
+        label: t.name,
+        href: teamHref(c.slug, t),
+        value: pct(t.weekendShare),
+      })),
+    },
+    {
+      icon: Languages,
+      title: 'Polyglots',
+      description: 'Most programming languages across the team’s repos',
+      items: topTeams(c, (t) => t.languageCount + t.commits / 1e6, 3).map((t) => ({
+        label: t.name,
+        href: teamHref(c.slug, t),
+        value: String(t.languageCount),
+        sub: t.languages
+          .slice(0, 3)
+          .map((l) => l.name)
+          .join(', '),
+      })),
+    },
+  ].filter((h) => h.items.length > 0);
 
   return (
     <div className='space-y-8'>
@@ -262,19 +383,6 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             }))}
           />
         )}
-        {everyoneReviews.length > 0 && (
-          <Highlight
-            icon={UsersRound}
-            title='Everyone reviews'
-            description='Members who reviewed at least one teammate’s PR this term'
-            items={everyoneReviews.map((t) => ({
-              label: t.name,
-              href: teamHref(c.slug, t),
-              value: pct(t.reviewerShare),
-              sub: `${Math.round(t.reviewerShare * t.contributors)} of ${t.contributors} people review`,
-            }))}
-          />
-        )}
         {earlyBirds.length > 0 && (
           <Highlight
             icon={Sunrise}
@@ -300,6 +408,12 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           />
         )}
       </Grid>
+
+      <MoreHighlights count={more.length}>
+        {more.map((h) => (
+          <Highlight key={h.title} {...h} />
+        ))}
+      </MoreHighlights>
 
       <ActivityChart
         data={c.weekly}

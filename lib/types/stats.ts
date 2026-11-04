@@ -128,8 +128,22 @@ export interface TeamStats {
   /** 0–1, commits made between 5 am and 9 am */
   earlyBirdShare: number;
   weekendShare: number;
-  /** 0–1, members who reviewed at least one teammate's PR */
-  reviewerShare: number;
+  /** PRs closed without merging */
+  prsClosedUnmerged: number;
+  /** 0–1, of PRs that were closed, the share that were merged */
+  shipRate: number;
+  /** average comments + reviews per merged PR */
+  discussionPerPr: number;
+  /** issues opened in the window, and the share of them now closed */
+  issuesTotal: number;
+  issueCloseRate: number;
+  languageCount: number;
+  /** commits in the first 4 weeks of term */
+  startCommits: number;
+  /** commits in the last 4 weeks of term (null while the term is still running) */
+  finishCommits: number | null;
+  /** most consecutive weeks with at least one commit */
+  longestStreak: number;
   lastActivity: string | null;
   languages: { name: string; bytes: number }[];
   weekly: WeekPoint[];

@@ -97,18 +97,15 @@ export interface HighlightItem {
   sub?: string;
 }
 
-/** A small "top 3" list for a positive team superlative. */
-export function Highlight({
-  title,
-  description,
-  icon: Icon,
-  items,
-}: {
+export interface HighlightProps {
   title: string;
   description: string;
   icon: LucideIcon;
   items: HighlightItem[];
-}) {
+}
+
+/** A small "top 3" list for a positive team superlative. */
+export function Highlight({ title, description, icon: Icon, items }: HighlightProps) {
   return (
     <Card size='sm'>
       <CardHeader>

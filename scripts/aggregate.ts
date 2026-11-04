@@ -125,6 +125,12 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     new Date(termStart.getTime() + w * WEEK).toISOString().slice(0, 10);
 
   const nowWeek = Math.floor((now.getTime() - termStart.getTime()) / WEEK);
+  // Last week of classes: end of April (winter) or mid-August (summer).
+  const termEndWeek = weekOf(
+    new Date(
+      summer ? Date.UTC(cfg.year, 7, 15) : Date.UTC(cfg.year + 1, 3, 30)
+    ).toISOString()
+  );
   const isCurrent = slug === currentCohort;
 
   /* Staff detection: logins committing to many different teams in one cohort. */
@@ -203,6 +209,10 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     const mergeHours: number[] = [];
     let merged = 0;
     let reviewed = 0;
+    let closedUnmerged = 0;
+    let discussion = 0;
+    let issuesTotal = 0;
+    let issuesClosedCount = 0;
     let openPrs = 0;
     let openIssues = 0;
     let last: string | null = null;
@@ -236,6 +246,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       for (const pr of repo.prs) {
         if (!inWindow(pr.createdAt)) continue;
         if (pr.state === 'OPEN') openPrs++;
+        if (pr.state === 'CLOSED' && !pr.mergedAt) closedUnmerged++;
         if (pr.login && !skip(pr.login)) {
           const p = person(pr.login.toLowerCase(), pr.login, null);
           p.prsOpened++;
@@ -245,6 +256,8 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
         if (pr.mergedAt && inWindow(pr.mergedAt)) {
           wp(weekOf(pr.mergedAt)).prs++;
           merged++;
+          discussion +=
+            pr.comments + pr.reviews.filter((r) => !r.login || !isBot(r.login)).length;
           mergeHours.push(
             (Date.parse(pr.mergedAt) - Date.parse(pr.createdAt)) / 3_600_000
           );
@@ -271,6 +284,8 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       for (const is of repo.issues) {
         if (!inWindow(is.createdAt)) continue;
         if (is.state === 'OPEN') openIssues++;
+        issuesTotal++;
+        if (is.state === 'CLOSED') issuesClosedCount++;
         if (is.login && !skip(is.login))
           person(is.login.toLowerCase(), is.login, null).issuesOpened++;
         if (is.state === 'CLOSED')
@@ -320,6 +335,20 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       members.reduce((a, p) => a + (p[k] as number), 0);
 
     const weeklyArr = [...weekly.values()].sort((a, b) => a.week - b.week);
+    const commitsIn = (from: number, to: number) =>
+      weeklyArr
+        .filter((w) => w.week >= from && w.week <= to)
+        .reduce((a, w) => a + w.commits, 0);
+    let streak = 0;
+    let longestStreak = 0;
+    for (
+      let w = -termLeadWeeks;
+      w <= Math.max(termEndWeek, ...weeklyArr.map((x) => x.week));
+      w++
+    ) {
+      streak = (weekly.get(w)?.commits ?? 0) > 0 ? streak + 1 : 0;
+      longestStreak = Math.max(longestStreak, streak);
+    }
     const peak = weeklyArr.reduce<WeekPoint | null>(
       (best, w) => (!best || w.commits > best.commits ? w : best),
       null
@@ -385,9 +414,6 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       nightOwlShare: totalCommits ? round(night / totalCommits) : 0,
       earlyBirdShare: totalCommits ? round(early / totalCommits) : 0,
       weekendShare: totalCommits ? round(weekend / totalCommits) : 0,
-      reviewerShare: members.length
-        ? round(members.filter((m) => m.reviews > 0).length / members.length)
-        : 0,
       lastActivity: last,
       languages: [...langs]
         .map(([name, bytes]) => ({ name, bytes }))
@@ -397,6 +423,15 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       punch,
       members,
       thisWeekCommits: weekly.get(nowWeek)?.commits ?? 0,
+      prsClosedUnmerged: closedUnmerged,
+      shipRate: merged + closedUnmerged ? round(merged / (merged + closedUnmerged)) : 0,
+      discussionPerPr: merged ? round(discussion / merged, 1) : 0,
+      issuesTotal,
+      issueCloseRate: issuesTotal ? round(issuesClosedCount / issuesTotal) : 0,
+      languageCount: langs.size,
+      startCommits: commitsIn(0, 3),
+      finishCommits: isCurrent ? null : commitsIn(termEndWeek - 3, termEndWeek),
+      longestStreak,
     });
   }
 
