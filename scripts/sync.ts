@@ -17,6 +17,7 @@ import type { Octokit } from 'octokit';
 
 import { createClient } from '../lib/github';
 import { aggregate } from './aggregate';
+import { progress } from './progress';
 import type { RawCommit, RawIssue, RawPullRequest, RawRepo } from '../lib/types/stats';
 import {
   cohortSlug,
@@ -28,6 +29,8 @@ import {
 } from '../sync.config';
 
 const RAW_DIR = path.join(process.cwd(), 'data', 'raw');
+/** Repos fetched at once. GitHub's secondary rate limits kick in above roughly this. */
+const CONCURRENCY = 6;
 
 const args = process.argv.slice(2);
 const force = args.includes('--force');
@@ -428,27 +431,37 @@ async function main() {
         (refresh ? '' : ' [cached unless missing]')
     );
 
-    await runPool(selected, 4, async ({ owner, name, team, file: fileName }) => {
-      const file = path.join(dir, fileName);
-      if (!refresh && existsSync(file)) {
-        cached++;
-        return;
+    progress.start(selected.length);
+    await runPool(
+      selected,
+      CONCURRENCY,
+      async ({ owner, name, team, file: fileName }) => {
+        const file = path.join(dir, fileName);
+        if (!refresh && existsSync(file)) {
+          cached++;
+          progress.skip();
+          return;
+        }
+        progress.begin(name);
+        try {
+          const t = Date.now();
+          const data = await fetchRepo(owner, name, team);
+          writeFileSync(file, JSON.stringify(data));
+          fetched++;
+          progress.end(name);
+          progress.log(
+            `  ✓ ${name.padEnd(48)} team ${String(team).padStart(2)}  ` +
+              `${data.commits.length} commits, ${data.prs.length} PRs, ${data.issues.length} issues ` +
+              `(${((Date.now() - t) / 1000).toFixed(1)}s)`
+          );
+        } catch (err) {
+          failures.push(`${owner}/${name}`);
+          progress.end(name);
+          progress.log(`  ✗ ${name}: ${(err as Error).message}`, 'err');
+        }
       }
-      try {
-        const t = Date.now();
-        const data = await fetchRepo(owner, name, team);
-        writeFileSync(file, JSON.stringify(data));
-        fetched++;
-        console.log(
-          `  ✓ ${name.padEnd(48)} team ${String(team).padStart(2)}  ` +
-            `${data.commits.length} commits, ${data.prs.length} PRs, ${data.issues.length} issues ` +
-            `(${((Date.now() - t) / 1000).toFixed(1)}s)`
-        );
-      } catch (err) {
-        failures.push(`${owner}/${name}`);
-        console.error(`  ✗ ${name}: ${(err as Error).message}`);
-      }
-    });
+    );
+    progress.stop();
   }
 
   const rate = await gh.rest.rateLimit.get();
