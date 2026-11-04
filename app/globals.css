@@ -107,6 +107,9 @@
   --cohort-2: #3c6300;
   --cohort-3: #4f8a00;
   --cohort-4: #6cbb00;
+  --summer-1: oklch(0.42 0.03 45);
+  --summer-2: oklch(0.56 0.025 45);
+  --summer-3: oklch(0.68 0.02 45);
   --seq-0: var(--muted);
   --seq-1: var(--chart-1);
   --seq-2: var(--chart-2);
@@ -154,6 +157,9 @@
   --cohort-2: var(--chart-2);
   --cohort-3: var(--chart-3);
   --cohort-4: var(--chart-4);
+  --summer-1: oklch(0.88 0.015 60);
+  --summer-2: oklch(0.74 0.02 55);
+  --summer-3: oklch(0.6 0.02 50);
   --seq-0: var(--muted);
   --seq-1: var(--chart-5);
   --seq-2: var(--chart-4);

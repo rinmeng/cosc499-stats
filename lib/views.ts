@@ -163,14 +163,20 @@ export function teamHabits(c: CohortStats, t: TeamStats): RadialItem[] {
 export const byTermStart = (a: CohortStats, b: CohortStats) =>
   a.termStart.localeCompare(b.termStart);
 
-/** Year-long (winter) cohorts only: summer terms are a third as long, so they'd skew the comparison. */
+/**
+ * Every cohort with data, oldest first. Summer sessions are a shorter term, so their
+ * lines simply end earlier; the chart draws them dashed.
+ */
 export function trendSeries(s: Summary): TrendSeries[] {
   return s.cohorts
-    .filter((c) => c.teams.length && c.session === 'winter')
+    .filter((c) => c.teams.length)
+    .sort(byTermStart)
     .map((c) => ({
+      slug: c.slug,
+      session: c.session,
       year: c.year,
       label: c.label,
-      color: cohortColor(c.year, s.currentYear),
+      color: cohortColor(c.year, s.currentYear, c.session),
       isCurrent: c.isCurrent,
       points: c.cumulative.filter((p) => p.week <= 34),
     }));

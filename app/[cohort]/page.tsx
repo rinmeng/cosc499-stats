@@ -178,7 +178,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       {live && (
         <CohortTrendChart
           title='How this cohort is tracking'
-          description='Average cumulative commits per team by week of term, next to past cohorts at the same point in the year. Click a cohort to bring it forward.'
+          description='Average cumulative commits per team by week of term, next to past cohorts at the same point in their term (summer sessions dashed). Click a cohort to bring it forward.'
           series={trendSeries(summary)}
           currentWeek={week}
         />

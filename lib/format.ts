@@ -51,7 +51,8 @@ export function cohortColor(
   currentYear: number,
   session: 'winter' | 'summer' = 'winter'
 ): string {
-  if (session === 'summer') return 'var(--muted-foreground)';
   const slot = Math.min(Math.max(currentYear - year, 0), 3) + 1;
+  // Summer sessions get their own neutral ramp (and dashed lines in the trend chart).
+  if (session === 'summer') return `var(--summer-${Math.min(slot, 3)})`;
   return `var(--cohort-${slot})`;
 }

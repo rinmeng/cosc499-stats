@@ -159,7 +159,7 @@ export default function Overview() {
 
       <CohortTrendChart
         title={current ? `How ${current.label} is tracking` : 'Cohorts through the year'}
-        description='Average cumulative commits per team by week of term (week 0 = first week of September). Click a cohort to bring it forward.'
+        description='Average cumulative commits per team by week of term (week 0 = first week of September, or of May for summer sessions; summer is dashed). Click a cohort to bring it forward.'
         series={trendSeries(s)}
         currentWeek={current ? currentWeek(current) : undefined}
       />

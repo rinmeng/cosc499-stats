@@ -35,6 +35,7 @@ export function ChartCard<K extends string>({
   onActive,
   action,
   className,
+  stacked = false,
   children,
 }: {
   title: string;
@@ -44,15 +45,24 @@ export function ChartCard<K extends string>({
   onActive?: (k: K) => void;
   action?: React.ReactNode;
   className?: string;
+  /** Put the metrics in their own full-width row under the title (for many metrics) */
+  stacked?: boolean;
   children: React.ReactNode;
 }) {
   const plain = metrics?.filter((m) => !m.emphasis).length ?? 0;
   // Keep plain metrics on one row on phones; 4 across still fits a 360px screen.
   const cols = Math.min(Math.max(plain, 1), 4);
+  // Stacked: 3 across on phones; on desktop every metric in one row, emphasis twice as wide.
+  const stackedCols = { '--cols-lg': plain + 2 } as React.CSSProperties;
 
   return (
     <Card className={cn('gap-0 py-0', className)}>
-      <CardHeader className='flex flex-col items-stretch border-b p-0! lg:flex-row'>
+      <CardHeader
+        className={cn(
+          'flex flex-col items-stretch border-b p-0!',
+          !stacked && 'lg:flex-row'
+        )}
+      >
         <div
           className='flex flex-1 flex-col justify-center gap-1 px-4 pt-5 pb-4 sm:px-6
             lg:py-5'
@@ -67,8 +77,19 @@ export function ChartCard<K extends string>({
         )}
         {metrics && metrics.length > 0 && (
           <div
-            className='grid gap-px border-t bg-border lg:flex lg:border-t-0 lg:border-l'
-            style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+            className={cn(
+              'grid gap-px border-t bg-border',
+              stacked
+                ? // phones: wrap 3 per row and let the last row stretch (no empty cells)
+                  `flex flex-wrap lg:grid
+                    lg:grid-cols-[repeat(var(--cols-lg),minmax(0,1fr))]`
+                : 'lg:flex lg:border-t-0 lg:border-l'
+            )}
+            style={
+              stacked
+                ? stackedCols
+                : { gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }
+            }
           >
             {metrics.map((m) => (
               <button
@@ -78,12 +99,15 @@ export function ChartCard<K extends string>({
                 data-emphasis={m.emphasis || undefined}
                 aria-pressed={active === m.key}
                 onClick={() => onActive?.(m.key)}
-                style={m.emphasis ? { gridColumn: '1 / -1' } : undefined}
+                style={m.emphasis && !stacked ? { gridColumn: '1 / -1' } : undefined}
+                data-stacked={stacked || undefined}
                 className='group/metric flex min-w-0 flex-col justify-center gap-1 bg-card
                   px-3 py-3 text-left transition-colors hover:bg-muted/40
                   data-[active=true]:bg-muted sm:px-5 sm:py-4 lg:min-w-28 lg:flex-1
                   lg:px-6 lg:py-5 sm:data-emphasis:py-5 lg:data-emphasis:min-w-56
-                  lg:data-emphasis:flex-[2]'
+                  lg:data-emphasis:flex-[2] data-stacked:grow data-stacked:basis-[30%]
+                  data-stacked:data-emphasis:basis-full lg:data-stacked:basis-auto
+                  lg:data-stacked:data-emphasis:col-span-2'
               >
                 <span
                   className='truncate text-[11px] text-muted-foreground sm:text-xs

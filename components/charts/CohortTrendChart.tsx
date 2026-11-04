@@ -13,6 +13,9 @@ import {
 import { ChartCard } from './ChartCard';
 
 export interface TrendSeries {
+  /** Cohort slug, e.g. "2024" or "summer-2024" */
+  slug: string;
+  session: 'winter' | 'summer';
   year: number;
   label: string;
   /** CSS color for this cohort (ordinal: newer cohorts are stronger) */
@@ -21,10 +24,16 @@ export interface TrendSeries {
   points: { week: number; value: number }[];
 }
 
+const SUMMER_DASH = '6 4';
+
+/** Chart-config key for a cohort (CSS-variable safe). */
+const keyOf = (s: TrendSeries) => `c_${s.slug.replace(/[^a-z0-9]/gi, '_')}`;
+
 /**
  * Average cumulative commits per team, aligned by week of term, one line per cohort.
- * Header buttons show each cohort's value at the comparison week; clicking one
- * brings that cohort's line to the front.
+ * Year-long cohorts are solid lines on the lime ramp; summer sessions (a shorter,
+ * May–August term) are dashed on a neutral ramp. Header buttons show each cohort's
+ * value at the comparison week; clicking one brings that cohort's line forward.
  */
 export function CohortTrendChart({
   series,
@@ -37,11 +46,11 @@ export function CohortTrendChart({
   title: string;
   description?: string;
 }) {
-  const initial = series.find((s) => s.isCurrent)?.year ?? series.at(-1)?.year;
-  const [focus, setFocus] = useState(String(initial));
+  const initial = series.find((s) => s.isCurrent) ?? series.at(-1);
+  const [focus, setFocus] = useState(initial?.slug ?? '');
 
   const config: ChartConfig = Object.fromEntries(
-    series.map((s) => [`y${s.year}`, { label: s.label, color: s.color }])
+    series.map((s) => [keyOf(s), { label: s.label, color: s.color }])
   );
 
   const weeks = new Set<number>();
@@ -52,21 +61,21 @@ export function CohortTrendChart({
       const row: Record<string, number> = { week };
       for (const s of series) {
         const p = s.points.find((x) => x.week === week);
-        if (p) row[`y${s.year}`] = p.value;
+        if (p) row[keyOf(s)] = p.value;
       }
       return row;
     });
 
-  // Value at the comparison week: today's week for a live cohort, else the season's end.
+  // Value at the comparison week: today's week for a live cohort, else the term's end.
   const valueAt = (s: TrendSeries) => {
     const w = currentWeek ?? Infinity;
     const pts = s.points.filter((p) => p.week <= w);
     return pts.at(-1)?.value ?? 0;
   };
 
-  // Context line for the current cohort: where it stands and the latest past cohort at the same week.
+  // Context for the current cohort, compared with the latest past cohort of the same kind.
   const nowHint = (s: TrendSeries) => {
-    const prev = series.filter((x) => !x.isCurrent).at(-1);
+    const prev = series.filter((x) => !x.isCurrent && x.session === s.session).at(-1);
     const base = `avg commits per team by week ${currentWeek ?? '—'}`;
     if (!prev) return base;
     const diff = Math.round(valueAt(s) - valueAt(prev));
@@ -75,12 +84,18 @@ export function CohortTrendChart({
       : `${base} · ${prev.label} was at ${Math.round(valueAt(prev)).toLocaleString()} at this point`;
   };
 
+  // Header: current cohort first, then newest to oldest.
+  const ordered = [...series]
+    .reverse()
+    .sort((a, b) => Number(b.isCurrent) - Number(a.isCurrent));
+
   return (
     <ChartCard
       title={title}
       description={description}
-      metrics={[...series].reverse().map((s) => ({
-        key: String(s.year),
+      stacked={series.length > 4}
+      metrics={ordered.map((s) => ({
+        key: s.slug,
         label: s.isCurrent ? `${s.label} · now` : s.label,
         value: Math.round(valueAt(s)).toLocaleString(),
         emphasis: s.isCurrent,
@@ -139,20 +154,19 @@ export function CohortTrendChart({
             }
           />
           {[...series]
-            .sort(
-              (a, b) =>
-                Number(String(a.year) === focus) - Number(String(b.year) === focus)
-            )
+            .sort((a, b) => Number(a.slug === focus) - Number(b.slug === focus))
             .map((s) => {
-              const on = String(s.year) === focus;
+              const on = s.slug === focus;
+              const k = keyOf(s);
               return (
                 <Line
-                  key={s.year}
-                  dataKey={`y${s.year}`}
+                  key={s.slug}
+                  dataKey={k}
                   type='monotone'
-                  stroke={`var(--color-y${s.year})`}
+                  stroke={`var(--color-${k})`}
                   strokeWidth={on ? 3 : 2}
-                  strokeOpacity={on ? 1 : 0.35}
+                  strokeOpacity={on ? 1 : 0.4}
+                  strokeDasharray={s.session === 'summer' ? SUMMER_DASH : undefined}
                   dot={false}
                   activeDot={{ r: 4 }}
                   connectNulls
@@ -163,10 +177,27 @@ export function CohortTrendChart({
       </ChartContainer>
       <div className='mt-3 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs'>
         {series.map((s) => (
-          <span key={s.year} className='flex items-center gap-1.5 text-muted-foreground'>
-            <span className='h-0.5 w-4 rounded-full' style={{ background: s.color }} />
+          <button
+            key={s.slug}
+            type='button'
+            onClick={() => setFocus(s.slug)}
+            className='flex items-center gap-1.5 text-muted-foreground
+              hover:text-foreground'
+          >
+            <svg width='18' height='4' aria-hidden>
+              <line
+                x1='1'
+                y1='2'
+                x2='17'
+                y2='2'
+                stroke={s.color}
+                strokeWidth='2.5'
+                strokeLinecap='round'
+                strokeDasharray={s.session === 'summer' ? '4 3' : undefined}
+              />
+            </svg>
             {s.label}
-          </span>
+          </button>
         ))}
       </div>
     </ChartCard>
