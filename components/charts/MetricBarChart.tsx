@@ -57,6 +57,7 @@ export function MetricBarChart({
     value: r.values[active] ?? 0,
   }));
   if (sortDesc) data.sort((a, b) => b.value - a.value);
+  const crowded = rows.length > 6;
 
   const config = {
     value: { label: metric?.label, color: 'var(--series)' },
@@ -80,7 +81,11 @@ export function MetricBarChart({
             axisLine={false}
             tickMargin={8}
             interval={0}
-            fontSize={11}
+            // Many bars (e.g. every cohort on a phone): tilt the labels so they don't collide.
+            angle={crowded ? -45 : 0}
+            textAnchor={crowded ? 'end' : 'middle'}
+            height={crowded ? 64 : 30}
+            tick={{ fontSize: 12, fontWeight: 500, fill: 'var(--foreground)' }}
           />
           <YAxis tickLine={false} axisLine={false} width={40} allowDecimals={false} />
           <ChartTooltip
