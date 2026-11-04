@@ -150,25 +150,29 @@ export default function Overview() {
         today. Last synced {fmtDate(s.generatedAt)}.
       </PageHeader>
 
-      <Grid className='grid-cols-2 md:grid-cols-3 lg:grid-cols-5'>
-        <StatTile icon={Calendar} label='Cohorts' value={cohorts.length} />
+      <Grid className='grid-cols-3 gap-2 md:grid-cols-3 md:gap-4 lg:grid-cols-5'>
+        <StatTile compact icon={Calendar} label='Cohorts' value={cohorts.length} />
         <StatTile
+          compact
           icon={Users}
           label='Contributors'
           value={fmt(sum('contributors'))}
           hint={`${fmt(allTeams.length)} teams`}
         />
         <StatTile
+          compact
           icon={GitPullRequest}
           label='Commits'
           value={fmtCompact(sum('commits'))}
         />
         <StatTile
+          compact
           icon={GitMerge}
           label='Merged PRs'
           value={fmtCompact(sum('prsMerged'))}
         />
         <StatTile
+          compact
           icon={MessageSquareCode}
           label='Code reviews'
           value={fmtCompact(sum('reviews'))}
@@ -183,10 +187,10 @@ export default function Overview() {
             <Link key={c.slug} href={`/${c.slug}`} className='group'>
               <Card
                 size='sm'
-                className='h-full transition-colors group-hover:bg-muted/50'
+                className='h-full py-3 transition-colors group-hover:bg-muted/50 md:py-4'
               >
-                <CardHeader>
-                  <CardTitle className='flex items-center gap-2'>
+                <CardHeader className='px-3 md:px-4'>
+                  <CardTitle className='flex items-center gap-2 text-sm md:text-base'>
                     <span
                       className='size-2.5'
                       style={{
@@ -205,24 +209,39 @@ export default function Overview() {
                     />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className='grid grid-cols-3 gap-2 text-sm'>
+                <CardContent className='grid grid-cols-3 gap-2 px-3 text-sm md:px-4'>
                   <div>
-                    <div className='font-mono font-semibold tabular-nums'>
+                    <div
+                      className='font-mono text-sm font-semibold tabular-nums
+                        md:text-base'
+                    >
                       {c.totals.teams.toLocaleString()}
                     </div>
-                    <div className='text-xs text-muted-foreground'>teams</div>
+                    <div className='text-[11px] text-muted-foreground md:text-xs'>
+                      teams
+                    </div>
                   </div>
                   <div>
-                    <div className='font-mono font-semibold tabular-nums'>
+                    <div
+                      className='font-mono text-sm font-semibold tabular-nums
+                        md:text-base'
+                    >
                       {fmtCompact(c.totals.commits)}
                     </div>
-                    <div className='text-xs text-muted-foreground'>commits</div>
+                    <div className='text-[11px] text-muted-foreground md:text-xs'>
+                      commits
+                    </div>
                   </div>
                   <div>
-                    <div className='font-mono font-semibold tabular-nums'>
+                    <div
+                      className='font-mono text-sm font-semibold tabular-nums
+                        md:text-base'
+                    >
                       {fmt(c.totals.prsMerged)}
                     </div>
-                    <div className='text-xs text-muted-foreground'>PRs</div>
+                    <div className='text-[11px] text-muted-foreground md:text-xs'>
+                      PRs
+                    </div>
                   </div>
                 </CardContent>
               </Card>

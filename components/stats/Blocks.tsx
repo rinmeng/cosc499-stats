@@ -36,28 +36,47 @@ export function PageHeader({
   );
 }
 
+/** `compact` shrinks the tile on phones (smaller type, no hint line) so charts show sooner. */
 export function StatTile({
   label,
   value,
   hint,
   icon: Icon,
+  compact = false,
 }: {
   label: string;
   value: React.ReactNode;
   hint?: React.ReactNode;
   icon?: LucideIcon;
+  compact?: boolean;
 }) {
   return (
-    <Card size='sm'>
-      <CardContent className='space-y-1'>
-        <div className='flex items-center gap-1.5 text-xs text-muted-foreground'>
+    <Card size='sm' className={cn(compact && 'py-2.5 md:py-4')}>
+      <CardContent className={cn('space-y-1', compact && 'px-3 md:px-4 md:space-y-1')}>
+        <div
+          className={cn(
+            'flex items-center gap-1.5 text-muted-foreground',
+            compact ? 'text-[11px] md:text-xs' : 'text-xs'
+          )}
+        >
           {Icon && <Icon className='size-3.5' />}
           {label}
         </div>
-        <div className='font-mono text-2xl font-semibold tabular-nums'>
+        <div
+          className={cn(
+            'font-mono font-semibold tabular-nums',
+            compact ? 'text-lg md:text-2xl' : 'text-2xl'
+          )}
+        >
           {typeof value === 'number' ? value.toLocaleString() : value}
         </div>
-        {hint && <div className='text-xs text-muted-foreground'>{hint}</div>}
+        {hint && (
+          <div
+            className={cn('text-xs text-muted-foreground', compact && 'hidden md:block')}
+          >
+            {hint}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
