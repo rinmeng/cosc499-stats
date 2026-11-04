@@ -125,22 +125,28 @@ export function RouteLoader() {
           role='status'
           aria-live='polite'
           aria-label='Loading page'
-          className={cn(
-            'fixed inset-0 z-[100] flex items-center justify-center bg-background',
-            // CSS-timed reveal for the server-rendered page-load loader
-            mode === 'initial' && 'initial-loader'
-          )}
+          // Click-through; the inner layer takes clicks only while it's showing.
+          className='pointer-events-none fixed inset-0 z-[100]'
           initial={mode === 'initial' ? false : { opacity: 0 }}
-          animate={mode === 'initial' ? undefined : { opacity: 1 }}
-          exit={mode === 'initial' ? undefined : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
         >
-          <LiquidWaveSpinner
-            size='lg'
-            words={words}
-            interval={1300}
-            className='bg-transparent'
-          />
+          <div
+            className={cn(
+              'pointer-events-auto flex size-full items-center justify-center bg-background',
+              // CSS-timed reveal for the server-rendered page-load loader. It sits on this
+              // inner layer so the outer fade-out isn't overridden by the CSS animation.
+              mode === 'initial' && 'initial-loader'
+            )}
+          >
+            <LiquidWaveSpinner
+              size='lg'
+              words={words}
+              interval={1300}
+              className='bg-transparent'
+            />
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

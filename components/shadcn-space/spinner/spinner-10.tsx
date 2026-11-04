@@ -34,7 +34,7 @@ export function TextMorph({ words, interval = 2000, className }: TextMorphProps)
       <motion.span
         key={index}
         className={cn('flex gap-0.25 overflow-hidden', className)}
-        initial={{ opacity: 0, y: 5 }}
+        initial={index === 0 ? false : { opacity: 0, y: 5 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -5 }}
         transition={{ duration: 0.25 }}
@@ -43,7 +43,7 @@ export function TextMorph({ words, interval = 2000, className }: TextMorphProps)
           <motion.span
             key={i}
             className='inline-block'
-            initial={{ opacity: 0, y: 5, filter: 'blur(5px)' }}
+            initial={index === 0 ? false : { opacity: 0, y: 5, filter: 'blur(5px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             exit={{ opacity: 0, y: -5, filter: 'blur(5px)' }}
             transition={{
@@ -115,12 +115,6 @@ const LiquidWaveSpinner = memo(
     const config = sizeConfig[size] || sizeConfig.md;
     const containerRef = useRef<HTMLDivElement>(null);
     const clipId = useId();
-    // Fixed timings (the original randomised these during render, which React's
-    // purity rules reject; the look is the same).
-    const randomYDuration = 1.6; // fill within the route loader's ~1.8 s minimum
-    const randomXDurationBg = 4;
-    const randomXDurationFg = 3;
-    const randomDelay = 0.1;
 
     return (
       <motion.div
@@ -147,50 +141,18 @@ const LiquidWaveSpinner = memo(
 
           <circle cx='249.5' cy='249.5' r='107.5' className='fill-muted' />
 
+          {/* CSS keyframes (globals.css, .lw-*) so the waves move before hydration too */}
           <g clipPath={`url(#${clipId})`}>
-            <motion.g
-              initial={{ y: 330.6 }}
-              animate={{ y: 170.1 }}
-              transition={{
-                duration: randomYDuration,
-                delay: randomDelay,
-                ease: 'easeOut',
-              }}
-            >
-              <motion.g
-                initial={{ x: -600 }}
-                animate={{ x: 0 }}
-                transition={{
-                  duration: randomXDurationBg,
-                  repeat: Infinity,
-                  ease: 'linear',
-                }}
-              >
+            <g className='lw-rise-bg'>
+              <g className='lw-drift-bg'>
                 <path d={WAVE_PATH} className='fill-primary' style={{ opacity: 0.4 }} />
-              </motion.g>
-            </motion.g>
-
-            <motion.g
-              initial={{ y: 330.6 }}
-              animate={{ y: 180.1 }}
-              transition={{
-                duration: randomYDuration,
-                delay: randomDelay,
-                ease: 'easeOut',
-              }}
-            >
-              <motion.g
-                initial={{ x: 0 }}
-                animate={{ x: -600 }}
-                transition={{
-                  duration: randomXDurationFg,
-                  repeat: Infinity,
-                  ease: 'linear',
-                }}
-              >
+              </g>
+            </g>
+            <g className='lw-rise-fg'>
+              <g className='lw-drift-fg'>
                 <path d={WAVE_PATH} className='fill-primary' />
-              </motion.g>
-            </motion.g>
+              </g>
+            </g>
           </g>
         </svg>
 
