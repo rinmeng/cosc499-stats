@@ -29,7 +29,7 @@ git commit -m "Add 2024–25 cohort data" && git push -u origin data/2024
 gh pr create --fill
 ```
 
-No access but know something useful? [Open an issue](https://github.com/rinmeng/cosc499-stats/issues/new).
+No access? **Even just a link to your year of the capstone helps.** [Open an issue](https://github.com/rinmeng/cosc499-stats/issues/new?template=cohort-info.yml) with a link to your cohort's org or your team's repo.
 
 ## Setup
 

@@ -1,0 +1,29 @@
+name: Add or fix my cohort
+description: Tell us about your capstone cohort or team. Even just a link helps!
+title: 'Cohort info: '
+labels: [cohort-data]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping! **Even just a link to your year of the capstone helps.** You don't need to run anything.
+  - type: input
+    id: cohort
+    attributes:
+      label: Which session were you in?
+      description: e.g. 2024–25, or Summer 2025
+    validations:
+      required: true
+  - type: input
+    id: link
+    attributes:
+      label: Link to your cohort or team
+      description: A GitHub org or repo link, your team's repo, a course page, anything that points to it. A link is enough.
+      placeholder: https://github.com/...
+    validations:
+      required: true
+  - type: textarea
+    id: more
+    attributes:
+      label: Anything else?
+      description: Team number, what your team built, repos that moved or were renamed, accounts to leave out (TAs, bots).

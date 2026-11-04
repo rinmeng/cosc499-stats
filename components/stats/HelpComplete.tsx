@@ -10,6 +10,16 @@ export const isSmallCohort = (c: { isCurrent: boolean; totals: { teams: number }
 
 export const contributingUrl = `${repoUrl}/blob/main/CONTRIBUTING.md`;
 
+/** New-issue link with the title and a body prefilled for this cohort. */
+export const issueUrl = (label?: string) => {
+  const params = new URLSearchParams({
+    template: 'cohort-info.yml',
+    title: `Cohort info: ${label ?? ''}`.trim(),
+    cohort: label ?? '',
+  });
+  return `${repoUrl}/issues/new?${params}`;
+};
+
 export function HelpComplete({
   label,
   cohort,
@@ -52,9 +62,9 @@ export function HelpComplete({
           <Button
             variant='outline'
             nativeButton={false}
-            render={<a href={`${repoUrl}/issues/new`} target='_blank' rel='noreferrer' />}
+            render={<a href={issueUrl(label)} target='_blank' rel='noreferrer' />}
           >
-            <MessageSquarePlus /> Share info
+            <MessageSquarePlus /> Share a link
           </Button>
         </div>
       </CardContent>
@@ -68,9 +78,11 @@ export function HelpComplete({
  */
 export function MissingTeam({
   cohort,
+  label,
   live = false,
 }: {
   cohort: string;
+  label?: string;
   live?: boolean;
 }) {
   return (
@@ -83,8 +95,8 @@ export function MissingTeam({
         <span className='font-medium text-foreground'>Don’t see your team?</span>{' '}
         {live ? (
           <>
-            Your repo may be private or outside the course org. Open an issue with the
-            repo link and we’ll add it.
+            Your repo may be private or outside the course org. Open an issue with a link
+            to it (even just the link helps) and we’ll add it.
           </>
         ) : (
           <>
@@ -102,7 +114,7 @@ export function MissingTeam({
         nativeButton={false}
         render={
           <a
-            href={live ? `${repoUrl}/issues/new` : contributingUrl}
+            href={live ? issueUrl(label) : contributingUrl}
             target='_blank'
             rel='noreferrer'
           />

@@ -121,19 +121,22 @@ export function Navbar() {
               <span className='sr-only'>Toggle menu</span>
             </SheetTrigger>
             <SheetContent side='right' className='w-72'>
-              <SheetHeader>
+              <SheetHeader className='items-center px-12 text-center'>
                 <SheetTitle>
                   <Brand onClick={() => setOpen(false)} />
                 </SheetTitle>
               </SheetHeader>
-              <div className={cn('flex flex-col gap-2 px-4')}>
-                {items(() => setOpen(false), 'justify-start')}
+              <div className={cn('flex flex-col items-center gap-2 px-4')}>
+                {items(() => setOpen(false), 'w-full justify-center')}
                 {summerLinks.length > 0 && (
                   <>
-                    <p className='mt-2 px-3 text-xs font-medium text-muted-foreground'>
+                    <p
+                      className='mt-2 text-center text-xs font-medium
+                        text-muted-foreground'
+                    >
                       Summer sessions
                     </p>
-                    {items(() => setOpen(false), 'justify-start', summerLinks)}
+                    {items(() => setOpen(false), 'w-full justify-center', summerLinks)}
                   </>
                 )}
                 <ModeToggle />

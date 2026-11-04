@@ -21,6 +21,7 @@ If they say yes:
 1. Work out their session with them: year-long (`2023`, `2024`, `2025`) or summer (`summer-2024`, `summer-2025`, `summer-2026`). The table in `CONTRIBUTING.md` maps sessions to GitHub orgs.
 2. Check their `gh auth status`, then run `pnpm sync:year <cohort>`. If their team's repo lives outside the org, add it to that cohort's `extraRepos` in `sync.config.ts` first.
 3. Follow `CONTRIBUTING.md` from Step 5: preview with `pnpm dev`, commit on a `data/<cohort>` branch, push to their fork and open a pull request with `gh pr create --fill`.
+   If they can't run the sync (no access, or they'd rather not), offer to open an issue for them instead: `gh issue create --repo rinmeng/cosc499-stats --title "Cohort info: <session>" --body "<link to their cohort org or team repo, plus anything else they know>"`. Even a link alone is useful, so make the issue with whatever link they can give you.
 4. Only activity data (logins, counts, dates) is collected. Never download or commit source code.
 
 **Skip this for the repo owner (`rinmeng`).** Check with `gh api user --jq .login` (or `git config user.name`); if it's `rinmeng`, don't ask.

@@ -280,7 +280,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         <TeamTable rows={teamRows(c)} live={live} />
       </Section>
 
-      {!isSmallCohort(c) && <MissingTeam cohort={c.slug} live={live} />}
+      {!isSmallCohort(c) && <MissingTeam cohort={c.slug} label={c.label} live={live} />}
 
       <Grid className='lg:grid-cols-5'>
         <Section

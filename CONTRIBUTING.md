@@ -67,7 +67,8 @@ gh repo list COSC-499-W2024 --limit 100
 
 If you see team repos that are missing from the site, you can help. 🎉 If the list is
 empty or matches what's already on the site, skip to
-[Other ways to help](#other-ways-to-help).
+[Other ways to help](#other-ways-to-help): **just opening an issue with a link to your
+cohort or team repo is a big help too.**
 
 ## Step 3: Get your own copy of this project
 
@@ -137,11 +138,13 @@ from Step 4.
 
 ## Other ways to help
 
-No access, or just want to share something? Open an issue and tell us what you know: what
-your team built, missing or renamed repos, wrong team numbers, or an account that should
-be left out (like a TA or bot).
+No access, or don't want to run anything? **Even just a link to your year of the
+capstone helps.** Open an issue and paste a link to your cohort's GitHub org, your team's
+repo, or your course page. That's all we need, and we'll take it from there. If you know
+more, add it too: what your team built, repos that moved or were renamed, wrong team
+numbers, or an account that should be left out (like a TA or bot).
 
-👉 [Open an issue](https://github.com/rinmeng/cosc499-stats/issues/new)
+👉 [Open an issue](https://github.com/rinmeng/cosc499-stats/issues/new?template=cohort-info.yml) (the form asks for your session and a link)
 
 ## Stuck?
 
