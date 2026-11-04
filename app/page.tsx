@@ -1,14 +1,12 @@
 import Link from 'next/link';
 import {
   ArrowRight,
-  Calendar,
   Ghost,
   Moon,
   Sunrise,
   TreePine,
   FileCode2,
   GitMerge,
-  GitPullRequest,
   MessageSquareCode,
   Trophy,
   Users,
@@ -23,9 +21,9 @@ import {
   Highlight,
   type HighlightProps,
   PageHeader,
-  StatTile,
 } from '@/components/stats/Blocks';
 import { isSmallCohort } from '@/components/stats/HelpComplete';
+import { RangeTotals } from '@/components/stats/RangeTotals';
 import { ShowMore } from '@/components/stats/ShowMore';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,6 +40,9 @@ import {
   trendSeries,
 } from '@/lib/views';
 
+/** First year of the headline totals' range on load (2023–24: the first COSC-499-W org). */
+const DEFAULT_RANGE_FROM = 2023;
+
 /** Cohort cards shown before "Show more": one full row of the 4-column grid, newest first. */
 const RECENT_COHORT_CARDS = 4;
 
@@ -56,8 +57,6 @@ export default function Overview() {
   if (!s) return <EmptyState />;
 
   const cohorts = s.cohorts.filter((c) => c.teams.length);
-  const sum = (k: 'contributors' | 'commits' | 'prsMerged' | 'reviews') =>
-    cohorts.reduce((a, c) => a + c.totals[k], 0);
   const current = cohorts.find((c) => c.isCurrent);
 
   const allTeams = cohorts.flatMap((c) =>
@@ -209,44 +208,17 @@ export default function Overview() {
         today. Last synced {fmtDate(s.generatedAt)}.
       </PageHeader>
 
-      <Grid className='grid-cols-3 gap-2 md:grid-cols-3 md:gap-4 lg:grid-cols-5'>
-        <StatTile
-          compact
-          icon={Calendar}
-          label='Cohorts'
-          value={cohorts.length}
-          unit='sessions'
-        />
-        <StatTile
-          compact
-          icon={Users}
-          label='Contributors'
-          value={fmt(sum('contributors'))}
-          unit='people'
-          hint={`across ${fmt(allTeams.length)} teams`}
-        />
-        <StatTile
-          compact
-          icon={GitPullRequest}
-          label='Commits'
-          value={fmtCompact(sum('commits'))}
-          unit='commits'
-        />
-        <StatTile
-          compact
-          icon={GitMerge}
-          label='Merged PRs'
-          value={fmtCompact(sum('prsMerged'))}
-          unit='PRs'
-        />
-        <StatTile
-          compact
-          icon={MessageSquareCode}
-          label='Code reviews'
-          value={fmtCompact(sum('reviews'))}
-          unit='reviews'
-        />
-      </Grid>
+      <RangeTotals
+        defaultFrom={DEFAULT_RANGE_FROM}
+        cohorts={cohorts.map((c) => ({
+          year: c.year,
+          teams: c.totals.teams,
+          contributors: c.totals.contributors,
+          commits: c.totals.commits,
+          prsMerged: c.totals.prsMerged,
+          reviews: c.totals.reviews,
+        }))}
+      />
 
       <div className='space-y-4'>
         <div className={cohortGrid}>{recentCohorts.map(cohortCard)}</div>
