@@ -2,11 +2,26 @@ import { ImageResponse } from 'next/og';
 
 export const OG_SIZE = { width: 1200, height: 630 };
 
+/** A number shown big on the card with a small label under it ("798" / "commits"). */
+export interface OgStat {
+  label: string;
+  value: string;
+}
+
 /**
  * Social-preview card (Open Graph / Twitter), generated per route in the site's light
- * theme: the page title as the header and its description underneath.
+ * theme: the page title as the header and its description underneath. With `stats`,
+ * a row of numbers replaces the description (person pages).
  */
-export function ogImage({ title, description }: { title: string; description?: string }) {
+export function ogImage({
+  title,
+  description,
+  stats,
+}: {
+  title: string;
+  description?: string;
+  stats?: OgStat[];
+}) {
   return new ImageResponse(
     <div
       style={{
@@ -46,6 +61,28 @@ export function ogImage({ title, description }: { title: string; description?: s
             style={{ fontSize: 32, color: '#57534e', lineHeight: 1.4, maxWidth: 1040 }}
           >
             {description}
+          </div>
+        )}
+        {stats && stats.length > 0 && (
+          <div style={{ display: 'flex', gap: 56, marginTop: 8 }}>
+            {stats.map((s) => (
+              <div key={s.label} style={{ display: 'flex', flexDirection: 'column' }}>
+                <div
+                  style={{
+                    fontSize: 64,
+                    fontWeight: 800,
+                    lineHeight: 1,
+                    letterSpacing: -1,
+                    color: '#0c0a09',
+                  }}
+                >
+                  {s.value}
+                </div>
+                <div style={{ fontSize: 26, color: '#57534e', marginTop: 8 }}>
+                  {s.label}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

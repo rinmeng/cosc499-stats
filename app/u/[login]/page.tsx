@@ -15,6 +15,7 @@ import { Grid, PageHeader, Section, StatTile } from '@/components/stats/Blocks';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { fmt, fmtCompact, pct } from '@/lib/format';
 import { getPeople, getPerson, type Capstone } from '@/lib/people';
+import { pageMetadata, personSeo } from '@/lib/seo';
 
 /**
  * A person's own output in each capstone they were part of. It never ranks them
@@ -31,12 +32,10 @@ export async function generateMetadata({ params }: PageProps<'/u/[login]'>) {
   const { login } = await params;
   const p = getPerson(login);
   if (!p) return { title: 'Person not found' };
-  const where = p.capstones.map((c) => `${c.team.name}, ${c.cohort.label}`).join('; ');
   return {
-    title: p.name,
-    description: `${p.name}'s COSC 499 capstone contributions (${where}).`,
-    alternates: { canonical: `/u/${p.login}` },
-    // Findable through the site's search, but kept out of search engines.
+    ...pageMetadata(personSeo(p)),
+    // Share previews work, but the page is kept out of search engines: it's found
+    // through the site's own search, not by googling someone's name.
     robots: { index: false, follow: true },
   };
 }

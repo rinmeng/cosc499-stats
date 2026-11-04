@@ -1,6 +1,8 @@
 import 'server-only';
 
 import { fmt } from '@/lib/format';
+import type { OgStat } from '@/lib/og';
+import type { Person } from '@/lib/people';
 import { SITE_DESCRIPTION } from '@/lib/site';
 import type { CohortStats, TeamStats } from '@/lib/types/stats';
 
@@ -34,6 +36,30 @@ export function teamSeo(c: CohortStats, t: TeamStats): PageSeo {
     title: `${t.name} · ${c.label}`,
     description: `UBCO COSC 499 ${c.label} capstone ${t.name}: top contributors, weekly activity and team habits, with ${fmt(t.commits)} commits, ${fmt(t.prsMerged)} merged PRs and ${fmt(t.reviews)} reviews.`,
     path: `/${c.slug}/${t.team}`,
+  };
+}
+
+/**
+ * A person's page, described by their most recent capstone. Their own numbers only,
+ * never a rank or a comparison (see the Tone rule).
+ */
+export function personSeo(p: Person): PageSeo & { stats: OgStat[]; subtitle: string } {
+  const latest = p.capstones.at(-1)!;
+  const m = latest.stats;
+  const where = `${latest.team.name}, ${latest.cohort.label}`;
+  const more =
+    p.capstones.length > 1 ? ` One of ${p.capstones.length} COSC 499 capstones.` : '';
+  return {
+    title: p.name,
+    subtitle: `${where}${latest.cohort.isCurrent ? ' (in progress)' : ''}`,
+    description: `${p.name}'s UBCO COSC 499 capstone (${where}): ${fmt(m.commits)} commits, ${fmt(m.prsMerged)} merged PRs and ${fmt(m.reviews)} code reviews.${more}`,
+    path: `/u/${p.login}`,
+    stats: [
+      { label: 'commits', value: fmt(m.commits) },
+      { label: 'merged PRs', value: fmt(m.prsMerged) },
+      { label: 'reviews', value: fmt(m.reviews) },
+      { label: 'active weeks', value: fmt(m.activeWeeks) },
+    ],
   };
 }
 
