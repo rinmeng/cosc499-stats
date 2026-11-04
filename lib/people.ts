@@ -29,6 +29,8 @@ export interface PersonIndexEntry {
   name: string;
   /** Cohort labels, e.g. ["Summer 2024", "2024–25"] */
   cohorts: string[];
+  /** In the cohort that's still running (listed first in search) */
+  current: boolean;
 }
 
 const hidden = new Set(hiddenPeople.map((l) => l.toLowerCase()));
@@ -76,11 +78,19 @@ export function getPerson(login: string): Person | null {
 }
 
 export function peopleIndex(): PersonIndexEntry[] {
-  return [...getPeople().values()]
-    .map((p) => ({
-      login: p.login,
-      name: p.name,
-      cohorts: p.capstones.map((x) => x.cohort.label),
-    }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  return (
+    [...getPeople().values()]
+      .map((p) => ({
+        login: p.login,
+        name: p.name,
+        cohorts: p.capstones.map((x) => x.cohort.label),
+        current: p.capstones.some((x) => x.cohort.isCurrent),
+      }))
+      // Current cohort first, then everyone else; A–Z within each.
+      .sort(
+        (a, b) =>
+          Number(b.current) - Number(a.current) ||
+          a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+      )
+  );
 }
