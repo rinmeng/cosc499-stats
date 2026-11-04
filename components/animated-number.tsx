@@ -21,12 +21,20 @@ const roll = {
     filter: 'blur(5px)',
   }),
 };
-// Same roll without the blur: transform + opacity only, so it stays on the GPU and
-// doesn't repaint every frame (used where many numbers animate, e.g. while scrolling).
+// Same roll with a lighter blur (2px instead of 5px): much cheaper to paint, used where
+// many numbers animate at once (e.g. while scrolling).
 const rollNoBlur = {
-  enter: (direction: number) => ({ y: direction > 0 ? '60%' : '-60%', opacity: 0 }),
-  center: { y: '0%', opacity: 1 },
-  exit: (direction: number) => ({ y: direction > 0 ? '-60%' : '60%', opacity: 0 }),
+  enter: (direction: number) => ({
+    y: direction > 0 ? '60%' : '-60%',
+    opacity: 0,
+    filter: 'blur(2px)',
+  }),
+  center: { y: '0%', opacity: 1, filter: 'blur(0px)' },
+  exit: (direction: number) => ({
+    y: direction > 0 ? '-60%' : '60%',
+    opacity: 0,
+    filter: 'blur(2px)',
+  }),
 };
 // Quick, with only a little overshoot.
 const transition = { type: 'spring', duration: 0.35, bounce: 0.15 } as const;
@@ -67,7 +75,14 @@ export function AnimatedNumber<T extends number | null | undefined>({
   return (
     // overflow-y: clip keeps rolling digits inside the line, so a scrolling ancestor (a table,
     // the sidebar) never flashes a scrollbar. Unlike hidden it leaves the baseline alone.
-    <span className={cn('inline-block overflow-y-clip tabular-nums', className)}>
+    // A little vertical padding (offset by negative margin) gives rolling digits room so they
+    // aren't cut off mid-roll, without changing the line height around them.
+    <span
+      className={cn(
+        'inline-block overflow-y-clip py-[0.06em] -my-[0.06em] tabular-nums',
+        className
+      )}
+    >
       <span className='sr-only'>{srText ?? text}</span>
       <span aria-hidden>
         {/* One slot per place value, counted from the right (ones, tens, ...), so a place keeps its

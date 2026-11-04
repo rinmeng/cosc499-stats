@@ -31,14 +31,14 @@ function parse(text: string): Parsed | null {
 /** Time between rolled steps while counting (each step rolls the changed digits). */
 const STEP_MS = 100;
 /** Gap between one number starting and the next, so they don't all animate at once. */
-const STAGGER_MS = 90;
+const STAGGER_MS = 60;
 
 /**
  * Shared start queue: numbers that come into view together start one after another
  * (STAGGER_MS apart) instead of all at the same moment, which avoids a lag spike.
  */
 /** If a number would wait longer than this (fast scrolling past many), just show it. */
-const MAX_WAIT_MS = 700;
+const MAX_WAIT_MS = 1500;
 
 let nextStartAt = 0;
 /** Milliseconds to wait before starting, or null to skip the animation entirely. */
@@ -129,14 +129,24 @@ export function CountUp({
   };
 
   return (
-    <span ref={ref} className='inline-block'>
-      <AnimatedNumber
-        value={reduceMotion ? target : shown}
-        format={format}
-        srText={text}
-        className={className}
-        blur={false}
-      />
+    // The invisible final value reserves the full width up front, so neighbours never
+    // shift while the number grows; digits fill in from the right, like an odometer.
+    <span ref={ref} className='inline-grid justify-items-end'>
+      <span
+        aria-hidden
+        className='invisible col-start-1 row-start-1 whitespace-pre tabular-nums'
+      >
+        {text}
+      </span>
+      <span className='col-start-1 row-start-1'>
+        <AnimatedNumber
+          value={reduceMotion ? target : shown}
+          format={format}
+          srText={text}
+          className={className}
+          blur={false}
+        />
+      </span>
     </span>
   );
 }
