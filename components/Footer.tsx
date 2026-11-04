@@ -18,7 +18,7 @@ export function Footer() {
         className='mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-8
           text-center sm:px-6 lg:px-8'
       >
-        <p className='text-sm text-muted-foreground'>&copy; {yearLabel}</p>
+        <p className='text-sm text-muted-foreground'>&copy; {yearLabel} rin</p>
 
         <Link
           href='/'
@@ -55,15 +55,14 @@ export function Footer() {
           target='_blank'
           rel='noreferrer'
           aria-label='rinm.dev'
-          className='rounded-lg p-1.5 transition-opacity hover:opacity-80
-            not-dark:bg-stone-900'
+          className='transition-opacity hover:opacity-80'
         >
           <Image
             src='/rmlogov2.png'
             alt='Rin logo'
             width={52}
             height={29}
-            className='h-auto w-13 object-contain'
+            className='h-auto w-13 object-contain not-dark:invert'
           />
         </Link>
       </div>
