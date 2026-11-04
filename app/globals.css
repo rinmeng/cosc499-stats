@@ -6,53 +6,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Loader waves (components/shadcn-space/spinner/spinner-10.tsx): pure CSS so they animate
- * from first paint, before JavaScript loads. */
-@keyframes lw-rise-bg {
-  from {
-    transform: translateY(330.6px);
-  }
-  to {
-    transform: translateY(170.1px);
-  }
-}
-@keyframes lw-rise-fg {
-  from {
-    transform: translateY(330.6px);
-  }
-  to {
-    transform: translateY(180.1px);
-  }
-}
-@keyframes lw-drift-right {
-  from {
-    transform: translateX(-600px);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-@keyframes lw-drift-left {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-600px);
-  }
-}
-.lw-rise-bg {
-  animation: lw-rise-bg 1.6s ease-out 0.1s both;
-}
-.lw-rise-fg {
-  animation: lw-rise-fg 1.6s ease-out 0.1s both;
-}
-.lw-drift-bg {
-  animation: lw-drift-right 4s linear infinite;
-}
-.lw-drift-fg {
-  animation: lw-drift-left 3s linear infinite;
-}
-
 @layer components {
   .nb-padding {
     @apply py-24;

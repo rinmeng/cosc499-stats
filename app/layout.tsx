@@ -4,7 +4,6 @@ import { Analytics } from '@vercel/analytics/next';
 
 import { Footer } from '@/components/Footer';
 import { Navbar } from '@/components/Navbar';
-import { RouteLoader } from '@/components/RouteLoader';
 
 import './globals.css';
 
@@ -112,7 +111,6 @@ export default function RootLayout({
         />
         <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
           <TooltipProvider>
-            <RouteLoader />
             <Navbar />
             <main className='mx-auto max-w-7xl px-4 pt-24 pb-16 sm:px-6 lg:px-8'>
               {children}
