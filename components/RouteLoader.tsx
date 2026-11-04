@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'motion/react';
 
 import LiquidWaveSpinner from '@/components/shadcn-space/spinner/spinner-10';
 
+/** Phrases shown under the spinner, in a new random order each time it opens. */
 const WORDS = [
   'Adding 3k lines in one commit ...',
   'Judging your PR sizes ...',
@@ -14,10 +15,19 @@ const WORDS = [
 ];
 
 /**
- * Long enough for the first phrase to animate in fully (its characters stagger in at
+ * Long enough for the first (random) phrase to animate in fully (its characters stagger in at
  * 15 ms each plus a 200 ms fade, about 0.7 s) and be read before the next one starts.
  */
 const MIN_VISIBLE_MS = 1800;
+const shuffle = <T,>(list: T[]) => {
+  const a = [...list];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+
 /** Never leave the overlay up if a navigation stalls or gets cancelled. */
 const MAX_VISIBLE_MS = 10_000;
 
@@ -28,6 +38,7 @@ const MAX_VISIBLE_MS = 10_000;
 export function RouteLoader() {
   const pathname = usePathname();
   const [visible, setVisible] = useState(false);
+  const [words, setWords] = useState(WORDS);
   const startedAt = useRef(0);
   const fromPath = useRef(pathname);
 
@@ -36,6 +47,7 @@ export function RouteLoader() {
     const start = () => {
       startedAt.current = Date.now();
       fromPath.current = window.location.pathname;
+      setWords(shuffle(WORDS));
       setVisible(true);
     };
 
@@ -93,7 +105,7 @@ export function RouteLoader() {
         >
           <LiquidWaveSpinner
             size='lg'
-            words={WORDS}
+            words={words}
             interval={1300}
             className='bg-transparent'
           />
