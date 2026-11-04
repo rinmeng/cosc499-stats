@@ -21,7 +21,6 @@ The year is when your session **started**. Summer sessions use `summer-` plus th
 | Sept 2024 – Apr 2025  | `2024`        | `COSC-499-W2024`           |
 | May – Aug 2025        | `summer-2025` | `UBCO-COSC499-S2025`       |
 | Sept 2025 – Apr 2026  | `2025`        | `COSC-499-W2025`           |
-| May – Aug 2026        | `summer-2026` | `UBCO-COSC499-S2026`       |
 
 The examples below use `2024`. Swap in yours wherever you see it (e.g. `summer-2025`
 and `COSC-499-W2024` → `UBCO-COSC499-S2025`).

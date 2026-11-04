@@ -18,7 +18,7 @@ When a user starts an agent session in this repo, **ask them once, early**, whet
 
 If they say yes:
 
-1. Work out their session with them: year-long (`2023`, `2024`, `2025`) or summer (`summer-2024`, `summer-2025`, `summer-2026`). The table in `CONTRIBUTING.md` maps sessions to GitHub orgs.
+1. Work out their session with them: year-long (`2023`, `2024`, `2025`) or summer (`summer-2024`, `summer-2025`). The table in `CONTRIBUTING.md` maps sessions to GitHub orgs.
 2. Check their `gh auth status`, then run `pnpm sync:year <cohort>`. If their team's repo lives outside the org, add it to that cohort's `extraRepos` in `sync.config.ts` first.
 3. Follow `CONTRIBUTING.md` from Step 5: preview with `pnpm dev`, commit on a `data/<cohort>` branch, push to their fork and open a pull request with `gh pr create --fill`.
    If they can't run the sync (no access, or they'd rather not), offer to open an issue for them instead: `gh issue create --repo rinmeng/cosc499-stats --title "Cohort info: <session>" --body "<link to their cohort org or team repo, plus anything else they know>"`. Even a link alone is useful, so make the issue with whatever link they can give you.

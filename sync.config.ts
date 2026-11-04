@@ -133,13 +133,8 @@ export const cohorts: CohortConfig[] = [
     label: 'Summer 2025',
     note: 'Only one team repository from this session is visible on GitHub.',
   },
-  {
-    org: 'UBCO-COSC499-S2026',
-    year: 2026,
-    session: 'summer',
-    label: 'Summer 2026',
-    note: 'No team repositories from this session are visible on GitHub yet.',
-  },
+  // No summer 2026: the UBCO-COSC499-S2026 org has no team repos, so the session
+  // most likely didn't run.
 ];
 
 /** URL slug and CLI name for a cohort: winter "2024", summer "summer-2024". */

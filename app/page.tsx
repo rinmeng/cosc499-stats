@@ -163,8 +163,10 @@ export default function Overview() {
 
   // Cohort cards: same 5-year window as the totals (older years live in the navbar).
   // Newest first; only the first row shows up front, the rest sit behind "Show more".
+  // A past cohort with no teams most likely didn't run, so it gets no card.
   const byNewest = [...s.cohorts]
     .filter((c) => c.year >= totalsFrom)
+    .filter((c) => c.teams.length > 0 || c.isCurrent)
     .sort(byTermStart)
     .reverse();
   const recentCohorts = byNewest.slice(0, RECENT_COHORT_CARDS);
