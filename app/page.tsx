@@ -230,34 +230,21 @@ export default function Overview() {
           ))}
       </div>
 
-      <CohortTrendChart
-        title={current ? `How ${current.label} is tracking` : 'Cohorts through the year'}
-        description='Average cumulative commits per team by week of term (week 0 = first week of September, or of May for summer sessions; summer is dashed). Click a cohort to bring it forward.'
-        series={trendSeries(s)}
-        currentWeek={current ? currentWeek(current) : undefined}
-      />
-
-      <Grid className='lg:grid-cols-5'>
-        <MetricBarChart
-          title='Cohorts side by side'
-          description={
-            current
-              ? `Average per team; header shows all-time totals. ${current.label} is still in progress.`
-              : 'Average per team; header shows all-time totals.'
-          }
-          {...cohortBars(s)}
-          height='h-72'
-          className='lg:col-span-3'
-        />
-        <div className='lg:col-span-2'>
-          <LanguageDonut
-            languages={[...languages]
-              .map(([name, bytes]) => ({ name, bytes }))
-              .sort((a, b) => b.bytes - a.bytes)}
-            description='Share of code across every team repository'
-          />
+      <div className='space-y-3'>
+        <div>
+          <h2 className='font-heading text-xl font-semibold'>All-time oddities</h2>
+          <p className='text-sm text-muted-foreground'>
+            The most memorable individual habits across every cohort.
+          </p>
         </div>
-      </Grid>
+        <Grid className='md:grid-cols-2 xl:grid-cols-3'>
+          {oddities
+            .filter((h) => h.items.length > 0)
+            .map((h) => (
+              <Highlight key={h.title} {...h} />
+            ))}
+        </Grid>
+      </div>
 
       <div className='space-y-3'>
         <h2 className='font-heading text-xl font-semibold'>All-time highlights</h2>
@@ -309,21 +296,34 @@ export default function Overview() {
         </Grid>
       </div>
 
-      <div className='space-y-3'>
-        <div>
-          <h2 className='font-heading text-xl font-semibold'>All-time oddities</h2>
-          <p className='text-sm text-muted-foreground'>
-            The most memorable individual habits across every cohort.
-          </p>
+      <CohortTrendChart
+        title={current ? `How ${current.label} is tracking` : 'Cohorts through the year'}
+        description='Average cumulative commits per team by week of term (week 0 = first week of September, or of May for summer sessions; summer is dashed). Click a cohort to bring it forward.'
+        series={trendSeries(s)}
+        currentWeek={current ? currentWeek(current) : undefined}
+      />
+
+      <Grid className='lg:grid-cols-5'>
+        <MetricBarChart
+          title='Cohorts side by side'
+          description={
+            current
+              ? `Average per team; header shows all-time totals. ${current.label} is still in progress.`
+              : 'Average per team; header shows all-time totals.'
+          }
+          {...cohortBars(s)}
+          height='h-72'
+          className='lg:col-span-3'
+        />
+        <div className='lg:col-span-2'>
+          <LanguageDonut
+            languages={[...languages]
+              .map(([name, bytes]) => ({ name, bytes }))
+              .sort((a, b) => b.bytes - a.bytes)}
+            description='Share of code across every team repository'
+          />
         </div>
-        <Grid className='md:grid-cols-2 xl:grid-cols-3'>
-          {oddities
-            .filter((h) => h.items.length > 0)
-            .map((h) => (
-              <Highlight key={h.title} {...h} />
-            ))}
-        </Grid>
-      </div>
+      </Grid>
 
       <p className='text-xs text-muted-foreground'>
         Counts cover the default branch (merge commits excluded), pull requests and issues

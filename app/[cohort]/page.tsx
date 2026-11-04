@@ -112,7 +112,115 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     return s < 120 ? `${Math.max(1, Math.round(s))} s` : fmtHours(h);
   };
 
-  const sections: HighlightSection[] = [
+  const allSections: HighlightSection[] = [
+    {
+      title: 'Strangest stats',
+      description: 'The odd, the heroic and the slightly concerning.',
+      cards: [
+        card(
+          {
+            icon: Zap,
+            title: 'Speed demon',
+            description: 'Fastest single PR from opened to merged',
+          },
+          c.teams
+            .filter((t) => t.fastestPr)
+            .sort((a, b) => a.fastestPr!.value - b.fastestPr!.value)
+            .slice(0, 3),
+          (t) => ({
+            value: fmtSecs(t.fastestPr!.value),
+            sub: `PR #${t.fastestPr!.number}`,
+          })
+        ),
+        card(
+          {
+            icon: Hourglass,
+            title: 'Patience award',
+            description: 'Longest a PR stayed open before finally being merged',
+          },
+          topTeams(c, (t) => t.slowestPr?.value ?? 0, 3),
+          (t) => ({
+            value: fmtDays(t.slowestPr!.value),
+            sub: `PR #${t.slowestPr!.number}`,
+          })
+        ),
+        card(
+          {
+            icon: Ghost,
+            title: 'Witching hour',
+            description: 'Commits made between 3 and 4 am',
+          },
+          topTeams(c, (t) => t.witchingCommits, 3),
+          (t) => ({ value: fmt(t.witchingCommits) })
+        ),
+        card(
+          {
+            icon: TreePine,
+            title: 'Holiday heroes',
+            description:
+              c.session === 'summer'
+                ? 'Commits on Victoria Day, Canada Day or BC Day'
+                : 'Commits on Thanksgiving, over Christmas and New Year, or in reading week',
+          },
+          topTeams(c, (t) => t.holidayCommits, 3),
+          (t) => ({ value: fmt(t.holidayCommits) })
+        ),
+        card(
+          {
+            icon: NotebookPen,
+            title: 'Exam-season grinders',
+            description: 'Commits during the December and April exam periods',
+          },
+          topTeams(c, (t) => t.examCommits, 3),
+          (t) => ({ value: fmt(t.examCommits) })
+        ),
+        card(
+          {
+            icon: Boxes,
+            title: 'Mega PR',
+            description: 'Most files changed in a single merged PR',
+          },
+          topTeams(c, (t) => t.megaPr?.value ?? 0, 3),
+          (t) => ({
+            value: `${fmt(t.megaPr!.value)} files`,
+            sub: `PR #${t.megaPr!.number}`,
+          })
+        ),
+      ],
+    },
+    {
+      title: 'Work rhythm',
+      description: 'When teams like to work.',
+      cards: [
+        card(
+          {
+            icon: Moon,
+            title: 'Night owls',
+            description: 'Share of commits made between 10 pm and 4 am',
+          },
+          topTeams(c, (t) => t.nightOwlShare, 3, enough),
+          (t) => ({ value: pct(t.nightOwlShare) })
+        ),
+        card(
+          {
+            icon: Sunrise,
+            title: 'Early birds',
+            description: 'Share of commits made between 5 am and 9 am',
+          },
+          topTeams(c, (t) => t.earlyBirdShare, 3, enough),
+          (t) => ({ value: pct(t.earlyBirdShare) })
+        ),
+        card(
+          {
+            icon: CalendarDays,
+            title: 'Weekend warriors',
+            description: 'Share of commits made on Saturday or Sunday',
+          },
+          topTeams(c, (t) => t.weekendShare, 3, enough),
+          (t) => ({ value: pct(t.weekendShare) })
+        ),
+      ],
+    },
     {
       title: 'Momentum',
       description: 'Who got going early, finished strong and had the biggest weeks.',
@@ -130,12 +238,15 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           : null,
         card(
           {
-            icon: Rocket,
-            title: 'Fastest start',
-            description: 'Commits in the first 4 weeks of term',
+            icon: Trophy,
+            title: 'Biggest week',
+            description: 'Most commits in a single week',
           },
-          topTeams(c, (t) => t.startCommits, 3),
-          (t) => ({ value: fmt(t.startCommits) })
+          topTeams(c, (t) => t.peakWeek?.commits ?? 0, 3),
+          (t) => ({
+            value: fmt(t.peakWeek?.commits ?? 0),
+            sub: `week ${t.peakWeek?.week}`,
+          })
         ),
         card(
           {
@@ -148,21 +259,19 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         ),
         card(
           {
-            icon: Trophy,
-            title: 'Biggest week',
-            description: 'Most commits in a single week',
+            icon: Rocket,
+            title: 'Fastest start',
+            description: 'Commits in the first 4 weeks of term',
           },
-          topTeams(c, (t) => t.peakWeek?.commits ?? 0, 3),
-          (t) => ({
-            value: fmt(t.peakWeek?.commits ?? 0),
-            sub: `week ${t.peakWeek?.week}`,
-          })
+          topTeams(c, (t) => t.startCommits, 3),
+          (t) => ({ value: fmt(t.startCommits) })
         ),
       ],
     },
     {
       title: 'Teamwork',
       description: 'Sharing the work and reviewing each other’s code.',
+      more: true,
       cards: [
         card(
           {
@@ -214,6 +323,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     {
       title: 'Shipping',
       description: 'Getting work merged and issues closed.',
+      more: true,
       cards: [
         card(
           {
@@ -262,40 +372,6 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       ],
     },
     {
-      title: 'Work rhythm',
-      description: 'When teams like to work.',
-      more: true,
-      cards: [
-        card(
-          {
-            icon: Sunrise,
-            title: 'Early birds',
-            description: 'Share of commits made between 5 am and 9 am',
-          },
-          topTeams(c, (t) => t.earlyBirdShare, 3, enough),
-          (t) => ({ value: pct(t.earlyBirdShare) })
-        ),
-        card(
-          {
-            icon: Moon,
-            title: 'Night owls',
-            description: 'Share of commits made between 10 pm and 4 am',
-          },
-          topTeams(c, (t) => t.nightOwlShare, 3, enough),
-          (t) => ({ value: pct(t.nightOwlShare) })
-        ),
-        card(
-          {
-            icon: CalendarDays,
-            title: 'Weekend warriors',
-            description: 'Share of commits made on Saturday or Sunday',
-          },
-          topTeams(c, (t) => t.weekendShare, 3, enough),
-          (t) => ({ value: pct(t.weekendShare) })
-        ),
-      ],
-    },
-    {
       title: 'Tech',
       description: 'What teams built with.',
       more: true,
@@ -315,83 +391,14 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         ),
       ],
     },
-    {
-      title: 'Strangest stats',
-      description: 'The odd, the heroic and the slightly concerning.',
-      more: true,
-      cards: [
-        card(
-          {
-            icon: TreePine,
-            title: 'Holiday heroes',
-            description:
-              c.session === 'summer'
-                ? 'Commits on Victoria Day, Canada Day or BC Day'
-                : 'Commits on Thanksgiving, over Christmas and New Year, or in reading week',
-          },
-          topTeams(c, (t) => t.holidayCommits, 3),
-          (t) => ({ value: fmt(t.holidayCommits) })
-        ),
-        card(
-          {
-            icon: NotebookPen,
-            title: 'Exam-season grinders',
-            description: 'Commits during the December and April exam periods',
-          },
-          topTeams(c, (t) => t.examCommits, 3),
-          (t) => ({ value: fmt(t.examCommits) })
-        ),
-        card(
-          {
-            icon: Ghost,
-            title: 'Witching hour',
-            description: 'Commits made between 3 and 4 am',
-          },
-          topTeams(c, (t) => t.witchingCommits, 3),
-          (t) => ({ value: fmt(t.witchingCommits) })
-        ),
-        card(
-          {
-            icon: Zap,
-            title: 'Speed demon',
-            description: 'Fastest single PR from opened to merged',
-          },
-          c.teams
-            .filter((t) => t.fastestPr)
-            .sort((a, b) => a.fastestPr!.value - b.fastestPr!.value)
-            .slice(0, 3),
-          (t) => ({
-            value: fmtSecs(t.fastestPr!.value),
-            sub: `PR #${t.fastestPr!.number}`,
-          })
-        ),
-        card(
-          {
-            icon: Hourglass,
-            title: 'Patience award',
-            description: 'Longest a PR stayed open before finally being merged',
-          },
-          topTeams(c, (t) => t.slowestPr?.value ?? 0, 3),
-          (t) => ({
-            value: fmtDays(t.slowestPr!.value),
-            sub: `PR #${t.slowestPr!.number}`,
-          })
-        ),
-        card(
-          {
-            icon: Boxes,
-            title: 'Mega PR',
-            description: 'Most files changed in a single merged PR',
-          },
-          topTeams(c, (t) => t.megaPr?.value ?? 0, 3),
-          (t) => ({
-            value: `${fmt(t.megaPr!.value)} files`,
-            sub: `PR #${t.megaPr!.number}`,
-          })
-        ),
-      ],
-    },
   ];
+  // Most interesting first; on a live cohort, "this week" momentum leads.
+  const sections = live
+    ? [
+        ...allSections.filter((x) => x.title === 'Momentum'),
+        ...allSections.filter((x) => x.title !== 'Momentum'),
+      ]
+    : allSections;
 
   return (
     <div className='space-y-8'>
