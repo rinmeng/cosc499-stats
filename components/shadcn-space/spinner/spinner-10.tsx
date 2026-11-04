@@ -37,7 +37,7 @@ export function TextMorph({ words, interval = 2000, className }: TextMorphProps)
         initial={{ opacity: 0, y: 5 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -5 }}
-        transition={{ duration: 0.4 }}
+        transition={{ duration: 0.25 }}
       >
         {chars.map((char, i) => (
           <motion.span
@@ -47,8 +47,8 @@ export function TextMorph({ words, interval = 2000, className }: TextMorphProps)
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             exit={{ opacity: 0, y: -5, filter: 'blur(5px)' }}
             transition={{
-              delay: i * 0.03,
-              duration: 0.3,
+              delay: i * 0.015,
+              duration: 0.2,
             }}
           >
             {char === ' ' ? '\u00A0' : char}

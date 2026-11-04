@@ -7,15 +7,15 @@ import { AnimatePresence, motion } from 'motion/react';
 import LiquidWaveSpinner from '@/components/shadcn-space/spinner/spinner-10';
 
 const WORDS = [
-  '3k lines 1 commit (iykyk)',
+  'Adding 3k lines in one commit ...',
   'Judging your PR sizes ...',
   'Asking who forgot to review ...',
   'Ignoring that 5,000 line commit ...',
 ];
 
 /**
- * Long enough for the first phrase to animate in fully: its 25 characters stagger in
- * at 30 ms each plus a 300 ms fade (about 1.05 s), then a moment to read it.
+ * Long enough for the first phrase to animate in fully (its characters stagger in at
+ * 15 ms each plus a 200 ms fade, about 0.7 s) and be read before the next one starts.
  */
 const MIN_VISIBLE_MS = 1800;
 /** Never leave the overlay up if a navigation stalls or gets cancelled. */
@@ -94,7 +94,7 @@ export function RouteLoader() {
           <LiquidWaveSpinner
             size='lg'
             words={WORDS}
-            interval={2200}
+            interval={1300}
             className='bg-transparent'
           />
         </motion.div>
