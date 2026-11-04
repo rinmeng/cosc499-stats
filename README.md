@@ -98,6 +98,14 @@ This dashboard celebrates contributions. It only highlights top contributors and
 achievements. It never lists the people or teams that contributed least, and it has no
 "inactive" flags or ascending rankings. Please keep it that way when contributing.
 
+### Personal pages
+
+Anyone can search their name or GitHub username (navbar, or ⌘K / Ctrl+K) to open
+`/u/<login>`: their own output in each capstone they were part of. These pages never
+rank people or compare them with teammates or other cohorts. They are kept out of search
+engines (`noindex`). To remove someone's page and search entry, add their login to
+`hiddenPeople` in `sync.config.ts`. Their work still counts toward team totals.
+
 ## Privacy & deployment
 
 - Cohorts' raw data (`data/raw/COSC-499-W2023` etc.) is committed so contributions can be

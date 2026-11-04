@@ -191,6 +191,12 @@ export const excludeLogins: string[] = [
 ];
 
 /**
+ * People who asked not to have a personal page (/u/<login>) or show up in search.
+ * Their work still counts toward team and cohort totals. Case-insensitive.
+ */
+export const hiddenPeople: string[] = [];
+
+/**
  * Accounts that author commits in more than this share of a cohort's teams are
  * treated as course staff (instructor / TA seeding starter code) and skipped.
  */
