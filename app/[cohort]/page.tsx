@@ -218,10 +218,8 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         label: t.name,
         href: teamHref(c.slug, t),
         value: String(t.languageCount),
-        sub: t.languages
-          .slice(0, 3)
-          .map((l) => l.name)
-          .join(', '),
+        sub: t.languages.map((l) => l.name).join(', '),
+        wrapSub: true,
       })),
     },
   ].filter((h) => h.items.length > 0);

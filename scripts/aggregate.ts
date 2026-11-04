@@ -417,8 +417,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       lastActivity: last,
       languages: [...langs]
         .map(([name, bytes]) => ({ name, bytes }))
-        .sort((a, b) => b.bytes - a.bytes)
-        .slice(0, 8),
+        .sort((a, b) => b.bytes - a.bytes),
       weekly: weeklyArr,
       punch,
       members,

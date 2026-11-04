@@ -95,6 +95,8 @@ export interface HighlightItem {
   href?: string;
   value: string;
   sub?: string;
+  /** Let the sub-line wrap instead of truncating (e.g. a full list) */
+  wrapSub?: boolean;
 }
 
 export interface HighlightProps {
@@ -131,7 +133,14 @@ export function Highlight({ title, description, icon: Icon, items }: HighlightPr
                   <span className='font-medium'>{it.label}</span>
                 )}
                 {it.sub && (
-                  <div className='truncate text-xs text-muted-foreground'>{it.sub}</div>
+                  <div
+                    className={cn(
+                      'text-xs text-muted-foreground',
+                      it.wrapSub ? 'leading-relaxed' : 'truncate'
+                    )}
+                  >
+                    {it.sub}
+                  </div>
                 )}
               </div>
               <span className='shrink-0 font-mono tabular-nums'>{it.value}</span>
