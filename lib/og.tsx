@@ -3,7 +3,7 @@ import { ImageResponse } from 'next/og';
 export const OG_SIZE = { width: 1200, height: 630 };
 
 /**
- * Social-preview card (Open Graph / Twitter), generated per route in the site's dark
+ * Social-preview card (Open Graph / Twitter), generated per route in the site's light
  * theme: the page title as the header and its description underneath.
  */
 export function ogImage({ title, description }: { title: string; description?: string }) {
@@ -16,8 +16,8 @@ export function ogImage({ title, description }: { title: string; description?: s
         flexDirection: 'column',
         justifyContent: 'space-between',
         padding: '72px 80px',
-        background: '#0c0a09',
-        color: '#fafaf9',
+        background: '#ffffff',
+        color: '#0c0a09',
         fontFamily: 'sans-serif',
       }}
     >
@@ -26,11 +26,11 @@ export function ogImage({ title, description }: { title: string; description?: s
           {[16, 26, 34, 20].map((h, i) => (
             <div
               key={i}
-              style={{ width: 8, height: h, background: '#bbf451', borderRadius: 3 }}
+              style={{ width: 8, height: h, background: '#5ea500', borderRadius: 3 }}
             />
           ))}
         </div>
-        <div style={{ fontSize: 28, fontWeight: 700, color: '#d6d3d1' }}>
+        <div style={{ fontSize: 28, fontWeight: 700, color: '#44403c' }}>
           UBCO COSC 499 Capstone Stats
         </div>
       </div>
@@ -43,7 +43,7 @@ export function ogImage({ title, description }: { title: string; description?: s
         </div>
         {description && (
           <div
-            style={{ fontSize: 32, color: '#a8a29e', lineHeight: 1.4, maxWidth: 1040 }}
+            style={{ fontSize: 32, color: '#57534e', lineHeight: 1.4, maxWidth: 1040 }}
           >
             {description}
           </div>
@@ -55,7 +55,7 @@ export function ogImage({ title, description }: { title: string; description?: s
           display: 'flex',
           height: 8,
           width: 160,
-          background: '#bbf451',
+          background: '#5ea500',
           borderRadius: 4,
         }}
       />
