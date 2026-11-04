@@ -68,16 +68,16 @@ export default function Overview() {
     totalsCohorts.reduce((a, c) => a + c.totals[k], 0);
   const yearLabel = (y: number) => `${y}–${String(y + 1).slice(2)}`;
 
-  const allTeams = cohorts.flatMap((c) =>
+  const allTeams = totalsCohorts.flatMap((c) =>
     c.teams.map((t) => ({ ...t, cohort: c }))
   ) as (TeamStats & { cohort: (typeof cohorts)[number] })[];
 
-  const recordPeople = cohorts
+  const recordPeople = totalsCohorts
     .map((c) => ({ c, best: cohortBest(c, 'commits') }))
     .filter((x) => x.best)
     .sort((a, b) => b.best!.value - a.best!.value)
     .slice(0, 3);
-  const recordReviewers = cohorts
+  const recordReviewers = totalsCohorts
     .map((c) => ({ c, best: cohortBest(c, 'reviews') }))
     .filter((x) => x.best)
     .sort((a, b) => b.best!.value - a.best!.value)
@@ -92,19 +92,20 @@ export default function Overview() {
     )
   );
 
-  // Individual records across all cohorts (shares need at least 50 commits).
-  const people = everyone(s);
+  // Individual records from the same window (shares need at least 50 commits).
+  const people = everyone(s).filter((p) => p.cohort.year >= totalsFrom);
   const regulars = people.filter((p) => p.m.commits >= 50);
   const top3 = <T,>(list: T[], value: (x: T) => number) =>
     [...list]
       .filter((x) => value(x) > 0)
       .sort((a, b) => value(b) - value(a))
       .slice(0, 3);
-  const personItem = (p: (typeof people)[number], value: string) => ({
+  const personItem = (p: (typeof people)[number], value: string, unit?: string) => ({
     label: p.name,
     href: `/${p.cohort.slug}/${p.team.team}`,
     sub: `${p.team.name}, ${p.cohort.label}`,
     value,
+    unit,
   });
   const share = (n: number, d: number) => (d ? n / d : 0);
   const oddities: HighlightProps[] = [
@@ -113,7 +114,7 @@ export default function Overview() {
       title: 'Night owls',
       description: 'Biggest share of their commits made between 10 pm and 4 am',
       items: top3(regulars, (p) => share(p.m.nightCommits, p.m.commits)).map((p) =>
-        personItem(p, pct(share(p.m.nightCommits, p.m.commits)))
+        personItem(p, pct(share(p.m.nightCommits, p.m.commits)), 'of commits')
       ),
     },
     {
@@ -121,7 +122,7 @@ export default function Overview() {
       title: 'Early birds',
       description: 'Biggest share of their commits made between 5 am and 9 am',
       items: top3(regulars, (p) => share(p.m.earlyCommits, p.m.commits)).map((p) =>
-        personItem(p, pct(share(p.m.earlyCommits, p.m.commits)))
+        personItem(p, pct(share(p.m.earlyCommits, p.m.commits)), 'of commits')
       ),
     },
     {
@@ -129,7 +130,7 @@ export default function Overview() {
       title: '3 am regulars',
       description: 'Most commits made between 3 and 4 am',
       items: top3(people, (p) => p.m.witchingCommits).map((p) =>
-        personItem(p, fmt(p.m.witchingCommits))
+        personItem(p, fmt(p.m.witchingCommits), 'commits')
       ),
     },
     {
@@ -138,7 +139,7 @@ export default function Overview() {
       description:
         'Most lines changed in one commit (vendored code over 20,000 lines left out)',
       items: top3(people, (p) => p.m.biggestCommit).map((p) =>
-        personItem(p, `${fmtCompact(p.m.biggestCommit)} lines`)
+        personItem(p, fmtCompact(p.m.biggestCommit), 'lines')
       ),
     },
     {
@@ -146,7 +147,7 @@ export default function Overview() {
       title: 'Holiday heroes',
       description: 'Most commits on holidays and breaks',
       items: top3(people, (p) => p.m.holidayCommits).map((p) =>
-        personItem(p, fmt(p.m.holidayCommits))
+        personItem(p, fmt(p.m.holidayCommits), 'commits')
       ),
     },
   ];
@@ -312,9 +313,12 @@ export default function Overview() {
 
       <div className='space-y-3'>
         <div>
-          <h2 className='font-heading text-xl font-semibold'>All-time oddities</h2>
+          <h2 className='font-heading text-xl font-semibold'>
+            Oddities, last {TOTALS_YEARS} years
+          </h2>
           <p className='text-sm text-muted-foreground'>
-            The most memorable individual habits across every cohort.
+            The most memorable individual habits from {yearLabel(totalsFrom)} to{' '}
+            {yearLabel(s.currentYear)}.
           </p>
         </div>
         <Grid className='md:grid-cols-2 xl:grid-cols-3'>
@@ -327,7 +331,9 @@ export default function Overview() {
       </div>
 
       <div className='space-y-3'>
-        <h2 className='font-heading text-xl font-semibold'>All-time highlights</h2>
+        <h2 className='font-heading text-xl font-semibold'>
+          Highlights, last {TOTALS_YEARS} years
+        </h2>
         <Grid className='md:grid-cols-2 xl:grid-cols-4'>
           <Highlight
             icon={Trophy}
@@ -356,7 +362,7 @@ export default function Overview() {
           <Highlight
             icon={Users}
             title='Highest team output'
-            description='Overall score, all cohorts'
+            description={`Overall score, ${yearLabel(totalsFrom)} to ${yearLabel(s.currentYear)}`}
             items={biggestTeams.map((t) => ({
               label: t.name,
               href: `/${t.cohort.slug}/${t.team}`,
