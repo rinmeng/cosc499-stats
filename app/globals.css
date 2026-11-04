@@ -6,6 +6,40 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * First-visit loader (components/RouteLoader.tsx): hidden and click-through for the first
+ * 150 ms, then fades in if the page is still loading; clears itself after 10 s as a
+ * safety net. Hidden entirely without JavaScript (see the <noscript> in app/layout.tsx).
+ */
+@keyframes initial-loader-in {
+  from {
+    opacity: 0;
+    visibility: hidden;
+  }
+  to {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+@keyframes initial-loader-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+.initial-loader {
+  animation:
+    initial-loader-in 200ms ease-out 150ms both,
+    initial-loader-out 300ms ease-in 10s forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .initial-loader {
+    animation:
+      initial-loader-in 0ms linear 150ms both,
+      initial-loader-out 0ms linear 10s forwards;
+  }
+}
+
 @layer components {
   .nb-padding {
     @apply py-24;

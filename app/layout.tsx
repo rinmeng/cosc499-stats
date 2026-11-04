@@ -106,6 +106,9 @@ export default function RootLayout({
       )}
     >
       <body className='antialiased'>
+        <noscript>
+          <style>{'.initial-loader{display:none!important}'}</style>
+        </noscript>
         <script
           type='application/ld+json'
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
