@@ -23,11 +23,19 @@ import { cn } from '@/lib/utils';
 import { cohortSlug, cohorts, currentCohort } from '@/sync.config';
 
 import { ModeToggle } from './ModeToggle';
+import { PeopleSearch } from './PeopleSearch';
 
 const toLink = (c: (typeof cohorts)[number]) => ({
   href: `/${cohortSlug(c)}`,
   label: c.label,
   live: cohortSlug(c) === currentCohort,
+});
+
+/** Navbar tab for a year-long cohort: "2024–25" → "24–25" to keep the bar short. */
+const toTab = (c: (typeof cohorts)[number]) => ({
+  ...toLink(c),
+  label: `${String(c.year).slice(2)}–${String(c.year + 1).slice(2)}`,
+  title: c.label,
 });
 
 type NavLink = ReturnType<typeof toLink>;
@@ -40,7 +48,7 @@ const winter = cohorts
   .sort((a, b) => b.year - a.year);
 const links = [
   { href: '/', label: 'Overview', live: false },
-  ...winter.slice(0, RECENT_YEARS).reverse().map(toLink),
+  ...winter.slice(0, RECENT_YEARS).reverse().map(toTab),
 ];
 const olderLinks = winter.slice(RECENT_YEARS).map(toLink);
 const summerLinks = cohorts
@@ -86,7 +94,8 @@ function Brand({ onClick }: { onClick?: () => void }) {
     <Link href='/' onClick={onClick} className='flex items-center gap-2 font-semibold'>
       <BarChart3 className='size-5 text-chart-1' />
       <span>
-        UBCO COSC 499 <span className='hidden sm:inline'>Capstone Stats</span>
+        UBCO COSC 499{' '}
+        <span className='hidden sm:inline lg:hidden xl:inline'>Capstone Stats</span>
       </span>
     </Link>
   );
@@ -108,9 +117,16 @@ export function Navbar() {
         size='sm'
         className={className}
         nativeButton={false}
-        render={<Link href={l.href} onClick={onClick} />}
+        render={
+          <Link
+            href={l.href}
+            onClick={onClick}
+            title={'title' in l ? l.title : undefined}
+          />
+        }
       >
-        {l.label}
+        {/* Short "24–25" tabs on desktop; the mobile menu (onClick set) has room for "2024–25". */}
+        {onClick && 'title' in l ? l.title : l.label}
         {l.live && (
           <span className='relative ml-1 flex size-2'>
             <span
@@ -140,9 +156,11 @@ export function Navbar() {
               active={g.links.some((l) => isActive(l.href))}
             />
           ))}
+          <PeopleSearch />
           <ModeToggle />
         </div>
-        <div className='lg:hidden'>
+        <div className='flex items-center gap-2 lg:hidden'>
+          <PeopleSearch className='h-9 w-9 px-0' />
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger render={<Button variant='outline' size='icon' />}>
               <Menu className='size-5' />
