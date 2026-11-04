@@ -28,8 +28,27 @@ function parse(text: string): Parsed | null {
   };
 }
 
-/** Steps per second while counting (each step rolls the changed digits). */
-const STEP_MS = 70;
+/** Time between rolled steps while counting (each step rolls the changed digits). */
+const STEP_MS = 100;
+/** Gap between one number starting and the next, so they don't all animate at once. */
+const STAGGER_MS = 90;
+
+/**
+ * Shared start queue: numbers that come into view together start one after another
+ * (STAGGER_MS apart) instead of all at the same moment, which avoids a lag spike.
+ */
+/** If a number would wait longer than this (fast scrolling past many), just show it. */
+const MAX_WAIT_MS = 700;
+
+let nextStartAt = 0;
+/** Milliseconds to wait before starting, or null to skip the animation entirely. */
+function reserveStart(): number | null {
+  const now = performance.now();
+  const at = Math.max(now, nextStartAt);
+  if (at - now > MAX_WAIT_MS) return null;
+  nextStartAt = at + STAGGER_MS;
+  return at - now;
+}
 
 /**
  * Counts a formatted number up from 0 the first time it scrolls into view, using the
@@ -39,7 +58,7 @@ const STEP_MS = 70;
 export function CountUp({
   value,
   className,
-  duration = 0.9,
+  duration = 0.8,
 }: {
   value: string | number;
   className?: string;
@@ -50,31 +69,49 @@ export function CountUp({
   const target = parsed?.num ?? 0;
 
   const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: '0px 0px -5% 0px' });
+  // Only once it's actually scrolled to: most of it on screen, not just peeking in.
+  const inView = useInView(ref, { once: true, amount: 0.8 });
   const reduceMotion = useReducedMotion();
   const [shown, setShown] = useState(0);
   const current = useRef(0);
+  const started = useRef(false);
 
   useEffect(() => {
     if (!parsed || !inView || reduceMotion) return;
     let last = 0;
-    const controls = animate(current.current, target, {
-      duration,
-      ease: 'easeOut',
-      onUpdate: (v) => {
-        current.current = v;
-        const now = performance.now();
-        if (now - last >= STEP_MS) {
-          last = now;
-          setShown(v);
-        }
-      },
-      onComplete: () => {
-        current.current = target;
-        setShown(target);
-      },
-    });
-    return () => controls.stop();
+    let controls: ReturnType<typeof animate> | null = null;
+    // First run waits its turn in the queue; later value changes (e.g. switching a
+    // metric) start right away.
+    const delay = started.current ? 0 : reserveStart();
+    if (delay === null) {
+      started.current = true;
+      current.current = target;
+      const t = setTimeout(() => setShown(target), 0);
+      return () => clearTimeout(t);
+    }
+    const timer = setTimeout(() => {
+      started.current = true;
+      controls = animate(current.current, target, {
+        duration,
+        ease: 'easeOut',
+        onUpdate: (v) => {
+          current.current = v;
+          const now = performance.now();
+          if (now - last >= STEP_MS) {
+            last = now;
+            setShown(v);
+          }
+        },
+        onComplete: () => {
+          current.current = target;
+          setShown(target);
+        },
+      });
+    }, delay);
+    return () => {
+      clearTimeout(timer);
+      controls?.stop();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- re-run only when the number changes
   }, [target, inView, reduceMotion]);
 
@@ -98,6 +135,7 @@ export function CountUp({
         format={format}
         srText={text}
         className={className}
+        blur={false}
       />
     </span>
   );

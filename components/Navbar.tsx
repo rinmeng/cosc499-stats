@@ -83,7 +83,7 @@ export function Navbar() {
     ));
 
   return (
-    <nav className='fixed z-50 w-full border-b bg-background/90 backdrop-blur'>
+    <nav className='fixed z-50 w-full border-b bg-background'>
       <div
         className='mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6
           lg:px-8'

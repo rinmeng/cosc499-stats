@@ -21,6 +21,13 @@ const roll = {
     filter: 'blur(5px)',
   }),
 };
+// Same roll without the blur: transform + opacity only, so it stays on the GPU and
+// doesn't repaint every frame (used where many numbers animate, e.g. while scrolling).
+const rollNoBlur = {
+  enter: (direction: number) => ({ y: direction > 0 ? '60%' : '-60%', opacity: 0 }),
+  center: { y: '0%', opacity: 1 },
+  exit: (direction: number) => ({ y: direction > 0 ? '-60%' : '60%', opacity: 0 }),
+};
 // Quick, with only a little overshoot.
 const transition = { type: 'spring', duration: 0.35, bounce: 0.15 } as const;
 
@@ -30,12 +37,15 @@ export function AnimatedNumber<T extends number | null | undefined>({
   format,
   className,
   srText,
+  blur = true,
 }: {
   value: T;
   format: (value: T) => string;
   className?: string;
   /** What screen readers (and crawlers) get; defaults to the formatted value */
   srText?: string;
+  /** Blur digits as they roll (prettier, but costs a repaint per frame) */
+  blur?: boolean;
 }) {
   const reduceMotion = useReducedMotion();
   // The last value and which way it moved, kept during render so every digit that changes in
@@ -53,6 +63,7 @@ export function AnimatedNumber<T extends number | null | undefined>({
     return <span className={cn('tabular-nums', className)}>{srText ?? text}</span>;
 
   const chars = [...text];
+  const variants = blur ? roll : rollNoBlur;
   return (
     // overflow-y: clip keeps rolling digits inside the line, so a scrolling ancestor (a table,
     // the sidebar) never flashes a scrollbar. Unlike hidden it leaves the baseline alone.
@@ -76,7 +87,7 @@ export function AnimatedNumber<T extends number | null | undefined>({
                 key={place}
                 className='relative inline-block'
                 custom={direction}
-                variants={roll}
+                variants={variants}
                 initial='enter'
                 animate='center'
                 exit='exit'
@@ -87,7 +98,7 @@ export function AnimatedNumber<T extends number | null | undefined>({
                     key={char}
                     className='inline-block'
                     custom={direction}
-                    variants={roll}
+                    variants={variants}
                     initial='enter'
                     animate='center'
                     exit='exit'
