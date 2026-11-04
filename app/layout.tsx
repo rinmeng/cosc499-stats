@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Geist_Mono, Inter, Merriweather } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
 
+import { Footer } from '@/components/Footer';
 import { Navbar } from '@/components/Navbar';
 
 import './globals.css';
@@ -114,6 +115,7 @@ export default function RootLayout({
             <main className='mx-auto max-w-7xl px-4 pt-24 pb-16 sm:px-6 lg:px-8'>
               {children}
             </main>
+            <Footer />
             <Analytics />
           </TooltipProvider>
         </ThemeProvider>
