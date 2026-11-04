@@ -119,25 +119,43 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
       </PageHeader>
 
       <Grid className='grid-cols-2 md:grid-cols-3 lg:grid-cols-6'>
-        <StatTile icon={Users} label='Contributors' value={fmt(t.contributors)} />
-        <StatTile icon={GitPullRequest} label='Commits' value={fmt(t.commits)} />
-        <StatTile icon={GitMerge} label='Merged PRs' value={fmt(t.prsMerged)} />
+        <StatTile
+          icon={Users}
+          label='Contributors'
+          value={fmt(t.contributors)}
+          unit='people'
+        />
+        <StatTile
+          icon={GitPullRequest}
+          label='Commits'
+          value={fmt(t.commits)}
+          unit='commits'
+        />
+        <StatTile
+          icon={GitMerge}
+          label='Merged PRs'
+          value={fmt(t.prsMerged)}
+          unit='PRs'
+        />
         <StatTile
           icon={MessageSquareCode}
           label='Reviews'
           value={fmt(t.reviews)}
-          hint={`${pct(t.reviewCoverage)} of PRs reviewed`}
+          unit='reviews'
+          hint={`${pct(t.reviewCoverage)} of merged PRs got one`}
         />
         <StatTile
           icon={Clock}
           label='Median time to merge'
           value={fmtHours(t.medianMergeHours)}
+          hint='from PR opened to merged'
         />
         <StatTile
           icon={Trophy}
           label='Biggest week'
           value={t.peakWeek ? fmt(t.peakWeek.commits) : '—'}
-          hint={t.peakWeek ? `commits in week ${t.peakWeek.week}` : undefined}
+          unit={t.peakWeek ? 'commits' : undefined}
+          hint={t.peakWeek ? `in week ${t.peakWeek.week} of term` : undefined}
         />
       </Grid>
 

@@ -151,31 +151,41 @@ export default function Overview() {
       </PageHeader>
 
       <Grid className='grid-cols-3 gap-2 md:grid-cols-3 md:gap-4 lg:grid-cols-5'>
-        <StatTile compact icon={Calendar} label='Cohorts' value={cohorts.length} />
+        <StatTile
+          compact
+          icon={Calendar}
+          label='Cohorts'
+          value={cohorts.length}
+          unit='sessions'
+        />
         <StatTile
           compact
           icon={Users}
           label='Contributors'
           value={fmt(sum('contributors'))}
-          hint={`${fmt(allTeams.length)} teams`}
+          unit='people'
+          hint={`across ${fmt(allTeams.length)} teams`}
         />
         <StatTile
           compact
           icon={GitPullRequest}
           label='Commits'
           value={fmtCompact(sum('commits'))}
+          unit='commits'
         />
         <StatTile
           compact
           icon={GitMerge}
           label='Merged PRs'
           value={fmtCompact(sum('prsMerged'))}
+          unit='PRs'
         />
         <StatTile
           compact
           icon={MessageSquareCode}
           label='Code reviews'
           value={fmtCompact(sum('reviews'))}
+          unit='reviews'
         />
       </Grid>
 
@@ -306,6 +316,7 @@ export default function Overview() {
               href: `/${c.slug}/${best!.team.team}`,
               sub: `${best!.team.name}, ${c.label}`,
               value: fmt(best!.value),
+              unit: 'commits',
             }))}
           />
           <Highlight
@@ -317,6 +328,7 @@ export default function Overview() {
               href: `/${c.slug}/${best!.team.team}`,
               sub: `${best!.team.name}, ${c.label}`,
               value: fmt(best!.value),
+              unit: 'reviews',
             }))}
           />
           <Highlight
@@ -327,7 +339,8 @@ export default function Overview() {
               label: t.name,
               href: `/${t.cohort.slug}/${t.team}`,
               sub: t.cohort.label,
-              value: `${fmtCompact(t.score)} pts`,
+              value: fmtCompact(t.score),
+              unit: 'pts',
             }))}
           />
           <Highlight
@@ -339,6 +352,7 @@ export default function Overview() {
               href: `/${t.cohort.slug}/${t.team}`,
               sub: `${t.cohort.label} · ${pct(t.reviewCoverage)} reviewed · ${fmtHours(t.medianMergeHours)}`,
               value: fmt(t.prsMerged),
+              unit: 'PRs',
             }))}
           />
         </Grid>

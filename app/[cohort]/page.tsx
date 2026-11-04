@@ -101,7 +101,12 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
   const card = (
     h: Omit<HighlightProps, 'items'>,
     teams: TeamStats[],
-    item: (t: TeamStats) => { value: string; sub?: string; wrapSub?: boolean }
+    item: (t: TeamStats) => {
+      value: string;
+      unit?: string;
+      sub?: string;
+      wrapSub?: boolean;
+    }
   ): HighlightProps => ({
     ...h,
     items: teams.map((t) => ({ label: t.name, href: teamHref(c.slug, t), ...item(t) })),
@@ -151,7 +156,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             description: 'Commits made between 3 and 4 am',
           },
           topTeams(c, (t) => t.witchingCommits, 3),
-          (t) => ({ value: fmt(t.witchingCommits) })
+          (t) => ({ value: fmt(t.witchingCommits), unit: 'commits' })
         ),
         card(
           {
@@ -163,7 +168,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
                 : 'Commits on Thanksgiving, over Christmas and New Year, or in reading week',
           },
           topTeams(c, (t) => t.holidayCommits, 3),
-          (t) => ({ value: fmt(t.holidayCommits) })
+          (t) => ({ value: fmt(t.holidayCommits), unit: 'commits' })
         ),
         card(
           {
@@ -172,7 +177,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             description: 'Commits during the December and April exam periods',
           },
           topTeams(c, (t) => t.examCommits, 3),
-          (t) => ({ value: fmt(t.examCommits) })
+          (t) => ({ value: fmt(t.examCommits), unit: 'commits' })
         ),
         card(
           {
@@ -182,7 +187,8 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           },
           topTeams(c, (t) => t.megaPr?.value ?? 0, 3),
           (t) => ({
-            value: `${fmt(t.megaPr!.value)} files`,
+            value: fmt(t.megaPr!.value),
+            unit: 'files',
             sub: `PR #${t.megaPr!.number}`,
           })
         ),
@@ -199,7 +205,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             description: 'Share of commits made between 10 pm and 4 am',
           },
           topTeams(c, (t) => t.nightOwlShare, 3, enough),
-          (t) => ({ value: pct(t.nightOwlShare) })
+          (t) => ({ value: pct(t.nightOwlShare), unit: 'of commits' })
         ),
         card(
           {
@@ -208,7 +214,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             description: 'Share of commits made between 5 am and 9 am',
           },
           topTeams(c, (t) => t.earlyBirdShare, 3, enough),
-          (t) => ({ value: pct(t.earlyBirdShare) })
+          (t) => ({ value: pct(t.earlyBirdShare), unit: 'of commits' })
         ),
         card(
           {
@@ -217,7 +223,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             description: 'Share of commits made on Saturday or Sunday',
           },
           topTeams(c, (t) => t.weekendShare, 3, enough),
-          (t) => ({ value: pct(t.weekendShare) })
+          (t) => ({ value: pct(t.weekendShare), unit: 'of commits' })
         ),
       ],
     },
@@ -233,7 +239,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
                 description: 'Commits since Sunday',
               },
               topTeams(c, (t) => t.thisWeekCommits, 3),
-              (t) => ({ value: fmt(t.thisWeekCommits) })
+              (t) => ({ value: fmt(t.thisWeekCommits), unit: 'commits' })
             )
           : null,
         card(
@@ -245,6 +251,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           topTeams(c, (t) => t.peakWeek?.commits ?? 0, 3),
           (t) => ({
             value: fmt(t.peakWeek?.commits ?? 0),
+            unit: 'commits',
             sub: `week ${t.peakWeek?.week}`,
           })
         ),
@@ -255,7 +262,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             description: 'Commits in the last 4 weeks of term',
           },
           topTeams(c, (t) => t.finishCommits ?? 0, 3),
-          (t) => ({ value: fmt(t.finishCommits ?? 0) })
+          (t) => ({ value: fmt(t.finishCommits ?? 0), unit: 'commits' })
         ),
         card(
           {
@@ -264,7 +271,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             description: 'Commits in the first 4 weeks of term',
           },
           topTeams(c, (t) => t.startCommits, 3),
-          (t) => ({ value: fmt(t.startCommits) })
+          (t) => ({ value: fmt(t.startCommits), unit: 'commits' })
         ),
       ],
     },
@@ -277,7 +284,8 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: Handshake,
             title: 'Most collaborative',
-            description: 'Commits shared most evenly across the team',
+            description:
+              'Commits shared most evenly across the team (100 = everyone equal)',
           },
           topTeams(
             c,
@@ -287,6 +295,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           ),
           (t) => ({
             value: `${Math.round(t.collaboration * 100)}`,
+            unit: '/ 100',
             sub: `${t.contributors} people`,
           })
         ),
@@ -302,7 +311,11 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             3,
             (t) => t.prsMerged >= 10
           ),
-          (t) => ({ value: pct(t.reviewCoverage), sub: `${fmt(t.prsMerged)} PRs` })
+          (t) => ({
+            value: pct(t.reviewCoverage),
+            unit: 'reviewed',
+            sub: `of ${fmt(t.prsMerged)} merged PRs`,
+          })
         ),
         card(
           {
@@ -316,7 +329,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             3,
             (t) => t.prsMerged >= 10
           ),
-          (t) => ({ value: t.discussionPerPr.toFixed(1) })
+          (t) => ({ value: t.discussionPerPr.toFixed(1), unit: 'per PR' })
         ),
       ],
     },
@@ -335,7 +348,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             .filter((t) => t.medianMergeHours !== null && t.prsMerged >= 10)
             .sort((a, b) => a.medianMergeHours! - b.medianMergeHours!)
             .slice(0, 3),
-          (t) => ({ value: fmtHours(t.medianMergeHours) })
+          (t) => ({ value: fmtHours(t.medianMergeHours), unit: 'median' })
         ),
         card(
           {
@@ -352,6 +365,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           ),
           (t) => ({
             value: pct(t.shipRate),
+            unit: 'merged',
             sub: `${fmt(t.prsMerged)} merged, ${fmt(t.prsClosedUnmerged)} closed`,
           })
         ),
@@ -367,7 +381,11 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             3,
             (t) => t.issuesTotal >= 10
           ),
-          (t) => ({ value: pct(t.issueCloseRate), sub: `${fmt(t.issuesTotal)} issues` })
+          (t) => ({
+            value: pct(t.issueCloseRate),
+            unit: 'closed',
+            sub: `of ${fmt(t.issuesTotal)} issues`,
+          })
         ),
       ],
     },
@@ -385,6 +403,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           topTeams(c, (t) => t.languageCount + t.commits / 1e6, 3),
           (t) => ({
             value: String(t.languageCount),
+            unit: 'languages',
             sub: t.languages.map((l) => l.name).join(', '),
             wrapSub: true,
           })
@@ -435,43 +454,58 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       )}
 
       <Grid className='grid-cols-2 md:grid-cols-3 lg:grid-cols-6'>
-        <StatTile icon={Users} label='Contributors' value={fmt(c.totals.contributors)} />
+        <StatTile
+          icon={Users}
+          label='Contributors'
+          value={fmt(c.totals.contributors)}
+          unit='people'
+        />
         <StatTile
           icon={GitPullRequest}
           label='Commits'
           value={fmtCompact(c.totals.commits)}
-          hint={`${fmt(c.avgPerTeam.commits)} per team`}
+          unit='commits'
+          hint={`avg ${fmt(c.avgPerTeam.commits)} commits per team`}
         />
         <StatTile
           icon={GitMerge}
           label='Merged PRs'
           value={fmt(c.totals.prsMerged)}
-          hint={`${fmt(c.avgPerTeam.prsMerged)} per team`}
+          unit='PRs'
+          hint={`avg ${fmt(c.avgPerTeam.prsMerged)} PRs per team`}
         />
         <StatTile
           icon={MessageSquareCode}
           label='Reviews'
           value={fmt(c.totals.reviews)}
-          hint={`${pct(c.reviewCoverage)} of PRs reviewed`}
+          unit='reviews'
+          hint={`${pct(c.reviewCoverage)} of merged PRs got one`}
         />
         <StatTile
           icon={Clock}
           label='Median time to merge'
           value={fmtHours(c.medianMergeHours)}
+          hint='from PR opened to merged'
         />
         {live ? (
           <StatTile
             icon={Sparkles}
             label='Commits this week'
             value={fmt(c.thisWeek.commits)}
-            hint={c.lastWeek.commits ? `${fmt(c.lastWeek.commits)} last week` : undefined}
+            unit='commits'
+            hint={
+              c.lastWeek.commits
+                ? `${fmt(c.lastWeek.commits)} commits last week`
+                : undefined
+            }
           />
         ) : (
           <StatTile
             icon={Sparkles}
             label='Lines changed'
             value={fmtCompact(c.totals.lines)}
-            hint='excl. very large commits'
+            unit='lines'
+            hint='added + deleted, excl. very large commits'
           />
         )}
       </Grid>

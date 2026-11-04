@@ -36,16 +36,31 @@ export function PageHeader({
   );
 }
 
-/** `compact` shrinks the tile on phones (smaller type, no hint line) so charts show sooner. */
+/** Small muted word after a number saying what it counts ("commits", "of PRs"). */
+function Unit({ children }: { children?: React.ReactNode }) {
+  if (!children) return null;
+  return (
+    <span className='ml-1 font-sans text-xs font-normal text-muted-foreground'>
+      {children}
+    </span>
+  );
+}
+
+/**
+ * `compact` shrinks the tile on phones (smaller type, no hint line) so charts show sooner.
+ * `unit` says what the number is (a count of commits, a share of PRs…) so it is not a guess.
+ */
 export function StatTile({
   label,
   value,
+  unit,
   hint,
   icon: Icon,
   compact = false,
 }: {
   label: string;
   value: React.ReactNode;
+  unit?: string;
   hint?: React.ReactNode;
   icon?: LucideIcon;
   compact?: boolean;
@@ -69,6 +84,7 @@ export function StatTile({
           )}
         >
           {typeof value === 'number' ? value.toLocaleString() : value}
+          <Unit>{unit}</Unit>
         </div>
         {hint && (
           <div
@@ -115,6 +131,8 @@ export interface HighlightItem {
   label: string;
   href?: string;
   value: string;
+  /** What the value is, shown small after it ("commits", "of commits", "per PR") */
+  unit?: string;
   sub?: string;
   /** Let the sub-line wrap instead of truncating (e.g. a full list) */
   wrapSub?: boolean;
@@ -164,7 +182,10 @@ export function Highlight({ title, description, icon: Icon, items }: HighlightPr
                   </div>
                 )}
               </div>
-              <span className='shrink-0 font-mono tabular-nums'>{it.value}</span>
+              <span className='shrink-0 font-mono tabular-nums'>
+                {it.value}
+                <Unit>{it.unit}</Unit>
+              </span>
             </li>
           ))}
         </ol>
