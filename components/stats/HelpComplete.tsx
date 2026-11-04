@@ -1,4 +1,4 @@
-import { BookOpen, HandHeart, MessageSquarePlus } from 'lucide-react';
+import { ArrowUpRight, BookOpen, HandHeart, MessageSquarePlus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -57,14 +57,14 @@ export function HelpComplete({
             nativeButton={false}
             render={<a href={contributingUrl} target='_blank' rel='noreferrer' />}
           >
-            <BookOpen /> How to contribute
+            <BookOpen /> How to contribute <ArrowUpRight />
           </Button>
           <Button
             variant='outline'
             nativeButton={false}
             render={<a href={issueUrl(label)} target='_blank' rel='noreferrer' />}
           >
-            <MessageSquarePlus /> Share a link
+            <MessageSquarePlus /> Share a link <ArrowUpRight />
           </Button>
         </div>
       </CardContent>
@@ -122,6 +122,7 @@ export function MissingTeam({
       >
         {live ? <MessageSquarePlus /> : <BookOpen />}
         {live ? 'Open an issue' : 'How to contribute'}
+        <ArrowUpRight />
       </Button>
     </div>
   );

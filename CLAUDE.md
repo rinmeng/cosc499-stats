@@ -59,6 +59,12 @@ There is no `tailwind.config.js`. Tailwind v4 is configured entirely via PostCSS
 
 Never add a "who contributed the least" view: no bottom-N lists, ascending sorts, inactivity flags, or "worst" records. Rank only the top N (default 5); frame team metrics as achievements.
 
+Personal pages (`/u/<login>`) show only that person's own output: no ranks, team shares, averages or comparisons with anyone.
+
+## Links
+
+Any link or link-style button that takes you to another page ends with a lucide arrow: `ArrowRight` for pages on this site, `ArrowUpRight` for external sites (GitHub, docs). Back links use a leading `ArrowLeft`. Names inside lists and tables (team names, people) don't need one.
+
 ## Charts
 
 Use shadcn `ChartContainer` + Recharts. Colors come from `--chart-1..8` (validated categorical palette) and `--seq-0..6` (sequential, for heatmaps) in `app/globals.css`. A cohort keeps the same color everywhere (`cohortColor` in `lib/format.ts`).

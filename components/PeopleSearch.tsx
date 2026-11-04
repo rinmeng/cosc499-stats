@@ -6,6 +6,7 @@ import { Search } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
+  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
@@ -77,36 +78,39 @@ export function PeopleSearch({
         title='Find a person'
         description='Search by name or GitHub username'
       >
-        <CommandInput placeholder='Name or GitHub username…' />
-        <CommandList>
-          <CommandEmpty>{people ? 'No one found.' : 'Loading…'}</CommandEmpty>
-          {people && (
-            <CommandGroup heading='People'>
-              {people.map((p) => (
-                <CommandItem
-                  key={p.login}
-                  value={`${p.name} ${p.login}`}
-                  onSelect={() => {
-                    setOpen(false);
-                    router.push(`/u/${p.login}`);
-                  }}
-                >
-                  <div className='flex min-w-0 flex-col'>
-                    <span className='truncate'>
-                      {p.name}
-                      {p.name.toLowerCase() !== p.login.toLowerCase() && (
-                        <span className='ml-1.5 text-muted-foreground'>@{p.login}</span>
-                      )}
-                    </span>
-                    <span className='truncate text-xs text-muted-foreground'>
-                      {p.cohorts.join(', ')}
-                    </span>
-                  </div>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          )}
-        </CommandList>
+        {/* This CommandDialog doesn't add a cmdk root itself; input and list need one. */}
+        <Command>
+          <CommandInput placeholder='Name or GitHub username…' />
+          <CommandList>
+            <CommandEmpty>{people ? 'No one found.' : 'Loading…'}</CommandEmpty>
+            {people && (
+              <CommandGroup heading='People'>
+                {people.map((p) => (
+                  <CommandItem
+                    key={p.login}
+                    value={`${p.name} ${p.login}`}
+                    onSelect={() => {
+                      setOpen(false);
+                      router.push(`/u/${p.login}`);
+                    }}
+                  >
+                    <div className='flex min-w-0 flex-col'>
+                      <span className='truncate'>
+                        {p.name}
+                        {p.name.toLowerCase() !== p.login.toLowerCase() && (
+                          <span className='ml-1.5 text-muted-foreground'>@{p.login}</span>
+                        )}
+                      </span>
+                      <span className='truncate text-xs text-muted-foreground'>
+                        {p.cohorts.join(', ')}
+                      </span>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+          </CommandList>
+        </Command>
       </CommandDialog>
     </>
   );

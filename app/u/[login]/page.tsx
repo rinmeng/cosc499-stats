@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
+  ArrowRight,
+  ArrowUpRight,
   CalendarDays,
   CircleDot,
-  ExternalLink,
   FileCode2,
   GitMerge,
   GitPullRequest,
@@ -63,13 +64,18 @@ function CapstoneSection({ c }: { c: Capstone }) {
           {c.cohort.isCurrent ? 'In progress. ' : ''}
           <Link
             href={`/${c.cohort.slug}/${c.team.team}`}
-            className='underline-offset-2 hover:underline'
+            className='inline-flex items-center gap-1 font-medium text-foreground
+              underline-offset-2 hover:underline'
           >
-            See the team
+            See the team <ArrowRight className='size-3.5' />
           </Link>{' '}
           ·{' '}
-          <Link href={`/${c.cohort.slug}`} className='underline-offset-2 hover:underline'>
-            See the {c.cohort.label} cohort
+          <Link
+            href={`/${c.cohort.slug}`}
+            className='inline-flex items-center gap-1 font-medium text-foreground
+              underline-offset-2 hover:underline'
+          >
+            See the {c.cohort.label} cohort <ArrowRight className='size-3.5' />
           </Link>
         </>
       }
@@ -157,7 +163,7 @@ export default async function PersonPage({ params }: PageProps<'/u/[login]'>) {
           rel='noreferrer'
           className='inline-flex items-center gap-1 underline-offset-2 hover:underline'
         >
-          @{p.login} <ExternalLink className='size-3.5' />
+          @{p.login} <ArrowUpRight className='size-3.5' />
         </a>
         {' · '}
         {n === 1 ? '1 capstone' : `${n} capstones`}:{' '}

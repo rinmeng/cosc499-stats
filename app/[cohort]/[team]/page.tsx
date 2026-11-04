@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import {
   ArrowLeft,
   Clock,
-  ExternalLink,
+  ArrowUpRight,
   GitMerge,
   GitPullRequest,
   Lock,
@@ -105,12 +105,9 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
                 className='inline-flex items-center gap-1 hover:text-foreground
                   hover:underline'
               >
-                {r.isPrivate ? (
-                  <Lock className='size-3' />
-                ) : (
-                  <ExternalLink className='size-3' />
-                )}
+                {r.isPrivate && <Lock className='size-3' />}
                 {r.name}
+                <ArrowUpRight className='size-3' />
               </a>
             ))}
             <span>Last activity {fmtDate(t.lastActivity)}</span>

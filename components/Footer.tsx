@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { BarChart3 } from 'lucide-react';
+import { ArrowUpRight, BarChart3 } from 'lucide-react';
 
 import { repoUrl } from '@/sync.config';
 
@@ -34,18 +34,20 @@ export function Footer() {
             href={repoUrl}
             target='_blank'
             rel='noreferrer'
-            className='underline-offset-4 hover:underline'
+            className='inline-flex items-center gap-0.5 underline-offset-4
+              hover:underline'
           >
-            Source on GitHub
+            Source on GitHub <ArrowUpRight className='size-3' />
           </a>{' '}
           ·{' '}
           <a
             href={`${repoUrl}/blob/main/CONTRIBUTING.md`}
             target='_blank'
             rel='noreferrer'
-            className='underline-offset-4 hover:underline'
+            className='inline-flex items-center gap-0.5 underline-offset-4
+              hover:underline'
           >
-            Add your cohort
+            Add your cohort <ArrowUpRight className='size-3' />
           </a>
         </p>
 
