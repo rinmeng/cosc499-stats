@@ -6,6 +6,8 @@ import {
   Handshake,
   MessageSquareCode,
   Moon,
+  Sunrise,
+  UsersRound,
   Sparkles,
   Users,
 } from 'lucide-react';
@@ -94,6 +96,19 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     .sort((a, b) => a.medianMergeHours! - b.medianMergeHours!)
     .slice(0, 3);
   const activeThisWeek = topTeams(c, (t) => t.thisWeekCommits, 3);
+  const everyoneReviews = topTeams(
+    c,
+    // ties (often 100%) go to the larger team
+    (t) => t.reviewerShare + t.contributors / 1000,
+    3,
+    (t) => t.contributors >= 3 && t.prsMerged >= 10
+  );
+  const earlyBirds = topTeams(
+    c,
+    (t) => t.earlyBirdShare,
+    3,
+    (t) => t.commits >= 50
+  );
   const nightOwls = topTeams(
     c,
     (t) => t.nightOwlShare,
@@ -247,7 +262,32 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             }))}
           />
         )}
-        {!live && nightOwls.length > 0 && (
+        {everyoneReviews.length > 0 && (
+          <Highlight
+            icon={UsersRound}
+            title='Everyone reviews'
+            description='Share of team members who reviewed a teammate’s PR'
+            items={everyoneReviews.map((t) => ({
+              label: t.name,
+              href: teamHref(c.slug, t),
+              value: pct(t.reviewerShare),
+              sub: `${Math.round(t.reviewerShare * t.contributors)} of ${t.contributors} people`,
+            }))}
+          />
+        )}
+        {earlyBirds.length > 0 && (
+          <Highlight
+            icon={Sunrise}
+            title='Early birds'
+            description='Share of commits made between 5 am and 9 am'
+            items={earlyBirds.map((t) => ({
+              label: t.name,
+              href: teamHref(c.slug, t),
+              value: pct(t.earlyBirdShare),
+            }))}
+          />
+        )}
+        {nightOwls.length > 0 && (
           <Highlight
             icon={Moon}
             title='Night owls'

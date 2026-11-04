@@ -125,7 +125,11 @@ export interface TeamStats {
   medianMergeHours: number | null;
   peakWeek: { week: number; start: string; commits: number } | null;
   nightOwlShare: number;
+  /** 0–1, commits made between 5 am and 9 am */
+  earlyBirdShare: number;
   weekendShare: number;
+  /** 0–1, members who reviewed at least one teammate's PR */
+  reviewerShare: number;
   lastActivity: string | null;
   languages: { name: string; bytes: number }[];
   weekly: WeekPoint[];

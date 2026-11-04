@@ -326,10 +326,12 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     );
     const totalCommits = sum('commits');
     let night = 0;
+    let early = 0;
     let weekend = 0;
     punch.forEach((row, dow) =>
       row.forEach((n, h) => {
         if (h >= 22 || h < 4) night += n;
+        if (h >= 5 && h < 9) early += n;
         if (dow === 0 || dow === 6) weekend += n;
         cohortPunch[dow][h] += n;
       })
@@ -381,7 +383,11 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
         ? { week: peak.week, start: peak.start, commits: peak.commits }
         : null,
       nightOwlShare: totalCommits ? round(night / totalCommits) : 0,
+      earlyBirdShare: totalCommits ? round(early / totalCommits) : 0,
       weekendShare: totalCommits ? round(weekend / totalCommits) : 0,
+      reviewerShare: members.length
+        ? round(members.filter((m) => m.reviews > 0).length / members.length)
+        : 0,
       lastActivity: last,
       languages: [...langs]
         .map(([name, bytes]) => ({ name, bytes }))
