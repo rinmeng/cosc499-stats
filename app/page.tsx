@@ -40,7 +40,6 @@ import {
   currentWeek,
   trendSeries,
 } from '@/lib/views';
-import { CountUp } from '@/components/CountUp';
 
 export const metadata = {
   ...pageMetadata(overviewSeo()),
@@ -238,19 +237,19 @@ export default function Overview() {
                 <CardContent className='grid grid-cols-3 gap-2 text-sm'>
                   <div>
                     <div className='font-mono font-semibold tabular-nums'>
-                      <CountUp value={c.totals.teams} />
+                      {c.totals.teams.toLocaleString()}
                     </div>
                     <div className='text-xs text-muted-foreground'>teams</div>
                   </div>
                   <div>
                     <div className='font-mono font-semibold tabular-nums'>
-                      <CountUp value={fmtCompact(c.totals.commits)} />
+                      {fmtCompact(c.totals.commits)}
                     </div>
                     <div className='text-xs text-muted-foreground'>commits</div>
                   </div>
                   <div>
                     <div className='font-mono font-semibold tabular-nums'>
-                      <CountUp value={fmt(c.totals.prsMerged)} />
+                      {fmt(c.totals.prsMerged)}
                     </div>
                     <div className='text-xs text-muted-foreground'>PRs</div>
                   </div>
