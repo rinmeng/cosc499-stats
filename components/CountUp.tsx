@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { animate, useInView, useReducedMotion } from 'motion/react';
 
 import { AnimatedNumber } from '@/components/animated-number';
@@ -28,6 +28,8 @@ function parse(text: string): Parsed | null {
   };
 }
 
+const noopSubscribe = () => () => {};
+
 /** Time between rolled steps while counting (each step rolls the changed digits). */
 const STEP_MS = 100;
 /** Gap between one number starting and the next, so they don't all animate at once. */
@@ -51,8 +53,9 @@ function reserveStart(): number | null {
 }
 
 /**
- * Counts a formatted number up from 0 the first time it scrolls into view, using the
- * rolling-digit AnimatedNumber. Later value changes roll from the old value to the new.
+ * On a visitor's first visit, counts a formatted number up from 0 the first time it
+ * scrolls into view (rolling-digit AnimatedNumber). Returning visitors just see the
+ * value. Later value changes roll from the old value to the new either way.
  * Non-numeric text (e.g. "—") is shown as is.
  */
 export function CountUp({
@@ -72,26 +75,53 @@ export function CountUp({
   // Only once it's actually scrolled to: most of it on screen, not just peeking in.
   const inView = useInView(ref, { once: true, amount: 0.8 });
   const reduceMotion = useReducedMotion();
-  const [shown, setShown] = useState(0);
-  const current = useRef(0);
-  const started = useRef(false);
+  // First-visit session? Set before paint by the script in app/layout.tsx. Read as an
+  // external store so the server render (false) and hydration agree.
+  const armed = useSyncExternalStore(
+    noopSubscribe,
+    () => document.documentElement.dataset.countup === '1',
+    () => false
+  );
+  const hydrated = useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false
+  );
+  // Server HTML and returning visitors get the final value straight away.
+  const [shown, setShown] = useState(target);
+  const [begun, setBegun] = useState(false);
+  const current = useRef(target);
+  // Whether the one-time count-up has run (or was skipped for this visitor).
+  const done = useRef(false);
 
   useEffect(() => {
-    if (!parsed || !inView || reduceMotion) return;
-    let last = 0;
-    let controls: ReturnType<typeof animate> | null = null;
-    // First run waits its turn in the queue; later value changes (e.g. switching a
-    // metric) start right away.
-    const delay = started.current ? 0 : reserveStart();
+    if (!parsed || reduceMotion) return;
+    let delay: number | null = 0;
+    let from = current.current;
+    if (armed && !done.current) {
+      // First visit: count up from 0 once it's scrolled into view, in the shared queue.
+      if (!inView) return;
+      done.current = true;
+      delay = reserveStart();
+      from = 0;
+    } else {
+      done.current = true;
+      // Later value changes (e.g. switching a metric) roll from the old value.
+      if (target === current.current) return;
+    }
     if (delay === null) {
-      started.current = true;
-      current.current = target;
-      const t = setTimeout(() => setShown(target), 0);
+      const t = setTimeout(() => {
+        current.current = target;
+        setShown(target);
+        setBegun(true);
+      }, 0);
       return () => clearTimeout(t);
     }
+    let last = 0;
+    let controls: ReturnType<typeof animate> | null = null;
     const timer = setTimeout(() => {
-      started.current = true;
-      controls = animate(current.current, target, {
+      setBegun(true);
+      controls = animate(from, target, {
         duration,
         ease: 'easeOut',
         onUpdate: (v) => {
@@ -112,8 +142,12 @@ export function CountUp({
       clearTimeout(timer);
       controls?.stop();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-run only when the number changes
-  }, [target, inView, reduceMotion]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-run only when these change
+  }, [target, inView, armed, reduceMotion]);
+
+  // Before a first-visit count-up begins, show 0.
+  const display = armed && !begun ? 0 : shown;
+  const ready = hydrated;
 
   if (!parsed) return <span className={className}>{text}</span>;
 
@@ -138,9 +172,15 @@ export function CountUp({
       >
         {text}
       </span>
-      <span className='col-start-1 row-start-1'>
+      {/* Hidden until hydrated on a first visit, so the final value never flashes before
+          the count-up starts from 0 (see .countup rules in globals.css). */}
+      <span
+        className='col-start-1 row-start-1'
+        data-countup-value
+        data-ready={ready || undefined}
+      >
         <AnimatedNumber
-          value={reduceMotion ? target : shown}
+          value={reduceMotion ? target : display}
           format={format}
           srText={text}
           className={className}

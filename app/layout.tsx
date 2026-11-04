@@ -68,6 +68,12 @@ export const viewport: Viewport = {
   ],
 };
 
+/**
+ * Runs before first paint: the first time someone visits, mark this browser session so
+ * numbers count up (components/CountUp.tsx); returning visitors just see the numbers.
+ */
+const firstVisitScript = `try{var l=localStorage,s=sessionStorage;if(!l.getItem('cosc499-seen')){l.setItem('cosc499-seen','1');s.setItem('cosc499-countup','1')}if(s.getItem('cosc499-countup'))document.documentElement.dataset.countup='1'}catch(e){}`;
+
 /** Structured data so search engines know what the site is about. */
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -105,10 +111,10 @@ export default function RootLayout({
         geistMono.variable
       )}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: firstVisitScript }} />
+      </head>
       <body className='antialiased'>
-        <noscript>
-          <style>{'.initial-loader{display:none!important}'}</style>
-        </noscript>
         <script
           type='application/ld+json'
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
