@@ -52,7 +52,7 @@ There is no `tailwind.config.js`. Tailwind v4 is configured entirely via PostCSS
 - `scripts/aggregate.ts`: raw → `data/summary.json` (`Summary` type). Pure, no network.
 - `lib/data.ts` (server-only) reads the summary; `lib/views.ts` shapes it into client props.
 - Pages: `/` overview, `/[year]` cohort, `/[year]/[team]` team detail.
-- Past cohorts' `data/raw/<org>/` is committed (contributions welcome); the current cohort's folder, `data/summary.json` and logs are gitignored. Update the current-cohort line in `.gitignore` each year.
+- All cohorts' `data/raw/<org>/` is committed (contributions welcome); `data/summary.json` and logs are gitignored.
 - Repos outside a cohort org go in that cohort's `extraRepos` (sync.config.ts).
 
 ## Tone Rule (important)

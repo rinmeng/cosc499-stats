@@ -40,8 +40,8 @@ pnpm sync              # pull data from GitHub
 pnpm dev               # http://localhost:3000
 ```
 
-The token needs read access to the cohort orgs. Private repos (e.g. the current cohort's
-team repos) only show up if your account is a member of the org. If `GITHUB_TOKEN` is
+The token needs read access to the cohort orgs. Repos your account can't read (for example,
+ones in an org you're not a member of) don't show up. If `GITHUB_TOKEN` is
 unset, the sync falls back to `gh auth token`.
 
 ## Syncing data
@@ -100,12 +100,10 @@ achievements. It never lists the people or teams that contributed least, and it 
 
 ## Privacy & deployment
 
-- Past cohorts' raw data (`data/raw/COSC-499-W2023` etc.) is committed so contributions
-  can be merged.
-- The current cohort's repos are private, so `data/raw/COSC-499-W2026/` is gitignored and
-  synced fresh on each deploy. The Vercel build (`vercel-build`) runs
-  `pnpm sync:current` first, which needs a `GITHUB_TOKEN` environment variable from an
-  account in that org.
+- Cohorts' raw data (`data/raw/COSC-499-W2023` etc.) is committed so contributions can be
+  merged. The current cohort (`data/raw/COSC-499-W2026/`) is committed too, and it is
+  re-synced on each deploy. The Vercel build (`vercel-build`) runs `pnpm sync:current`
+  first, which needs a `GITHUB_TOKEN` environment variable from an account in that org.
 - `data/summary.json` is always regenerated, by `pnpm build` locally or by the sync.
 
 ## SEO
