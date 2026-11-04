@@ -15,8 +15,11 @@ import type {
   WeekPoint,
 } from '../lib/types/stats';
 import {
+  cohortSlug,
   cohorts,
+  currentCohort,
   currentYear,
+  teamPattern,
   excludeLogins,
   lineOutlierThreshold,
   scoreWeights,
@@ -33,9 +36,9 @@ const WEEK = 7 * DAY;
 
 /* --------------------------------- Helpers -------------------------------- */
 
-/** Sunday on/before the first Monday of September, in UTC. */
-function termStartFor(year: number): Date {
-  const d = new Date(Date.UTC(year, 8, 1));
+/** Sunday on/before the first Monday of September (winter) or May (summer), in UTC. */
+function termStartFor(year: number, summer = false): Date {
+  const d = new Date(Date.UTC(year, summer ? 4 : 8, 1));
   while (d.getUTCDay() !== 1) d.setUTCDate(d.getUTCDate() + 1);
   d.setUTCDate(d.getUTCDate() - 1);
   return d;
@@ -102,11 +105,15 @@ function loadRaw(org: string): RawRepo[] {
 
 function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | null {
   const repos = loadRaw(cfg.org);
-  if (!repos.length) return null;
+  const summer = cfg.session === 'summer';
+  const slug = cohortSlug(cfg);
 
-  const termStart = termStartFor(cfg.year);
+  const termStart = termStartFor(cfg.year, summer);
   const windowStart = termStart.getTime() - termLeadWeeks * WEEK;
-  const windowEnd = Date.UTC(cfg.year + 1, 4, 31, 23, 59, 59);
+  // Winter runs to the end of the following May; summer to mid-September.
+  const windowEnd = summer
+    ? Date.UTC(cfg.year, 8, 15, 23, 59, 59)
+    : Date.UTC(cfg.year + 1, 4, 31, 23, 59, 59);
   const inWindow = (iso: string | null) => {
     if (!iso) return false;
     const t = Date.parse(iso);
@@ -118,7 +125,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     new Date(termStart.getTime() + w * WEEK).toISOString().slice(0, 10);
 
   const nowWeek = Math.floor((now.getTime() - termStart.getTime()) / WEEK);
-  const isCurrent = cfg.year === currentYear;
+  const isCurrent = slug === currentCohort;
 
   /* Staff detection: logins committing to many different teams in one cohort. */
   const teamsByLogin = new Map<string, Set<number>>();
@@ -344,7 +351,8 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     teams.push({
       key: `team-${team}`,
       team,
-      name: `Team ${team}`,
+      // Repos without a team number in their name are shown under their repo name.
+      name: teamPattern.test(main.name) ? `Team ${team}` : main.name,
       repos: teamRepos.map((r) => ({
         name: r.name,
         url: r.meta.url,
@@ -412,6 +420,8 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
 
   return {
     org: cfg.org,
+    slug,
+    session: summer ? 'summer' : 'winter',
     year: cfg.year,
     label: cfg.label,
     note: cfg.note ?? null,
@@ -459,6 +469,7 @@ export function aggregate() {
   const summary: Summary = {
     generatedAt: now.toISOString(),
     currentYear,
+    currentCohort,
     topN,
     scoreWeights,
     lineOutlierThreshold,

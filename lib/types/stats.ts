@@ -138,6 +138,9 @@ export interface TeamStats {
 
 export interface CohortStats {
   org: string;
+  /** URL slug: "2024" (winter) or "summer-2024" */
+  slug: string;
+  session: 'winter' | 'summer';
   year: number;
   label: string;
   note: string | null;
@@ -174,6 +177,7 @@ export interface CohortStats {
 export interface Summary {
   generatedAt: string;
   currentYear: number;
+  currentCohort: string;
   topN: number;
   scoreWeights: Record<string, number>;
   lineOutlierThreshold: number;

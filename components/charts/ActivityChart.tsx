@@ -52,12 +52,22 @@ export function ActivityChart({
   termStart,
   title = 'Activity by week',
   description,
+  session = 'winter',
 }: {
   data: WeekPoint[];
   termStart: string;
   title?: string;
   description?: string;
+  session?: 'winter' | 'summer';
 }) {
+  // Summer sessions are one short term, so only whole-term and recent views apply.
+  const ranges =
+    session === 'summer'
+      ? [
+          { value: 'all' as Range, label: 'Whole term' },
+          { value: 'recent' as Range, label: 'Last 8 weeks' },
+        ]
+      : RANGES;
   const [metric, setMetric] = useState<Metric>('commits');
   const [range, setRange] = useState<Range>('all');
 
@@ -104,13 +114,13 @@ export function ActivityChart({
         <Select
           value={range}
           onValueChange={(v) => v && setRange(v as Range)}
-          items={RANGES}
+          items={ranges}
         >
           <SelectTrigger className='w-36' aria-label='Time range'>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {RANGES.map((r) => (
+            {ranges.map((r) => (
               <SelectItem key={r.value} value={r.value}>
                 {r.label}
               </SelectItem>

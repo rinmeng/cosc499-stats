@@ -25,7 +25,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getSummary } from '@/lib/data';
 import { cohortColor, fmt, fmtDate, fmtCompact, fmtHours, pct } from '@/lib/format';
 import type { TeamStats } from '@/lib/types/stats';
-import { cohortBars, cohortBest, currentWeek, trendSeries } from '@/lib/views';
+import {
+  byTermStart,
+  cohortBars,
+  cohortBest,
+  currentWeek,
+  trendSeries,
+} from '@/lib/views';
 
 export default function Overview() {
   const s = getSummary();
@@ -66,8 +72,9 @@ export default function Overview() {
         eyebrow='UBC Okanagan · COSC 499'
         title='Capstone contributions, every cohort'
       >
-        Contribution highlights from {cohorts.length} capstone cohorts on GitHub, from{' '}
-        {cohorts[0]?.label} to today. Last synced {fmtDate(s.generatedAt)}.
+        Contribution highlights from {cohorts.length} capstone cohorts on GitHub,
+        year-long and summer sessions, from {[...cohorts].sort(byTermStart)[0]?.label} to
+        today. Last synced {fmtDate(s.generatedAt)}.
       </PageHeader>
 
       <Grid className='grid-cols-2 md:grid-cols-3 lg:grid-cols-5'>
@@ -96,47 +103,58 @@ export default function Overview() {
       </Grid>
 
       <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
-        {[...cohorts].reverse().map((c) => (
-          <Link key={c.year} href={`/${c.year}`} className='group'>
-            <Card size='sm' className='h-full transition-colors group-hover:bg-muted/50'>
-              <CardHeader>
-                <CardTitle className='flex items-center gap-2'>
-                  <span
-                    className='size-2.5'
-                    style={{ background: cohortColor(c.year, s.currentYear) }}
-                  />
-                  {c.label}
-                  {c.isCurrent && <Badge>Week {currentWeek(c)}</Badge>}
-                  {isSmallCohort(c) && <Badge variant='outline'>Help complete</Badge>}
-                  <ArrowRight
-                    className='ml-auto size-4 text-muted-foreground transition-transform
-                      group-hover:translate-x-0.5'
-                  />
-                </CardTitle>
-              </CardHeader>
-              <CardContent className='grid grid-cols-3 gap-2 text-sm'>
-                <div>
-                  <div className='font-mono font-semibold tabular-nums'>
-                    {c.totals.teams}
+        {[...s.cohorts]
+          .sort(byTermStart)
+          .reverse()
+          .map((c) => (
+            <Link key={c.slug} href={`/${c.slug}`} className='group'>
+              <Card
+                size='sm'
+                className='h-full transition-colors group-hover:bg-muted/50'
+              >
+                <CardHeader>
+                  <CardTitle className='flex items-center gap-2'>
+                    <span
+                      className='size-2.5'
+                      style={{
+                        background: cohortColor(c.year, s.currentYear, c.session),
+                      }}
+                    />
+                    {c.label}
+                    {c.isCurrent && <Badge>Week {currentWeek(c)}</Badge>}
+                    {c.session === 'summer' && !isSmallCohort(c) && (
+                      <Badge variant='secondary'>Summer</Badge>
+                    )}
+                    {isSmallCohort(c) && <Badge variant='outline'>Help complete</Badge>}
+                    <ArrowRight
+                      className='ml-auto size-4 text-muted-foreground transition-transform
+                        group-hover:translate-x-0.5'
+                    />
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className='grid grid-cols-3 gap-2 text-sm'>
+                  <div>
+                    <div className='font-mono font-semibold tabular-nums'>
+                      {c.totals.teams}
+                    </div>
+                    <div className='text-xs text-muted-foreground'>teams</div>
                   </div>
-                  <div className='text-xs text-muted-foreground'>teams</div>
-                </div>
-                <div>
-                  <div className='font-mono font-semibold tabular-nums'>
-                    {fmtCompact(c.totals.commits)}
+                  <div>
+                    <div className='font-mono font-semibold tabular-nums'>
+                      {fmtCompact(c.totals.commits)}
+                    </div>
+                    <div className='text-xs text-muted-foreground'>commits</div>
                   </div>
-                  <div className='text-xs text-muted-foreground'>commits</div>
-                </div>
-                <div>
-                  <div className='font-mono font-semibold tabular-nums'>
-                    {fmt(c.totals.prsMerged)}
+                  <div>
+                    <div className='font-mono font-semibold tabular-nums'>
+                      {fmt(c.totals.prsMerged)}
+                    </div>
+                    <div className='text-xs text-muted-foreground'>PRs</div>
                   </div>
-                  <div className='text-xs text-muted-foreground'>PRs</div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
       </div>
 
       <CohortTrendChart
@@ -177,7 +195,7 @@ export default function Overview() {
             description='Top committer of each cohort'
             items={recordPeople.map(({ c, best }) => ({
               label: best!.name,
-              href: `/${c.year}/${best!.team.team}`,
+              href: `/${c.slug}/${best!.team.team}`,
               sub: `${best!.team.name}, ${c.label}`,
               value: fmt(best!.value),
             }))}
@@ -188,7 +206,7 @@ export default function Overview() {
             description='Top reviewer of each cohort'
             items={recordReviewers.map(({ c, best }) => ({
               label: best!.name,
-              href: `/${c.year}/${best!.team.team}`,
+              href: `/${c.slug}/${best!.team.team}`,
               sub: `${best!.team.name}, ${c.label}`,
               value: fmt(best!.value),
             }))}
@@ -199,7 +217,7 @@ export default function Overview() {
             description='Overall score, all cohorts'
             items={biggestTeams.map((t) => ({
               label: t.name,
-              href: `/${t.cohort.year}/${t.team}`,
+              href: `/${t.cohort.slug}/${t.team}`,
               sub: t.cohort.label,
               value: `${fmtCompact(t.score)} pts`,
             }))}
@@ -210,7 +228,7 @@ export default function Overview() {
             description={`Teams with the most shipped PRs`}
             items={mostPrs.map((t) => ({
               label: t.name,
-              href: `/${t.cohort.year}/${t.team}`,
+              href: `/${t.cohort.slug}/${t.team}`,
               sub: `${t.cohort.label} · ${pct(t.reviewCoverage)} reviewed · ${fmtHours(t.medianMergeHours)}`,
               value: fmt(t.prsMerged),
             }))}

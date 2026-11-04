@@ -33,15 +33,19 @@ import { teamHabits, teamTopViews } from '@/lib/views';
 export function generateStaticParams() {
   return (
     getSummary()?.cohorts.flatMap((c) =>
-      c.teams.map((t) => ({ year: String(c.year), team: String(t.team) }))
+      c.teams.map((t) => ({ cohort: c.slug, team: String(t.team) }))
     ) ?? []
   );
 }
 
-export async function generateMetadata({ params }: PageProps<'/[year]/[team]'>) {
-  const { year, team } = await params;
-  const c = getCohort(Number(year));
-  return { title: c ? `Team ${team} · ${c.label} · COSC 499 Stats` : 'COSC 499 Stats' };
+export async function generateMetadata({ params }: PageProps<'/[cohort]/[team]'>) {
+  const { cohort, team } = await params;
+  const c = getCohort(cohort);
+  return {
+    title: c
+      ? `${c.teams.find((t) => t.team === Number(team))?.name ?? `Team ${team}`} · ${c.label} · COSC 499 Stats`
+      : 'COSC 499 Stats',
+  };
 }
 
 const AXES: { key: keyof PersonStats; label: string }[] = [
@@ -52,12 +56,12 @@ const AXES: { key: keyof PersonStats; label: string }[] = [
   { key: 'activeWeeks', label: 'Weeks' },
 ];
 
-export default async function TeamPage({ params }: PageProps<'/[year]/[team]'>) {
-  const { year, team } = await params;
+export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>) {
+  const { cohort, team } = await params;
   const summary = getSummary();
   if (!summary) return <EmptyState />;
-  const c = getCohort(Number(year));
-  const t = getTeam(Number(year), Number(team));
+  const c = getCohort(cohort);
+  const t = getTeam(cohort, Number(team));
   if (!c || !t) notFound();
 
   const view = teamTopViews({ ...c, teams: [t] }, summary.topN)[0];
@@ -80,7 +84,7 @@ export default async function TeamPage({ params }: PageProps<'/[year]/[team]'>) 
   return (
     <div className='space-y-8'>
       <Link
-        href={`/${c.year}`}
+        href={`/${c.slug}`}
         className='inline-flex items-center gap-1 text-sm text-muted-foreground
           hover:text-foreground'
       >
@@ -167,6 +171,7 @@ export default async function TeamPage({ params }: PageProps<'/[year]/[team]'>) 
       <ActivityChart
         data={t.weekly}
         termStart={c.termStart}
+        session={c.session}
         title='Team activity by week'
         description='Pick a measure above, or narrow the time range.'
       />

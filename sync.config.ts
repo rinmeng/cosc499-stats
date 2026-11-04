@@ -3,11 +3,15 @@
  * or to tweak which repos and accounts are counted.
  */
 
+export type Session = 'winter' | 'summer';
+
 export interface CohortConfig {
   /** GitHub organization login */
   org: string;
-  /** Start year of the winter session (W2026 = Sept 2026 → Apr 2027) */
+  /** Start year: winter 2026 = Sept 2026 → Apr 2027, summer 2026 = May → Aug 2026 */
   year: number;
+  /** Defaults to 'winter' (the year-long session) */
+  session?: Session;
   /** Human label shown in the UI */
   label: string;
   /** Optional caveat shown on the cohort page */
@@ -29,15 +33,46 @@ export const cohorts: CohortConfig[] = [
   },
   { org: 'COSC-499-W2025', year: 2025, label: '2025–26' },
   { org: 'COSC-499-W2026', year: 2026, label: '2026–27' },
+
+  // Summer sessions (May → August)
+  {
+    org: 'UBCO-COSC499-Summer-2024',
+    year: 2024,
+    session: 'summer',
+    label: 'Summer 2024',
+  },
+  {
+    org: 'UBCO-COSC499-S2025',
+    year: 2025,
+    session: 'summer',
+    label: 'Summer 2025',
+    note: 'Only one team repository from this session is visible on GitHub.',
+  },
+  {
+    org: 'UBCO-COSC499-S2026',
+    year: 2026,
+    session: 'summer',
+    label: 'Summer 2026',
+    note: 'No team repositories from this session are visible on GitHub yet.',
+  },
 ];
 
-/** The cohort that is still in progress. Always re-synced; past cohorts are cached. */
-export const currentYear = 2026;
+/** URL slug and CLI name for a cohort: winter "2024", summer "summer-2024". */
+export const cohortSlug = (c: Pick<CohortConfig, 'year' | 'session'>) =>
+  c.session === 'summer' ? `summer-${c.year}` : String(c.year);
+
+/** Slug of the cohort that is still in progress. Always re-synced; past cohorts are cached. */
+export const currentCohort = '2026';
+
+/** Start year of the current cohort (derived; used for colors and the trend chart). */
+export const currentYear =
+  cohorts.find((c) => cohortSlug(c) === currentCohort)?.year ?? new Date().getFullYear();
 
 /** Repos whose name matches any of these are skipped (starters, templates, empty copies). */
 export const repoExclude: RegExp[] = [
   /starter/i,
   /^templates$/i,
+  /^docker-examples$/i,
   /^Team7_002$/,
   /^year-long-project-team-12-1$/,
 ];
@@ -59,6 +94,11 @@ export const excludeLogins: string[] = [
   'copilot-pull-request-reviewer',
   'vercel',
   'coderabbitai',
+  // Course staff (instructors / TAs). Auto-detection below misses them in small
+  // cohorts, so they are listed explicitly.
+  'sfazackerley',
+  'ayhchen',
+  'bohuie',
 ];
 
 /**

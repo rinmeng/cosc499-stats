@@ -46,7 +46,12 @@ export const displayName = (p: { login: string | null; name: string | null }) =>
  * Fixed color per cohort (color follows entity). The ramp is ordinal: the
  * current cohort gets the strongest step, older cohorts step back.
  */
-export function cohortColor(year: number, currentYear: number): string {
+export function cohortColor(
+  year: number,
+  currentYear: number,
+  session: 'winter' | 'summer' = 'winter'
+): string {
+  if (session === 'summer') return 'var(--muted-foreground)';
   const slot = Math.min(Math.max(currentYear - year, 0), 3) + 1;
   return `var(--cohort-${slot})`;
 }

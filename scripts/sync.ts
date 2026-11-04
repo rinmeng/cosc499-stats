@@ -4,10 +4,11 @@
  *
  *   pnpm sync              past cohorts from cache, current cohort refreshed
  *   pnpm sync:year 2024    only the 2024–25 cohort, always re-fetched
+ *   pnpm sync:year summer-2024   only the Summer 2024 session
  *   pnpm sync:current      only the current cohort
  *   pnpm sync:all          refresh everything
  *
- * Flags: --year <YYYY> | --org <name> | --current | --force | --no-aggregate
+ * Flags: --year <YYYY | summer-YYYY> | --org <name> | --current | --force | --no-aggregate
  */
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -18,8 +19,9 @@ import { createClient } from '../lib/github';
 import { aggregate } from './aggregate';
 import type { RawCommit, RawIssue, RawPullRequest, RawRepo } from '../lib/types/stats';
 import {
+  cohortSlug,
   cohorts,
-  currentYear,
+  currentCohort,
   minRepoSizeKb,
   repoExclude,
   teamPattern,
@@ -33,12 +35,12 @@ const onlyCurrent = args.includes('--current');
 const flag = (name: string) =>
   args.includes(name) ? args[args.indexOf(name) + 1] : undefined;
 const orgArg = flag('--org');
-const yearArg = flag('--year') ? Number(flag('--year')) : undefined;
+const yearArg = flag('--year')?.toLowerCase();
 const skipAggregate = args.includes('--no-aggregate');
 
-if (args.includes('--year') && !Number.isInteger(yearArg)) {
-  console.error('Usage: pnpm sync:year <YYYY>   e.g. pnpm sync:year 2024');
-  console.error(`Known cohorts: ${cohorts.map((c) => c.year).join(', ')}`);
+if (args.includes('--year') && !yearArg) {
+  console.error('Usage: pnpm sync:year <YYYY | summer-YYYY>   e.g. pnpm sync:year 2024');
+  console.error(`Known cohorts: ${cohorts.map(cohortSlug).join(', ')}`);
   process.exit(1);
 }
 
@@ -372,13 +374,13 @@ async function main() {
   const targets = cohorts.filter(
     (c) =>
       (!orgArg || c.org.toLowerCase() === orgArg.toLowerCase()) &&
-      (!yearArg || c.year === yearArg) &&
-      (!onlyCurrent || c.year === currentYear)
+      (!yearArg || cohortSlug(c) === yearArg) &&
+      (!onlyCurrent || cohortSlug(c) === currentCohort)
   );
   if (!targets.length) {
     console.error(
       `No cohort matches ${yearArg ?? orgArg ?? '--current'}. ` +
-        `Known: ${cohorts.map((c) => `${c.year} (${c.org})`).join(', ')}. ` +
+        `Known: ${cohorts.map((c) => `${cohortSlug(c)} (${c.org})`).join(', ')}. ` +
         'Add new cohorts in sync.config.ts.'
     );
     process.exit(1);
@@ -393,19 +395,22 @@ async function main() {
     const dir = path.join(RAW_DIR, cohort.org);
     mkdirSync(dir, { recursive: true });
     // A single-cohort run (--year / --org) always re-fetches that cohort.
-    const refresh = force || !!yearArg || !!orgArg || cohort.year === currentYear;
+    const refresh =
+      force || !!yearArg || !!orgArg || cohortSlug(cohort) === currentCohort;
 
     const repos = await listOrgRepos(gh, cohort.org);
     const selected: { owner: string; name: string; team: number; file: string }[] = repos
       .filter((r) => !repoExclude.some((re) => re.test(r.name)))
       .filter((r) => (r.size ?? 0) >= minRepoSizeKb)
-      .map((r) => ({
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((r, i) => ({
         owner: cohort.org,
         name: r.name,
-        team: Number(teamPattern.exec(r.name)?.[1] ?? NaN),
+        // Repos with no team number in the name (e.g. a renamed project) still count;
+        // they get a number from 100 up and are shown under their repo name.
+        team: Number(teamPattern.exec(r.name)?.[1] ?? 100 + i),
         file: `${r.name}.json`,
-      }))
-      .filter((r) => Number.isFinite(r.team));
+      }));
 
     // Team repos that live outside the org (see `extraRepos` in sync.config.ts).
     for (const extra of cohort.extraRepos ?? []) {

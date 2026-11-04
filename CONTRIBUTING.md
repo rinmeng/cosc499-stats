@@ -12,15 +12,19 @@ any code.
 
 ## Which year am I?
 
-The year is when your session **started**:
+The year is when your session **started**. Summer sessions use `summer-` plus the year:
 
-| You took COSC 499 in… | Year to use | GitHub org       |
-| --------------------- | ----------- | ---------------- |
-| Sept 2023 – Apr 2024  | `2023`      | `COSC-499-W2023` |
-| Sept 2024 – Apr 2025  | `2024`      | `COSC-499-W2024` |
-| Sept 2025 – Apr 2026  | `2025`      | `COSC-499-W2025` |
+| You took COSC 499 in… | Use this      | GitHub org                 |
+| --------------------- | ------------- | -------------------------- |
+| Sept 2023 – Apr 2024  | `2023`        | `COSC-499-W2023`           |
+| May – Aug 2024        | `summer-2024` | `UBCO-COSC499-Summer-2024` |
+| Sept 2024 – Apr 2025  | `2024`        | `COSC-499-W2024`           |
+| May – Aug 2025        | `summer-2025` | `UBCO-COSC499-S2025`       |
+| Sept 2025 – Apr 2026  | `2025`        | `COSC-499-W2025`           |
+| May – Aug 2026        | `summer-2026` | `UBCO-COSC499-S2026`       |
 
-The examples below use `2024`. Swap in your year wherever you see it.
+The examples below use `2024`. Swap in yours wherever you see it (e.g. `summer-2025`
+and `COSC-499-W2024` → `UBCO-COSC499-S2025`).
 
 ---
 
@@ -147,7 +151,7 @@ be left out (like a TA or bot).
 | `gh repo list` shows nothing           | Your account no longer has access to that org; see [Other ways to help](#other-ways-to-help). |
 | `pnpm: command not found`              | Run `corepack enable`, then open a new terminal.                                              |
 | `secondary rate limit … retry in 300s` | GitHub is slowing things down. Leave it running; it continues on its own.                     |
-| `No cohort matches 2024`               | Check the year table above, or open an issue.                                                 |
+| `No cohort matches 2024`               | Check the year table above (summer is `summer-2024`), or open an issue.                       |
 
 ## Ground rules
 

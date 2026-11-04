@@ -9,7 +9,7 @@ import { topByMetric } from '@/lib/data';
 import { cohortColor, displayName, fmt, fmtCompact } from '@/lib/format';
 import type { CohortStats, MetricKey, Summary, TeamStats } from '@/lib/types/stats';
 
-export const teamHref = (year: number, t: TeamStats) => `/${year}/${t.team}`;
+export const teamHref = (slug: string, t: TeamStats) => `/${slug}/${t.team}`;
 
 export function teamTopViews(c: CohortStats, n: number): TeamTopView[] {
   return [...c.teams]
@@ -19,7 +19,7 @@ export function teamTopViews(c: CohortStats, n: number): TeamTopView[] {
       return {
         key: t.key,
         name: t.name,
-        href: teamHref(c.year, t),
+        href: teamHref(c.slug, t),
         top: Object.fromEntries(
           Object.entries(top).map(([k, list]) => [
             k,
@@ -36,7 +36,7 @@ export function cohortTopView(
   n: number
 ): Record<MetricKey, TopEntryView[]> {
   const people = c.teams.flatMap((t) =>
-    t.members.map((m) => ({ m, team: { name: t.name, href: teamHref(c.year, t) } }))
+    t.members.map((m) => ({ m, team: { name: t.name, href: teamHref(c.slug, t) } }))
   );
   const keys: MetricKey[] = [
     'score',
@@ -69,7 +69,7 @@ export function teamRows(c: CohortStats): TeamRow[] {
   return c.teams.map((t) => ({
     team: t.team,
     name: t.name,
-    href: teamHref(c.year, t),
+    href: teamHref(c.slug, t),
     isPrivate: t.repos.some((r) => r.isPrivate),
     contributors: t.contributors,
     commits: t.commits,
@@ -109,7 +109,7 @@ export function teamBars(c: CohortStats): { rows: BarRow[]; metrics: BarMetric[]
 
 /** Per-cohort bars (average per team) for the overview. */
 export function cohortBars(s: Summary): { rows: BarRow[]; metrics: BarMetric[] } {
-  const cohorts = s.cohorts.filter((c) => c.teams.length);
+  const cohorts = s.cohorts.filter((c) => c.teams.length).sort(byTermStart);
   const rows = cohorts.map((c) => ({
     label: c.label,
     name: `${c.label} · average per team`,
@@ -159,9 +159,14 @@ export function teamHabits(c: CohortStats, t: TeamStats): RadialItem[] {
   ];
 }
 
+/** Oldest first, by when the term started (summer 2024 sits between 2023–24 and 2024–25). */
+export const byTermStart = (a: CohortStats, b: CohortStats) =>
+  a.termStart.localeCompare(b.termStart);
+
+/** Year-long (winter) cohorts only: summer terms are a third as long, so they'd skew the comparison. */
 export function trendSeries(s: Summary): TrendSeries[] {
   return s.cohorts
-    .filter((c) => c.teams.length)
+    .filter((c) => c.teams.length && c.session === 'winter')
     .map((c) => ({
       year: c.year,
       label: c.label,

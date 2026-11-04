@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BarChart3, Menu } from 'lucide-react';
+import { BarChart3, ChevronDown, Menu } from 'lucide-react';
 
 import {
   Button,
@@ -13,19 +13,32 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { cohorts, currentYear } from '@/sync.config';
+import { cohortSlug, cohorts, currentCohort } from '@/sync.config';
 
 import { ModeToggle } from './ModeToggle';
 
+const toLink = (c: (typeof cohorts)[number]) => ({
+  href: `/${cohortSlug(c)}`,
+  label: c.label,
+  live: cohortSlug(c) === currentCohort,
+});
+
+// Year-long cohorts get their own tab; summer sessions live in a dropdown.
 const links = [
   { href: '/', label: 'Overview', live: false },
-  ...cohorts.map((c) => ({
-    href: `/${c.year}`,
-    label: c.label,
-    live: c.year === currentYear,
-  })),
+  ...cohorts.filter((c) => c.session !== 'summer').map(toLink),
 ];
+const summerLinks = cohorts
+  .filter((c) => c.session === 'summer')
+  .sort((a, b) => b.year - a.year)
+  .map(toLink);
 
 function Brand({ onClick }: { onClick?: () => void }) {
   return (
@@ -44,8 +57,8 @@ export function Navbar() {
       ? pathname === '/'
       : pathname === href || pathname.startsWith(`${href}/`);
 
-  const items = (onClick?: () => void, className?: string) =>
-    links.map((l) => (
+  const items = (onClick?: () => void, className?: string, list = links) =>
+    list.map((l) => (
       <Button
         key={l.href}
         variant={isActive(l.href) ? 'secondary' : 'ghost'}
@@ -74,11 +87,34 @@ export function Navbar() {
           lg:px-8'
       >
         <Brand />
-        <div className='hidden items-center gap-1 md:flex'>
+        <div className='hidden items-center gap-1 lg:flex'>
           {items()}
+          {summerLinks.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    variant={
+                      summerLinks.some((l) => isActive(l.href)) ? 'secondary' : 'ghost'
+                    }
+                    size='sm'
+                  />
+                }
+              >
+                Summer <ChevronDown className='size-3.5' />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align='end'>
+                {summerLinks.map((l) => (
+                  <DropdownMenuItem key={l.href} render={<Link href={l.href} />}>
+                    {l.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           <ModeToggle />
         </div>
-        <div className='md:hidden'>
+        <div className='lg:hidden'>
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger render={<Button variant='outline' size='icon' />}>
               <Menu className='size-5' />
@@ -92,6 +128,14 @@ export function Navbar() {
               </SheetHeader>
               <div className={cn('flex flex-col gap-2 px-4')}>
                 {items(() => setOpen(false), 'justify-start')}
+                {summerLinks.length > 0 && (
+                  <>
+                    <p className='mt-2 px-3 text-xs font-medium text-muted-foreground'>
+                      Summer sessions
+                    </p>
+                    {items(() => setOpen(false), 'justify-start', summerLinks)}
+                  </>
+                )}
                 <ModeToggle />
               </div>
             </SheetContent>

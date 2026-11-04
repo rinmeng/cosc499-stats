@@ -25,12 +25,12 @@ export function getSummary(): Summary | null {
   return cache.data;
 }
 
-export function getCohort(year: number): CohortStats | null {
-  return getSummary()?.cohorts.find((c) => c.year === year) ?? null;
+export function getCohort(slug: string): CohortStats | null {
+  return getSummary()?.cohorts.find((c) => c.slug === slug) ?? null;
 }
 
-export function getTeam(year: number, team: number): TeamStats | null {
-  return getCohort(year)?.teams.find((t) => t.team === team) ?? null;
+export function getTeam(slug: string, team: number): TeamStats | null {
+  return getCohort(slug)?.teams.find((t) => t.team === team) ?? null;
 }
 
 export const METRICS: { key: MetricKey; label: string; short: string }[] = [

@@ -3,7 +3,8 @@
 **Live site: [cosc499.rinm.dev](https://cosc499.rinm.dev)**
 
 A dashboard of GitHub contribution highlights for every UBC Okanagan COSC 499 capstone
-cohort (`COSC-499-W2023` and later): the top contributors on each team, cohort-wide trends,
+cohort: the year-long sessions (`COSC-499-W2023` and later) and the summer sessions
+(`UBCO-COSC499-Summer-2024` and later): the top contributors on each team, cohort-wide trends,
 and how the current cohort is tracking against past years.
 
 Built with Next.js, shadcn/ui and shadcn charts (Recharts). Data comes from the GitHub API
@@ -45,19 +46,20 @@ unset, the sync falls back to `gh auth token`.
 
 ## Syncing data
 
-| Command                 | What it does                                                          |
-| ----------------------- | --------------------------------------------------------------------- |
-| `pnpm sync`             | Refresh the current cohort; past cohorts come from cache when present |
-| `pnpm sync:year <YYYY>` | Re-fetch only one cohort, e.g. `pnpm sync:year 2024`                  |
-| `pnpm sync:current`     | Re-fetch only the current cohort (run this for regular updates)       |
-| `pnpm sync:all`         | Re-fetch every cohort from scratch (slow)                             |
-| `pnpm aggregate`        | Rebuild `data/summary.json` from the raw files (no network)           |
+| Command                 | What it does                                                               |
+| ----------------------- | -------------------------------------------------------------------------- |
+| `pnpm sync`             | Refresh the current cohort; past cohorts come from cache when present      |
+| `pnpm sync:year <YYYY>` | Re-fetch one cohort: `pnpm sync:year 2024` or `pnpm sync:year summer-2024` |
+| `pnpm sync:current`     | Re-fetch only the current cohort (run this for regular updates)            |
+| `pnpm sync:all`         | Re-fetch every cohort from scratch (slow)                                  |
+| `pnpm aggregate`        | Rebuild `data/summary.json` from the raw files (no network)                |
 
 `scripts/sync.ts` writes one file per repo to `data/raw/<org>/<repo>.json`: commits on the
 default branch, pull requests with reviews, issues, and languages. It then runs
 `scripts/aggregate.ts`, which turns those into `data/summary.json`, the only file the site
 reads. The year is the cohort's start year: `2024` is the 2024–25 session
-(`COSC-499-W2024`).
+(`COSC-499-W2024`), and `summer-2024` is the May–August 2024 session
+(`UBCO-COSC499-Summer-2024`). Pages live at `/2024` and `/summer-2024`.
 
 ### Adding next year's cohort
 
@@ -67,8 +69,9 @@ Edit `sync.config.ts`:
 export const cohorts = [
   // ...
   { org: 'COSC-499-W2027', year: 2027, label: '2027–28' },
+  { org: 'UBCO-COSC499-S2027', year: 2027, session: 'summer', label: 'Summer 2027' },
 ];
-export const currentYear = 2027;
+export const currentCohort = '2027'; // or 'summer-2027' while that session runs
 ```
 
 Then update the current-cohort line in `.gitignore` (see Privacy). You can also adjust the

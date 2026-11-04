@@ -45,21 +45,32 @@ import {
 } from '@/lib/views';
 
 export function generateStaticParams() {
-  return getSummary()?.cohorts.map((c) => ({ year: String(c.year) })) ?? [];
+  return getSummary()?.cohorts.map((c) => ({ cohort: c.slug })) ?? [];
 }
 
-export async function generateMetadata({ params }: PageProps<'/[year]'>) {
-  const { year } = await params;
-  const c = getCohort(Number(year));
+export async function generateMetadata({ params }: PageProps<'/[cohort]'>) {
+  const { cohort } = await params;
+  const c = getCohort(cohort);
   return { title: c ? `${c.label} cohort · COSC 499 Stats` : 'COSC 499 Stats' };
 }
 
-export default async function CohortPage({ params }: PageProps<'/[year]'>) {
-  const { year } = await params;
+export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
+  const { cohort } = await params;
   const summary = getSummary();
   if (!summary) return <EmptyState />;
-  const c = getCohort(Number(year));
+  const c = getCohort(cohort);
   if (!c) notFound();
+
+  // Nothing visible yet (e.g. a summer session whose repos are all private).
+  if (c.teams.length === 0)
+    return (
+      <div className='space-y-8'>
+        <PageHeader eyebrow={c.org} title={`${c.label} cohort`}>
+          No team repositories from this session are visible on GitHub yet.
+        </PageHeader>
+        <HelpComplete label={c.label} cohort={c.slug} teams={0} note={c.note} />
+      </div>
+    );
 
   const week = currentWeek(c);
   const live = c.isCurrent;
@@ -106,6 +117,7 @@ export default async function CohortPage({ params }: PageProps<'/[year]'>) {
           </>
         ) : (
           <>
+            {c.session === 'summer' && 'Summer session (May to August). '}
             {c.totals.teams} teams, {fmt(c.totals.contributors)} contributors, term
             starting {fmtDate(c.termStart)}.
           </>
@@ -115,7 +127,7 @@ export default async function CohortPage({ params }: PageProps<'/[year]'>) {
       {isSmallCohort(c) && (
         <HelpComplete
           label={c.label}
-          year={c.year}
+          cohort={c.slug}
           teams={c.totals.teams}
           note={c.note}
         />
@@ -190,7 +202,7 @@ export default async function CohortPage({ params }: PageProps<'/[year]'>) {
             description='Commits since Sunday'
             items={activeThisWeek.map((t) => ({
               label: t.name,
-              href: teamHref(c.year, t),
+              href: teamHref(c.slug, t),
               value: fmt(t.thisWeekCommits),
             }))}
           />
@@ -202,7 +214,7 @@ export default async function CohortPage({ params }: PageProps<'/[year]'>) {
             description='Commits shared most evenly across the team'
             items={collaborative.map((t) => ({
               label: t.name,
-              href: teamHref(c.year, t),
+              href: teamHref(c.slug, t),
               value: `${Math.round(t.collaboration * 100)}`,
               sub: `${t.contributors} people`,
             }))}
@@ -215,7 +227,7 @@ export default async function CohortPage({ params }: PageProps<'/[year]'>) {
             description='Share of merged PRs reviewed by a teammate'
             items={reviewCulture.map((t) => ({
               label: t.name,
-              href: teamHref(c.year, t),
+              href: teamHref(c.slug, t),
               value: pct(t.reviewCoverage),
               sub: `${fmt(t.prsMerged)} PRs`,
             }))}
@@ -228,7 +240,7 @@ export default async function CohortPage({ params }: PageProps<'/[year]'>) {
             description='Median time from PR opened to merged'
             items={fastest.map((t) => ({
               label: t.name,
-              href: teamHref(c.year, t),
+              href: teamHref(c.slug, t),
               value: fmtHours(t.medianMergeHours),
             }))}
           />
@@ -240,7 +252,7 @@ export default async function CohortPage({ params }: PageProps<'/[year]'>) {
             description='Share of commits made between 10 pm and 4 am'
             items={nightOwls.map((t) => ({
               label: t.name,
-              href: teamHref(c.year, t),
+              href: teamHref(c.slug, t),
               value: pct(t.nightOwlShare),
             }))}
           />
@@ -250,6 +262,7 @@ export default async function CohortPage({ params }: PageProps<'/[year]'>) {
       <ActivityChart
         data={c.weekly}
         termStart={c.termStart}
+        session={c.session}
         description='Across the whole cohort. Pick a measure above, or narrow the time range.'
       />
 
@@ -267,7 +280,7 @@ export default async function CohortPage({ params }: PageProps<'/[year]'>) {
         <TeamTable rows={teamRows(c)} live={live} />
       </Section>
 
-      {!isSmallCohort(c) && <MissingTeam year={c.year} live={live} />}
+      {!isSmallCohort(c) && <MissingTeam cohort={c.slug} live={live} />}
 
       <Grid className='lg:grid-cols-5'>
         <Section

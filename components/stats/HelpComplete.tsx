@@ -12,12 +12,12 @@ export const contributingUrl = `${repoUrl}/blob/main/CONTRIBUTING.md`;
 
 export function HelpComplete({
   label,
-  year,
+  cohort,
   teams,
   note,
 }: {
   label: string;
-  year: number;
+  cohort: string;
   teams: number;
   note?: string | null;
 }) {
@@ -37,7 +37,7 @@ export function HelpComplete({
               `Only ${teams} team${teams === 1 ? ' is' : 's are'} visible on GitHub right now.`}{' '}
             If you can still see your team’s repo, you can add it in about 15 minutes. Run{' '}
             <code className='rounded bg-muted px-1 py-0.5 font-mono text-xs'>
-              pnpm sync:year {year}
+              pnpm sync:year {cohort}
             </code>{' '}
             and open a pull request. No coding needed.
           </p>
@@ -66,7 +66,13 @@ export function HelpComplete({
  * Compact prompt for every other cohort: a team that's missing can be added by
  * anyone who can still see its repo.
  */
-export function MissingTeam({ year, live = false }: { year: number; live?: boolean }) {
+export function MissingTeam({
+  cohort,
+  live = false,
+}: {
+  cohort: string;
+  live?: boolean;
+}) {
   return (
     <div
       className='flex flex-col gap-3 rounded-2xl border border-dashed px-5 py-4
@@ -84,7 +90,7 @@ export function MissingTeam({ year, live = false }: { year: number; live?: boole
           <>
             Help put it on the site: run{' '}
             <code className='rounded bg-muted px-1 py-0.5 font-mono text-xs'>
-              pnpm sync:year {year}
+              pnpm sync:year {cohort}
             </code>{' '}
             and open a pull request with the data. The guide walks you through every step.
           </>
