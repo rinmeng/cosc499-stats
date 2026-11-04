@@ -52,7 +52,7 @@ const RECENT_COHORT_CARDS = 4;
 export const metadata = {
   ...pageMetadata(overviewSeo()),
   // keep the site-wide default title on the home page
-  title: { absolute: 'UBCO COSC 499 Capstone Stats · UBC Okanagan' },
+  title: { absolute: 'UBCO COSC 499 Capstone Stats' },
 };
 
 export default function Overview() {
