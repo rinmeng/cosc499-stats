@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
 
 import LiquidWaveSpinner from '@/components/shadcn-space/spinner/spinner-10';
-import { cn } from '@/lib/utils';
 
 /** Phrases shown under the spinner, in a new random order each time it opens. */
 const WORDS = [
@@ -30,40 +29,18 @@ const shuffle = <T,>(list: T[]) => {
 const MAX_VISIBLE_MS = 10_000;
 
 /**
- * Full-page loading screen, shown for as long as a page takes to load:
- *  - page load or refresh: rendered in the server HTML and revealed by CSS only if loading takes
- *    longer than SHOW_AFTER_MS (see `.initial-loader` in globals.css); removed once the
- *    page is interactive and its fonts are ready.
- *  - page switches (link clicks, back/forward): shown after SHOW_AFTER_MS, hidden as soon
- *    as the new page is in place.
+ * Full-page loading screen shown while a page is loading: after link clicks and
+ * back/forward, only if the switch takes longer than SHOW_AFTER_MS, and hidden as soon
+ * as the new page is in place.
  */
 export function RouteLoader() {
   const pathname = usePathname();
-  // 'initial' = full page load or refresh (server-rendered), 'nav' = switching pages.
-  const [mode, setMode] = useState<'initial' | 'nav' | null>('initial');
-  const visible = mode !== null;
-  const setVisible = (on: boolean) => setMode(on ? 'nav' : null);
+  const [visible, setVisible] = useState(false);
   const [words, setWords] = useState(WORDS);
   const fromPath = useRef(pathname);
   const pending = useRef(false);
   const showTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const maxTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Page load: remove the server-rendered loader once the page is interactive (this
-  // effect runs right after hydration) and the fonts are ready. Not waiting for the
-  // window `load` event, which also waits for every avatar image further down the page.
-  useEffect(() => {
-    let cancelled = false;
-    const done = () => {
-      if (!cancelled) setMode((m) => (m === 'initial' ? null : m));
-    };
-    const safety = setTimeout(done, MAX_VISIBLE_MS);
-    (document.fonts?.ready ?? Promise.resolve()).then(done, done);
-    return () => {
-      cancelled = true;
-      clearTimeout(safety);
-    };
-  }, []);
 
   // Start: internal link clicks to a different page, and browser back/forward.
   useEffect(() => {
@@ -121,32 +98,22 @@ export function RouteLoader() {
     <AnimatePresence>
       {visible && (
         <motion.div
-          key={mode === 'initial' ? 'initial-loader' : 'route-loader'}
+          key='route-loader'
           role='status'
           aria-live='polite'
           aria-label='Loading page'
-          // Click-through; the inner layer takes clicks only while it's showing.
-          className='pointer-events-none fixed inset-0 z-[100]'
-          initial={mode === 'initial' ? false : { opacity: 0 }}
+          className='fixed inset-0 z-[100] flex items-center justify-center bg-background'
+          initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
         >
-          <div
-            className={cn(
-              'pointer-events-auto flex size-full items-center justify-center bg-background',
-              // CSS-timed reveal for the server-rendered page-load loader. It sits on this
-              // inner layer so the outer fade-out isn't overridden by the CSS animation.
-              mode === 'initial' && 'initial-loader'
-            )}
-          >
-            <LiquidWaveSpinner
-              size='lg'
-              words={words}
-              interval={1300}
-              className='bg-transparent'
-            />
-          </div>
+          <LiquidWaveSpinner
+            size='lg'
+            words={words}
+            interval={1300}
+            className='bg-transparent'
+          />
         </motion.div>
       )}
     </AnimatePresence>
