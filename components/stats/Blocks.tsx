@@ -37,10 +37,21 @@ export function PageHeader({
 }
 
 /** Small muted word after a number saying what it counts ("commits", "of PRs"). */
-function Unit({ children }: { children?: React.ReactNode }) {
+function Unit({
+  children,
+  className,
+}: {
+  children?: React.ReactNode;
+  className?: string;
+}) {
   if (!children) return null;
   return (
-    <span className='ml-1 font-sans text-xs font-normal text-muted-foreground'>
+    <span
+      className={cn(
+        'ml-1 font-sans text-xs font-normal whitespace-nowrap text-muted-foreground',
+        className
+      )}
+    >
       {children}
     </span>
   );
@@ -77,14 +88,15 @@ export function StatTile({
           {Icon && <Icon className='size-3.5' />}
           {label}
         </div>
+        {/* The unit wraps under the number when the tile is narrow (3-across on phones). */}
         <div
           className={cn(
-            'font-mono font-semibold tabular-nums',
+            'flex flex-wrap items-baseline gap-x-1 font-mono font-semibold tabular-nums',
             compact ? 'text-lg md:text-2xl' : 'text-2xl'
           )}
         >
-          {typeof value === 'number' ? value.toLocaleString() : value}
-          <Unit>{unit}</Unit>
+          <span>{typeof value === 'number' ? value.toLocaleString() : value}</span>
+          <Unit className='ml-0 leading-tight'>{unit}</Unit>
         </div>
         {hint && (
           <div
