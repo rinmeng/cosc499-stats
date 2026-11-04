@@ -175,35 +175,6 @@ export default function Overview() {
         />
       </Grid>
 
-      <CohortTrendChart
-        title={current ? `How ${current.label} is tracking` : 'Cohorts through the year'}
-        description='Average cumulative commits per team by week of term (week 0 = first week of September, or of May for summer sessions; summer is dashed). Click a cohort to bring it forward.'
-        series={trendSeries(s)}
-        currentWeek={current ? currentWeek(current) : undefined}
-      />
-
-      <Grid className='lg:grid-cols-5'>
-        <MetricBarChart
-          title='Cohorts side by side'
-          description={
-            current
-              ? `Average per team; header shows all-time totals. ${current.label} is still in progress.`
-              : 'Average per team; header shows all-time totals.'
-          }
-          {...cohortBars(s)}
-          height='h-72'
-          className='lg:col-span-3'
-        />
-        <div className='lg:col-span-2'>
-          <LanguageDonut
-            languages={[...languages]
-              .map(([name, bytes]) => ({ name, bytes }))
-              .sort((a, b) => b.bytes - a.bytes)}
-            description='Share of code across every team repository'
-          />
-        </div>
-      </Grid>
-
       <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
         {[...s.cohorts]
           .sort(byTermStart)
@@ -258,6 +229,35 @@ export default function Overview() {
             </Link>
           ))}
       </div>
+
+      <CohortTrendChart
+        title={current ? `How ${current.label} is tracking` : 'Cohorts through the year'}
+        description='Average cumulative commits per team by week of term (week 0 = first week of September, or of May for summer sessions; summer is dashed). Click a cohort to bring it forward.'
+        series={trendSeries(s)}
+        currentWeek={current ? currentWeek(current) : undefined}
+      />
+
+      <Grid className='lg:grid-cols-5'>
+        <MetricBarChart
+          title='Cohorts side by side'
+          description={
+            current
+              ? `Average per team; header shows all-time totals. ${current.label} is still in progress.`
+              : 'Average per team; header shows all-time totals.'
+          }
+          {...cohortBars(s)}
+          height='h-72'
+          className='lg:col-span-3'
+        />
+        <div className='lg:col-span-2'>
+          <LanguageDonut
+            languages={[...languages]
+              .map(([name, bytes]) => ({ name, bytes }))
+              .sort((a, b) => b.bytes - a.bytes)}
+            description='Share of code across every team repository'
+          />
+        </div>
+      </Grid>
 
       <div className='space-y-3'>
         <div>
