@@ -151,8 +151,12 @@ export default function Overview() {
     },
   ];
 
-  // Newest first. Only the first row shows up front; the rest sit behind "Show more".
-  const byNewest = [...s.cohorts].sort(byTermStart).reverse();
+  // Cohort cards: same 5-year window as the totals (older years live in the navbar).
+  // Newest first; only the first row shows up front, the rest sit behind "Show more".
+  const byNewest = [...s.cohorts]
+    .filter((c) => c.year >= totalsFrom)
+    .sort(byTermStart)
+    .reverse();
   const recentCohorts = byNewest.slice(0, RECENT_COHORT_CARDS);
   const olderCohorts = byNewest.slice(RECENT_COHORT_CARDS);
   const cohortGrid = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-4';
