@@ -64,14 +64,27 @@ export function CohortTrendChart({
     return pts.at(-1)?.value ?? 0;
   };
 
+  // Context line for the current cohort: where it stands and the latest past cohort at the same week.
+  const nowHint = (s: TrendSeries) => {
+    const prev = series.filter((x) => !x.isCurrent).at(-1);
+    const base = `avg commits per team by week ${currentWeek ?? '—'}`;
+    if (!prev) return base;
+    const diff = Math.round(valueAt(s) - valueAt(prev));
+    return diff > 0
+      ? `${base} · ${diff.toLocaleString()} ahead of ${prev.label} at this point`
+      : `${base} · ${prev.label} was at ${Math.round(valueAt(prev)).toLocaleString()} at this point`;
+  };
+
   return (
     <ChartCard
       title={title}
       description={description}
       metrics={[...series].reverse().map((s) => ({
         key: String(s.year),
-        label: s.isCurrent ? `${s.label} (now)` : s.label,
+        label: s.isCurrent ? `${s.label} · now` : s.label,
         value: Math.round(valueAt(s)).toLocaleString(),
+        emphasis: s.isCurrent,
+        hint: s.isCurrent ? nowHint(s) : undefined,
       }))}
       active={focus}
       onActive={setFocus}

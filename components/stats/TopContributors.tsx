@@ -5,7 +5,9 @@ import Link from 'next/link';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { cn } from '@/lib/utils';
 import type { MetricKey } from '@/lib/types/stats';
 
 export interface TopEntryView {
@@ -14,6 +16,8 @@ export interface TopEntryView {
   login: string | null;
   avatarUrl: string | null;
   value: number;
+  /** Set in the cohort-wide list so each person shows their team */
+  team?: { name: string; href: string };
 }
 
 export interface TeamTopView {
@@ -40,33 +44,46 @@ export function MetricToggle({
   onChange: (m: MetricKey) => void;
 }) {
   return (
-    <ToggleGroup
-      variant='outline'
-      size='sm'
-      spacing={0}
-      value={[value]}
-      onValueChange={(v) => v[0] && onChange(v[0] as MetricKey)}
-      className='flex-wrap'
-    >
-      {METRIC_OPTIONS.map((m) => (
-        <ToggleGroupItem key={m.key} value={m.key}>
-          {m.label}
-        </ToggleGroupItem>
-      ))}
-    </ToggleGroup>
+    // One row; scrolls sideways on narrow phones instead of wrapping.
+    <div className='-mx-1 max-w-full overflow-x-auto px-1 pb-1'>
+      <ToggleGroup
+        variant='outline'
+        size='sm'
+        spacing={0}
+        value={[value]}
+        onValueChange={(v) => v[0] && onChange(v[0] as MetricKey)}
+      >
+        {METRIC_OPTIONS.map((m) => (
+          <ToggleGroupItem key={m.key} value={m.key}>
+            {m.label}
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+    </div>
   );
 }
 
-export function TopList({ entries, unit }: { entries: TopEntryView[]; unit: string }) {
+export function TopList({
+  entries,
+  unit,
+  className,
+}: {
+  entries: TopEntryView[];
+  unit: string;
+  className?: string;
+}) {
   const best = entries[0]?.value || 1;
   if (!entries.length)
     return (
       <p className='py-6 text-center text-sm text-muted-foreground'>No activity yet</p>
     );
   return (
-    <ol className='space-y-2.5'>
+    <ol className={cn('space-y-2.5', className)}>
       {entries.map((e, i) => (
-        <li key={e.id} className='flex items-center gap-3'>
+        <li
+          key={`${e.id}-${e.team?.name ?? ''}`}
+          className='flex break-inside-avoid items-center gap-3'
+        >
           <span className='w-4 text-right font-mono text-xs text-muted-foreground'>
             {i + 1}
           </span>
@@ -91,8 +108,18 @@ export function TopList({ entries, unit }: { entries: TopEntryView[]; unit: stri
               ) : (
                 <span className='truncate text-sm font-medium'>{e.name}</span>
               )}
+              {e.team && (
+                <Link
+                  href={e.team.href}
+                  className='shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px]
+                    text-muted-foreground hover:text-foreground'
+                >
+                  {e.team.name}
+                </Link>
+              )}
               <span
-                className='shrink-0 font-mono text-xs tabular-nums text-muted-foreground'
+                className='ml-auto shrink-0 font-mono text-xs tabular-nums
+                  text-muted-foreground'
               >
                 {e.value.toLocaleString()} {unit}
               </span>
@@ -113,9 +140,12 @@ export function TopList({ entries, unit }: { entries: TopEntryView[]; unit: stri
 /** Grid of team cards, each listing that team's top contributors for the chosen metric. */
 export function TopContributors({
   teams,
+  cohort,
   single = false,
 }: {
   teams: TeamTopView[];
+  /** Top contributors across the whole cohort, per metric (enables the tabs) */
+  cohort?: Record<MetricKey, TopEntryView[]>;
   single?: boolean;
 }) {
   const [metric, setMetric] = useState<MetricKey>('score');
@@ -129,25 +159,46 @@ export function TopContributors({
       </div>
     );
 
-  return (
-    <div className='space-y-4'>
-      <MetricToggle value={metric} onChange={setMetric} />
-      <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-3'>
-        {teams.map((t) => (
-          <Card key={t.key} size='sm'>
-            <CardHeader>
-              <CardTitle>
-                <Link href={t.href} className='hover:underline'>
-                  {t.name}
-                </Link>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TopList entries={t.top[metric]} unit={unit} />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+  const byTeam = (
+    <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-3'>
+      {teams.map((t) => (
+        <Card key={t.key} size='sm'>
+          <CardHeader>
+            <CardTitle>
+              <Link href={t.href} className='hover:underline'>
+                {t.name}
+              </Link>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TopList entries={t.top[metric]} unit={unit} />
+          </CardContent>
+        </Card>
+      ))}
     </div>
+  );
+
+  if (!cohort)
+    return (
+      <div className='space-y-4'>
+        <MetricToggle value={metric} onChange={setMetric} />
+        {byTeam}
+      </div>
+    );
+
+  return (
+    <Tabs defaultValue='cohort' className='gap-4'>
+      <div className='flex flex-wrap items-center justify-between gap-3'>
+        <TabsList>
+          <TabsTrigger value='cohort'>This cohort</TabsTrigger>
+          <TabsTrigger value='team'>By team</TabsTrigger>
+        </TabsList>
+        <MetricToggle value={metric} onChange={setMetric} />
+      </div>
+      <TabsContent value='cohort'>
+        <TopList entries={cohort[metric]} unit={unit} className='gap-x-10 lg:columns-2' />
+      </TabsContent>
+      <TabsContent value='team'>{byTeam}</TabsContent>
+    </Tabs>
   );
 }

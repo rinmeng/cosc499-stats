@@ -13,11 +13,19 @@ export interface HeaderMetric<K extends string = string> {
   key: K;
   label: string;
   value: string;
+  /** Small line under the value (only shown on emphasized metrics) */
+  hint?: string;
+  /** Give this metric more room: full row on mobile, double width on desktop */
+  emphasis?: boolean;
 }
 
 /**
  * The shadcn "interactive chart" card: title on the left, clickable metric
  * totals on the right (one is active), optional extra control (e.g. a Select).
+ *
+ * Metrics sit in a grid with hairline dividers: on phones and tablets they form
+ * a full-width row under the title (an emphasized metric takes its own row);
+ * from `lg` up they sit to the right of the title.
  */
 export function ChartCard<K extends string>({
   title,
@@ -38,39 +46,62 @@ export function ChartCard<K extends string>({
   className?: string;
   children: React.ReactNode;
 }) {
+  const plain = metrics?.filter((m) => !m.emphasis).length ?? 0;
+  // Keep plain metrics on one row on phones; 4 across still fits a 360px screen.
+  const cols = Math.min(Math.max(plain, 1), 4);
+
   return (
     <Card className={cn('gap-0 py-0', className)}>
-      <CardHeader className='flex flex-col items-stretch border-b p-0! sm:flex-row'>
-        <div className='flex flex-1 flex-col justify-center gap-1 px-6 pt-5 pb-4 sm:py-5'>
+      <CardHeader className='flex flex-col items-stretch border-b p-0! lg:flex-row'>
+        <div
+          className='flex flex-1 flex-col justify-center gap-1 px-4 pt-5 pb-4 sm:px-6
+            lg:py-5'
+        >
           <CardTitle>{title}</CardTitle>
           {description && <CardDescription>{description}</CardDescription>}
         </div>
         {action && (
-          <div className='flex items-center px-6 pb-4 sm:py-5 sm:pl-0'>{action}</div>
+          <div className='flex items-center px-4 pb-4 sm:px-6 lg:py-5 lg:pl-0'>
+            {action}
+          </div>
         )}
         {metrics && metrics.length > 0 && (
-          <div className='flex overflow-x-auto'>
+          <div
+            className='grid gap-px border-t bg-border lg:flex lg:border-t-0 lg:border-l'
+            style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+          >
             {metrics.map((m) => (
               <button
                 key={m.key}
                 type='button'
                 data-active={active === m.key}
+                data-emphasis={m.emphasis || undefined}
                 aria-pressed={active === m.key}
                 onClick={() => onActive?.(m.key)}
-                className='flex min-w-24 flex-1 flex-col justify-center gap-1 border-t
-                  px-5 py-4 text-left transition-colors even:border-l hover:bg-muted/30
-                  data-[active=true]:bg-muted/50 sm:border-t-0 sm:border-l sm:px-6
-                  sm:py-5'
+                style={m.emphasis ? { gridColumn: '1 / -1' } : undefined}
+                className='group/metric flex min-w-0 flex-col justify-center gap-1 bg-card
+                  px-3 py-3 text-left transition-colors hover:bg-muted/40
+                  data-[active=true]:bg-muted sm:px-5 sm:py-4 lg:min-w-28 lg:flex-1
+                  lg:px-6 lg:py-5 sm:data-emphasis:py-5 lg:data-emphasis:min-w-56
+                  lg:data-emphasis:flex-[2]'
               >
-                <span className='text-xs whitespace-nowrap text-muted-foreground'>
+                <span
+                  className='truncate text-[11px] text-muted-foreground sm:text-xs
+                    group-data-emphasis/metric:font-medium
+                    group-data-emphasis/metric:text-foreground'
+                >
                   {m.label}
                 </span>
                 <span
                   className='font-heading text-lg leading-none font-bold tabular-nums
-                    sm:text-2xl'
+                    sm:text-2xl group-data-emphasis/metric:text-4xl
+                    sm:group-data-emphasis/metric:text-5xl'
                 >
                   {m.value}
                 </span>
+                {m.emphasis && m.hint && (
+                  <span className='text-xs text-muted-foreground'>{m.hint}</span>
+                )}
               </button>
             ))}
           </div>

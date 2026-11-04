@@ -4,7 +4,7 @@ import type { TrendSeries } from '@/components/charts/CohortTrendChart';
 import type { BarMetric, BarRow } from '@/components/charts/MetricBarChart';
 import type { RadialItem } from '@/components/charts/TeamRadial';
 import type { TeamRow } from '@/components/stats/TeamTable';
-import type { TeamTopView } from '@/components/stats/TopContributors';
+import type { TeamTopView, TopEntryView } from '@/components/stats/TopContributors';
 import { topByMetric } from '@/lib/data';
 import { cohortColor, displayName, fmt, fmtCompact } from '@/lib/format';
 import type { CohortStats, MetricKey, Summary, TeamStats } from '@/lib/types/stats';
@@ -28,6 +28,41 @@ export function teamTopViews(c: CohortStats, n: number): TeamTopView[] {
         ) as TeamTopView['top'],
       };
     });
+}
+
+/** Top contributors across the whole cohort, per metric, each tagged with their team. */
+export function cohortTopView(
+  c: CohortStats,
+  n: number
+): Record<MetricKey, TopEntryView[]> {
+  const people = c.teams.flatMap((t) =>
+    t.members.map((m) => ({ m, team: { name: t.name, href: teamHref(c.year, t) } }))
+  );
+  const keys: MetricKey[] = [
+    'score',
+    'commits',
+    'prsMerged',
+    'reviews',
+    'issues',
+    'lines',
+  ];
+  return Object.fromEntries(
+    keys.map((k) => [
+      k,
+      people
+        .filter(({ m }) => m[k] > 0)
+        .sort((a, b) => b.m[k] - a.m[k])
+        .slice(0, n)
+        .map(({ m, team }) => ({
+          id: m.id,
+          login: m.login,
+          name: displayName(m),
+          avatarUrl: m.avatarUrl,
+          value: m[k],
+          team,
+        })),
+    ])
+  ) as Record<MetricKey, TopEntryView[]>;
 }
 
 export function teamRows(c: CohortStats): TeamRow[] {

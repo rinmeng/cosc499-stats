@@ -34,6 +34,7 @@ import { Badge } from '@/components/ui/badge';
 import { getCohort, getSummary } from '@/lib/data';
 import { fmt, fmtCompact, fmtDate, fmtHours, pct } from '@/lib/format';
 import {
+  cohortTopView,
   currentWeek,
   teamBars,
   trendSeries,
@@ -172,10 +173,13 @@ export default async function CohortPage({ params }: PageProps<'/[year]'>) {
       )}
 
       <Section
-        title={`Top ${summary.topN} contributors per team`}
-        description={`“Overall” weighs commits ×${summary.scoreWeights.commits}, merged PRs ×${summary.scoreWeights.prsMerged}, reviews ×${summary.scoreWeights.reviews} and issues ×${summary.scoreWeights.issuesOpened}. Switch to rank by a single measure.`}
+        title='Top contributors'
+        description={`“Overall” weighs commits ×${summary.scoreWeights.commits}, merged PRs ×${summary.scoreWeights.prsMerged}, reviews ×${summary.scoreWeights.reviews} and issues ×${summary.scoreWeights.issuesOpened}. Top 10 across the cohort, or the top ${summary.topN} on each team. Switch the measure to rank by just one thing.`}
       >
-        <TopContributors teams={teamTopViews(c, summary.topN)} />
+        <TopContributors
+          teams={teamTopViews(c, summary.topN)}
+          cohort={cohortTopView(c, 10)}
+        />
       </Section>
 
       <Grid className='lg:grid-cols-3'>
