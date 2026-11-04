@@ -17,6 +17,8 @@ export interface HeaderMetric<K extends string = string> {
   hint?: string;
   /** Give this metric more room: full row on mobile, double width on desktop */
   emphasis?: boolean;
+  /** Small marker shown before the label (e.g. the series' shape) */
+  icon?: React.ReactNode;
 }
 
 /**
@@ -110,11 +112,13 @@ export function ChartCard<K extends string>({
                   lg:data-stacked:data-emphasis:col-span-2'
               >
                 <span
-                  className='truncate text-[11px] text-muted-foreground sm:text-xs
+                  className='flex min-w-0 items-center gap-1.5 text-[11px]
+                    text-muted-foreground sm:text-xs
                     group-data-emphasis/metric:font-medium
                     group-data-emphasis/metric:text-foreground'
                 >
-                  {m.label}
+                  {m.icon}
+                  <span className='truncate'>{m.label}</span>
                 </span>
                 <span
                   className='font-heading text-lg leading-none font-bold tabular-nums
