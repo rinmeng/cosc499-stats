@@ -32,6 +32,7 @@ import { TeamTable } from '@/components/stats/TeamTable';
 import { TopContributors } from '@/components/stats/TopContributors';
 import { Badge } from '@/components/ui/badge';
 import { getCohort, getSummary } from '@/lib/data';
+import { cohortSeo, pageMetadata } from '@/lib/seo';
 import { fmt, fmtCompact, fmtDate, fmtHours, pct } from '@/lib/format';
 import {
   cohortTopView,
@@ -51,7 +52,8 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<'/[cohort]'>) {
   const { cohort } = await params;
   const c = getCohort(cohort);
-  return { title: c ? `${c.label} cohort · COSC 499 Stats` : 'COSC 499 Stats' };
+  if (!c) return { title: 'Cohort not found' };
+  return pageMetadata(cohortSeo(c));
 }
 
 export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {

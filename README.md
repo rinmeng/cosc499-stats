@@ -1,4 +1,4 @@
-# COSC 499 Capstone Stats
+# UBCO COSC 499 Capstone Stats
 
 **Live site: [cosc499.rinm.dev](https://cosc499.rinm.dev)**
 
@@ -107,3 +107,11 @@ achievements. It never lists the people or teams that contributed least, and it 
   `pnpm sync:current` first, which needs a `GITHUB_TOKEN` environment variable from an
   account in that org.
 - `data/summary.json` is always regenerated, by `pnpm build` locally or by the sync.
+
+## SEO
+
+Metadata, Open Graph and Twitter tags, `sitemap.xml`, `robots.txt` and JSON-LD are generated
+from the synced data. Every page also gets its own social preview image (page title plus
+description). Page titles and descriptions live in `lib/seo.ts`; site-wide values (name, URL,
+keywords) in `lib/site.ts`. The canonical URL defaults to `https://cosc499.rinm.dev`; set
+`NEXT_PUBLIC_SITE_URL` to override it (e.g. for a preview deploy).

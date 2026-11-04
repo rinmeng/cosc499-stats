@@ -23,6 +23,7 @@ import { isSmallCohort } from '@/components/stats/HelpComplete';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getSummary } from '@/lib/data';
+import { overviewSeo, pageMetadata } from '@/lib/seo';
 import { cohortColor, fmt, fmtDate, fmtCompact, fmtHours, pct } from '@/lib/format';
 import type { TeamStats } from '@/lib/types/stats';
 import {
@@ -32,6 +33,12 @@ import {
   currentWeek,
   trendSeries,
 } from '@/lib/views';
+
+export const metadata = {
+  ...pageMetadata(overviewSeo()),
+  // keep the site-wide default title on the home page
+  title: { absolute: 'UBCO COSC 499 Capstone Stats · UBC Okanagan' },
+};
 
 export default function Overview() {
   const s = getSummary();

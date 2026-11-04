@@ -44,7 +44,9 @@ function Brand({ onClick }: { onClick?: () => void }) {
   return (
     <Link href='/' onClick={onClick} className='flex items-center gap-2 font-semibold'>
       <BarChart3 className='size-5 text-chart-1' />
-      <span>COSC 499 Capstone Stats</span>
+      <span>
+        UBCO COSC 499 <span className='hidden sm:inline'>Capstone Stats</span>
+      </span>
     </Link>
   );
 }

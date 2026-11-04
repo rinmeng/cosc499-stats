@@ -26,6 +26,7 @@ import {
 } from '@/components/stats/Blocks';
 import { TopContributors } from '@/components/stats/TopContributors';
 import { getCohort, getSummary, getTeam } from '@/lib/data';
+import { pageMetadata, teamSeo } from '@/lib/seo';
 import { displayName, fmt, fmtDate, fmtHours, pct } from '@/lib/format';
 import type { PersonStats } from '@/lib/types/stats';
 import { teamHabits, teamTopViews } from '@/lib/views';
@@ -41,11 +42,9 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<'/[cohort]/[team]'>) {
   const { cohort, team } = await params;
   const c = getCohort(cohort);
-  return {
-    title: c
-      ? `${c.teams.find((t) => t.team === Number(team))?.name ?? `Team ${team}`} · ${c.label} · COSC 499 Stats`
-      : 'COSC 499 Stats',
-  };
+  const t = c?.teams.find((x) => x.team === Number(team));
+  if (!c || !t) return { title: 'Team not found' };
+  return pageMetadata(teamSeo(c, t));
 }
 
 const AXES: { key: keyof PersonStats; label: string }[] = [
