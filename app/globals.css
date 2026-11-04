@@ -6,11 +6,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Count-ups: on a first visit, hide server-rendered final values until hydrated. */
-html[data-countup] [data-countup-value]:not([data-ready]) {
-  visibility: hidden;
-}
-
 @layer components {
   .nb-padding {
     @apply py-24;
