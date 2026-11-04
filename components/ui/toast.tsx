@@ -44,7 +44,7 @@ function Toast({ className, ...props }: ToastPrimitive.Root.Props) {
       data-slot='toast'
       className={cn(
         `group/toast pointer-events-auto absolute right-0 bottom-0
-        z-[calc(1000-var(--toast-index))] w-full origin-bottom rounded-none border
+        z-[calc(1000-var(--toast-index))] w-full origin-bottom rounded-2xl! border
         bg-popover text-popover-foreground shadow-lg will-change-transform outline-none
         select-none focus-visible:border-ring focus-visible:ring-[3px]
         focus-visible:ring-ring/50`,

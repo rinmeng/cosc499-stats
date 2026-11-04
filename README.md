@@ -1,85 +1,120 @@
-# next-shadcn-supabase-starter
+# COSC 499 Capstone Stats
 
-A Next.js starter with shadcn/ui, Supabase auth wiring, and Tailwind CSS v4. Clone it, add your env vars, and start building.
+**Live site: [cosc499.rinm.dev](https://cosc499.rinm.dev)**
 
-**Stack:** Next.js 16 · React 19 · TypeScript 7 · shadcn/ui (radix-vega) · Supabase · pnpm
+A dashboard of GitHub contribution highlights for every UBC Okanagan COSC 499 capstone
+cohort (`COSC-499-W2023` and later): the top contributors on each team, cohort-wide trends,
+and how the current cohort is tracking against past years.
 
-## Quick start
+Built with Next.js, shadcn/ui and shadcn charts (Recharts). Data comes from the GitHub API
+through a sync script and lives in JSON files, with no database.
+
+## Help fill in your cohort 🙌
+
+Some cohorts are incomplete. For example, only two team repositories from **2024–25**
+(`COSC-499-W2024`) are still visible on GitHub, and teams whose repos are private or
+moved elsewhere don't show up at all. If you were in one of those cohorts, you can help:
+
+- **You can still see your cohort's repos** (you're still in the org, or a teammate kept
+  a copy): sync just your year and open a pull request with the result.
+
+  ```bash
+  pnpm install
+  gh auth login            # your GitHub account, the one with access
+  pnpm sync:year 2024      # only fetches the 2024–25 cohort
+  git add data/raw/COSC-499-W2024
+  ```
+
+  Only aggregated activity (logins, commit/PR/review/issue counts and dates) ends up in
+  `data/raw`. No source code is downloaded.
+
+- **Your team's repo lives somewhere else** (e.g. moved to a personal account): add it to
+  that cohort's `extraRepos` in `sync.config.ts`, then run `pnpm sync:year <year>`.
+
+  ```ts
+  {
+    org: 'COSC-499-W2024',
+    year: 2024,
+    label: '2024–25',
+    extraRepos: [{ repo: 'your-username/capstone-project-team-3', team: 3 }],
+  },
+  ```
+
+- **You have other info** (what a team built, a missing cohort, wrong team numbers, an
+  account that should be excluded): [open an issue](https://github.com/rinmeng/cosc499-stats/issues)
+  or a pull request.
+
+## Setup
 
 ```bash
-git clone https://github.com/rinmeng/next-shadcn-supabase-starter.git
-cd next-shadcn-supabase-starter
 pnpm install
-cp .env.example .env.local
-pnpm dev
+gh auth login          # or put GITHUB_TOKEN=... in .env.local
+pnpm sync              # pull data from GitHub
+pnpm dev               # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+The token needs read access to the cohort orgs. Private repos (e.g. the current cohort's
+team repos) only show up if your account is a member of the org. If `GITHUB_TOKEN` is
+unset, the sync falls back to `gh auth token`.
 
-### Supabase env vars
+## Syncing data
 
-Add these to `.env.local` (from [Project Settings → API](https://supabase.com/dashboard/project/_/settings/api)):
+| Command                 | What it does                                                          |
+| ----------------------- | --------------------------------------------------------------------- |
+| `pnpm sync`             | Refresh the current cohort; past cohorts come from cache when present |
+| `pnpm sync:year <YYYY>` | Re-fetch only one cohort, e.g. `pnpm sync:year 2024`                  |
+| `pnpm sync:current`     | Re-fetch only the current cohort (run this for regular updates)       |
+| `pnpm sync:all`         | Re-fetch every cohort from scratch (slow)                             |
+| `pnpm aggregate`        | Rebuild `data/summary.json` from the raw files (no network)           |
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=your-project-url
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your-anon-key
+`scripts/sync.ts` writes one file per repo to `data/raw/<org>/<repo>.json`: commits on the
+default branch, pull requests with reviews, issues, and languages. It then runs
+`scripts/aggregate.ts`, which turns those into `data/summary.json`, the only file the site
+reads. The year is the cohort's start year: `2024` is the 2024–25 session
+(`COSC-499-W2024`).
+
+### Adding next year's cohort
+
+Edit `sync.config.ts`:
+
+```ts
+export const cohorts = [
+  // ...
+  { org: 'COSC-499-W2027', year: 2027, label: '2027–28' },
+];
+export const currentYear = 2027;
 ```
 
-The app expects the publishable key name above — not `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Without valid credentials, auth-related code won't connect.
+Then update the current-cohort line in `.gitignore` (see Privacy). You can also adjust the
+repo exclude list, the bot/staff accounts to skip, and the composite score weights in
+`sync.config.ts`.
 
-## Scripts
+## How things are counted
 
-| Command             | What it does                      |
-| ------------------- | --------------------------------- |
-| `pnpm dev`          | Start the dev server              |
-| `pnpm build`        | Production build                  |
-| `pnpm start`        | Run the production server         |
-| `pnpm lint`         | ESLint                            |
-| `pnpm format`       | Prettier (write)                  |
-| `pnpm format:check` | Prettier (check only, used in CI) |
-| `pnpm typecheck`    | `tsc --noEmit` (TypeScript 7)     |
+- **Commits**: non-merge commits on the default branch, credited to the linked GitHub
+  account (or the commit name/email when not linked).
+- **Merged PRs / reviews**: a review counts once per PR per reviewer, and reviews on your
+  own PR don't count.
+- **Issues**: issues opened, plus closed issues you were assigned to.
+- **Overall score** = commits ×1 + merged PRs ×3 + reviews ×2 + issues ×1. Lines of code
+  are shown but left out of the score, since lockfiles and vendored code distort them.
+- **Window**: three weeks before the first Monday of September through May 31. This also
+  drops upstream history in repos forked from older projects.
+- **Excluded**: bots, plus "staff" accounts that commit to many teams in the same cohort
+  (instructors and TAs seeding starter code).
 
-CI runs format check + lint on push/PR via `.github/workflows/format-lint.yml`.
+## Tone
 
-## shadcn/ui
+This dashboard celebrates contributions. It only highlights top contributors and team
+achievements. It never lists the people or teams that contributed least, and it has no
+"inactive" flags or ascending rankings. Please keep it that way when contributing.
 
-Components live in `components/ui/`. Most of the usual set is already installed.
+## Privacy & deployment
 
-Add more:
-
-```bash
-pnpm dlx shadcn@latest add [component]
-```
-
-This project uses the **radix-vega** style. Newer components (questionnaire, bubble, message, etc.) import `cn` from the [`cn`](https://github.com/shadcn-ui/cn) package. App code can use `@/lib/utils`, which re-exports the same thing.
-
-If you're upgrading an older shadcn project, use the CLI migrations instead of hand-editing imports:
-
-```bash
-pnpm dlx shadcn@latest migrate cn      # clsx + tailwind-merge → cn
-pnpm dlx shadcn@latest migrate radix   # @radix-ui/react-* → radix-ui
-```
-
-## Project layout
-
-```text
-app/              Pages and layouts (App Router)
-components/       App components + components/ui/ (shadcn)
-contexts/         AuthProvider, ToastProvider
-hooks/            use-auth, use-toast, use-mobile
-lib/              Supabase client, types, utils
-utils/supabase/   Browser + middleware Supabase clients
-proxy.ts          Session refresh middleware
-```
-
-Auth follows a simple pattern: context in `contexts/`, hook in `hooks/`, types in `lib/types/`. Providers are wired up in `app/layout.tsx`.
-
-## Deploy
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/rinmeng/next-shadcn-supabase-starter)
-
-Set the same Supabase env vars in your host's dashboard.
-
-## License
-
-MIT — see [LICENSE](LICENSE).
+- Past cohorts' raw data (`data/raw/COSC-499-W2023` etc.) is committed so contributions
+  can be merged.
+- The current cohort's repos are private, so `data/raw/COSC-499-W2026/` is gitignored and
+  synced fresh on each deploy. The Vercel build (`vercel-build`) runs
+  `pnpm sync:current` first, which needs a `GITHUB_TOKEN` environment variable from an
+  account in that org.
+- `data/summary.json` is always regenerated, by `pnpm build` locally or by the sync.

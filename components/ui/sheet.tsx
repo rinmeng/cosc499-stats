@@ -28,9 +28,9 @@ function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
     <SheetPrimitive.Backdrop
       data-slot='sheet-overlay'
       className={cn(
-        `fixed inset-0 z-50 bg-black/10 text-xs/relaxed transition-opacity duration-150
+        `fixed inset-0 z-50 bg-black/30 transition-opacity duration-150
         data-ending-style:opacity-0 data-starting-style:opacity-0
-        supports-backdrop-filter:backdrop-blur-xs`,
+        supports-backdrop-filter:backdrop-blur-sm`,
         className
       )}
       {...props}
@@ -55,8 +55,8 @@ function SheetContent({
         data-slot='sheet-content'
         data-side={side}
         className={cn(
-          `fixed z-50 flex flex-col bg-popover bg-clip-padding text-xs/relaxed
-          text-popover-foreground shadow-lg transition duration-200 ease-in-out
+          `fixed z-50 flex flex-col bg-popover bg-clip-padding text-sm
+          text-popover-foreground shadow-xl transition duration-200 ease-in-out
           data-ending-style:opacity-0 data-starting-style:opacity-0
           data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0
           data-[side=bottom]:h-auto data-[side=bottom]:border-t
@@ -83,7 +83,11 @@ function SheetContent({
           <SheetPrimitive.Close
             data-slot='sheet-close'
             render={
-              <Button variant='ghost' className='absolute top-3 right-3' size='icon-sm' />
+              <Button
+                variant='ghost'
+                className='absolute top-4 right-4 bg-secondary'
+                size='icon-sm'
+              />
             }
           >
             <XIcon />
@@ -99,7 +103,7 @@ function SheetHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot='sheet-header'
-      className={cn('flex flex-col gap-0.5 p-4', className)}
+      className={cn('flex flex-col gap-1.5 p-6', className)}
       {...props}
     />
   );
@@ -109,7 +113,7 @@ function SheetFooter({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot='sheet-footer'
-      className={cn('mt-auto flex flex-col gap-2 p-4', className)}
+      className={cn('mt-auto flex flex-col gap-2 p-6', className)}
       {...props}
     />
   );
@@ -119,7 +123,7 @@ function SheetTitle({ className, ...props }: SheetPrimitive.Title.Props) {
   return (
     <SheetPrimitive.Title
       data-slot='sheet-title'
-      className={cn('font-heading text-sm font-medium text-foreground', className)}
+      className={cn('font-heading text-base font-medium text-foreground', className)}
       {...props}
     />
   );
@@ -129,7 +133,7 @@ function SheetDescription({ className, ...props }: SheetPrimitive.Description.Pr
   return (
     <SheetPrimitive.Description
       data-slot='sheet-description'
-      className={cn('text-xs/relaxed text-muted-foreground', className)}
+      className={cn('text-sm text-muted-foreground', className)}
       {...props}
     />
   );

@@ -20,7 +20,7 @@ function Tabs({
 }
 
 const tabsListVariants = cva(
-  'group/tabs-list inline-flex w-fit items-center justify-center rounded-none p-[3px] text-muted-foreground group-data-horizontal/tabs:h-8 group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col data-[variant=line]:rounded-none',
+  'group/tabs-list inline-flex w-fit items-center justify-center rounded-2xl p-[3px] text-muted-foreground group-data-horizontal/tabs:h-8 group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col group-data-vertical/tabs:p-1 data-[variant=line]:rounded-none',
   {
     variants: {
       variant: {
@@ -55,14 +55,13 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
       data-slot='tabs-trigger'
       className={cn(
         `relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center
-        gap-1.5 rounded-none border border-transparent px-1.5 py-0.5 text-xs font-medium
+        gap-1.5 rounded-2xl border border-transparent! px-1.5 py-0.5 text-sm font-medium
         whitespace-nowrap text-foreground/60 transition-all
         group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start
-        group-data-vertical/tabs:py-[calc(--spacing(1.25))] hover:text-foreground
-        focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50
-        focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none
-        disabled:opacity-50 has-data-[icon=inline-end]:pr-1
-        has-data-[icon=inline-start]:pl-1 aria-disabled:pointer-events-none
+        group-data-vertical/tabs:px-3 group-data-vertical/tabs:py-0.5
+        hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px]
+        focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring
+        disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none
         aria-disabled:opacity-50 dark:text-muted-foreground dark:hover:text-foreground
         [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
         `group-data-[variant=line]/tabs-list:bg-transparent
@@ -89,7 +88,7 @@ function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
   return (
     <TabsPrimitive.Panel
       data-slot='tabs-content'
-      className={cn('flex-1 text-xs/relaxed outline-none', className)}
+      className={cn('flex-1 text-sm outline-none', className)}
       {...props}
     />
   );

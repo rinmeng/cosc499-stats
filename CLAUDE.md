@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Package Manager
 
-Always use **pnpm**. Never use `npm` or `yarn`. Two lockfiles exist (`pnpm-lock.yaml` and `package-lock.json`) — pnpm-lock.yaml is authoritative.
+Always use **pnpm**. Never use `npm` or `yarn`.
 
 ## Commands
 
@@ -13,6 +13,9 @@ pnpm dev       # development server
 pnpm build     # production build
 pnpm lint      # ESLint (eslint-config-next/core-web-vitals + typescript)
 pnpm format    # Prettier — formats all files
+pnpm sync            # fetch GitHub data → data/raw, then aggregate → data/summary.json
+pnpm sync:year 2024  # re-fetch one cohort only
+pnpm aggregate       # rebuild data/summary.json from raw files only
 ```
 
 ## Code Style
@@ -38,20 +41,29 @@ There is no `tailwind.config.js`. Tailwind v4 is configured entirely via PostCSS
 
 ## Environment Setup
 
-Copy `.env.example` to `.env.local` and fill in:
+`pnpm sync` needs a GitHub token: `GITHUB_TOKEN` in `.env.local`, or falls back to `gh auth token`. No other env vars.
 
-```
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=
-```
+## Data Flow
 
-Both must be set or the Supabase client will log warnings and auth will fail.
+- `sync.config.ts`: cohorts (orgs), repo filters, excluded logins, score weights.
+- `scripts/sync.ts`: GitHub GraphQL → `data/raw/<org>/<repo>.json` (types: `RawRepo` in `lib/types/stats.ts`).
+- `scripts/aggregate.ts`: raw → `data/summary.json` (`Summary` type). Pure, no network.
+- `lib/data.ts` (server-only) reads the summary; `lib/views.ts` shapes it into client props.
+- Pages: `/` overview, `/[year]` cohort, `/[year]/[team]` team detail.
+- Past cohorts' `data/raw/<org>/` is committed (contributions welcome); the current cohort's folder, `data/summary.json` and logs are gitignored. Update the current-cohort line in `.gitignore` each year.
+- Repos outside a cohort org go in that cohort's `extraRepos` (sync.config.ts).
+
+## Tone Rule (important)
+
+Never add a "who contributed the least" view: no bottom-N lists, ascending sorts, inactivity flags, or "worst" records. Rank only the top N (default 5); frame team metrics as achievements.
+
+## Charts
+
+Use shadcn `ChartContainer` + Recharts. Colors come from `--chart-1..8` (validated categorical palette) and `--seq-0..6` (sequential, for heatmaps) in `app/globals.css`. A cohort keeps the same color everywhere (`cohortColor` in `lib/format.ts`).
 
 ## Architecture Patterns
 
-**Context + Hooks**: Contexts in `contexts/` define providers; custom hooks in `hooks/` consume them. Components call `useAuth()`, `useToast()` — never import contexts directly.
-
-**Types**: All TypeScript interfaces live in `lib/types/` (per-feature files). Import via the barrel: `import { AuthContextType } from '@/lib/types'`.
+**Types**: All TypeScript interfaces live in `lib/types/` (per-feature files). Import via the barrel: `import { Summary } from '@/lib/types'`.
 
 **Shadcn UI**: All 40+ components are pre-installed in `components/ui/`. Do not recreate them — import from there directly.
 

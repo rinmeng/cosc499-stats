@@ -5,21 +5,14 @@ import { Analytics } from '@vercel/analytics/next';
 import { Navbar } from '@/components/Navbar';
 
 import './globals.css';
+
 import { ThemeProvider } from '@/components/theme-provider';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { ToastProvider } from '@/contexts/ToastContext';
-import { Toaster } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
-const inter = Inter({
-  variable: '--font-sans',
-  subsets: ['latin'],
-});
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
-const merriweather = Merriweather({
-  variable: '--font-heading',
-  subsets: ['latin'],
-});
+const merriweather = Merriweather({ subsets: ['latin'], variable: '--font-heading' });
 
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
@@ -27,8 +20,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Next.js Starter - Shadcn + Supabase',
-  description: 'A modern Next.js boilerplate with Shadcn UI and Supabase',
+  title: 'COSC 499 Capstone Stats',
+  description:
+    'Contribution highlights and progress for every UBC Okanagan COSC 499 capstone cohort on GitHub.',
 };
 
 export default function RootLayout({
@@ -39,6 +33,7 @@ export default function RootLayout({
   return (
     <html
       lang='en'
+      suppressHydrationWarning
       className={cn(
         'font-sans',
         inter.variable,
@@ -47,16 +42,15 @@ export default function RootLayout({
       )}
     >
       <body className='antialiased'>
-        <AuthProvider>
-          <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
-            <ToastProvider>
-              <Navbar />
-              <main>{children}</main>
-              <Toaster />
-              <Analytics />
-            </ToastProvider>
-          </ThemeProvider>
-        </AuthProvider>
+        <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
+          <TooltipProvider>
+            <Navbar />
+            <main className='mx-auto max-w-7xl px-4 pt-24 pb-16 sm:px-6 lg:px-8'>
+              {children}
+            </main>
+            <Analytics />
+          </TooltipProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
