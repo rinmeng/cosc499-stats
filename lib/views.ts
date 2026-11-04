@@ -186,6 +186,15 @@ export function currentWeek(c: CohortStats, now = Date.now()) {
   return Math.floor((now - Date.parse(c.termStart)) / (7 * 86_400_000));
 }
 
+/** Every contributor across all cohorts, with where they were (for all-time records). */
+export function everyone(s: Summary) {
+  return s.cohorts.flatMap((c) =>
+    c.teams.flatMap((t) =>
+      t.members.map((m) => ({ m, name: displayName(m), team: t, cohort: c }))
+    )
+  );
+}
+
 /** Best contributor in a cohort by a metric (for record cards). */
 export function cohortBest(c: CohortStats, key: MetricKey) {
   let best: {

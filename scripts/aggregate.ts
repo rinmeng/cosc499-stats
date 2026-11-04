@@ -29,6 +29,11 @@ import {
   topN,
 } from '../sync.config';
 
+/** PRs touching more files than this are almost always vendored/generated code. */
+const MEGA_PR_CAP = 1000;
+/** Commits bigger than this (lines) are treated as vendored/generated for "biggest commit". */
+const BIGGEST_COMMIT_CAP = 20000;
+
 const DATA_DIR = path.join(process.cwd(), 'data');
 const RAW_DIR = path.join(DATA_DIR, 'raw');
 const DAY = 86_400_000;
@@ -83,6 +88,58 @@ function localSlot(iso: string): { dow: number; hour: number } {
   return { dow, hour };
 }
 
+const dateFmt = new Intl.DateTimeFormat('en-CA', {
+  timeZone: timezone,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+/** Local calendar date as YYYY-MM-DD in the configured timezone. */
+const localDate = (iso: string) => dateFmt.format(new Date(iso));
+
+const ymd = (d: Date) => d.toISOString().slice(0, 10);
+/** The nth weekday (0=Sun) of a month, UTC. n = -1 means the last one before `before`. */
+function nthWeekday(year: number, month: number, dow: number, n: number): Date {
+  const d = new Date(Date.UTC(year, month, 1));
+  while (d.getUTCDay() !== dow) d.setUTCDate(d.getUTCDate() + 1);
+  d.setUTCDate(d.getUTCDate() + 7 * (n - 1));
+  return d;
+}
+const range = (from: Date, days: number) =>
+  Array.from({ length: days }, (_, i) => ymd(new Date(from.getTime() + i * 86_400_000)));
+
+/**
+ * BC / UBCO holidays and breaks that fall inside a session, as local dates.
+ * Winter: Thanksgiving, Dec 24–26, Dec 31–Jan 1, Family Day reading week (Mon–Fri).
+ * Summer: Victoria Day, Canada Day, BC Day.
+ */
+function holidaysFor(year: number, summer: boolean): Set<string> {
+  if (summer) {
+    const victoria = new Date(Date.UTC(year, 4, 24));
+    while (victoria.getUTCDay() !== 1) victoria.setUTCDate(victoria.getUTCDate() - 1);
+    return new Set([ymd(victoria), `${year}-07-01`, ymd(nthWeekday(year, 7, 1, 1))]);
+  }
+  const y2 = year + 1;
+  return new Set([
+    ymd(nthWeekday(year, 9, 1, 2)), // Thanksgiving
+    `${year}-12-24`,
+    `${year}-12-25`,
+    `${year}-12-26`,
+    `${year}-12-31`,
+    `${y2}-01-01`,
+    ...range(nthWeekday(y2, 1, 1, 3), 5), // reading week (Family Day week)
+  ]);
+}
+
+/** Final exam periods (winter only): mid-December and mid-to-late April. */
+function examDaysFor(year: number, summer: boolean): Set<string> {
+  if (summer) return new Set();
+  return new Set([
+    ...range(new Date(Date.UTC(year, 11, 8)), 14),
+    ...range(new Date(Date.UTC(year + 1, 3, 11)), 17),
+  ]);
+}
+
 const emptyPunch = () => Array.from({ length: 7 }, () => Array(24).fill(0) as number[]);
 
 /** Key a commit author: login when linked, otherwise a normalized email/name. */
@@ -132,6 +189,8 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     ).toISOString()
   );
   const isCurrent = slug === currentCohort;
+  const holidays = holidaysFor(cfg.year, summer);
+  const examDays = examDaysFor(cfg.year, summer);
 
   /* Staff detection: logins committing to many different teams in one cohort. */
   const teamsByLogin = new Map<string, Set<number>>();
@@ -190,6 +249,11 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
           issues: 0,
           activeWeeks: 0,
           score: 0,
+          nightCommits: 0,
+          earlyCommits: 0,
+          witchingCommits: 0,
+          holidayCommits: 0,
+          biggestCommit: 0,
           weeks: new Set(),
         };
         people.set(key, p);
@@ -209,6 +273,13 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     const mergeHours: number[] = [];
     let merged = 0;
     let reviewed = 0;
+    let holidayCommits = 0;
+    let examCommits = 0;
+    let witchingCommits = 0;
+    type PrPick = { number: number; repo: string; value: number } | null;
+    let fastest: PrPick = null;
+    let slowest: PrPick = null;
+    let mega: PrPick = null;
     let closedUnmerged = 0;
     let discussion = 0;
     let issuesTotal = 0;
@@ -240,6 +311,17 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
         wp(w).commits++;
         const { dow, hour } = localSlot(c.date);
         punch[dow][hour]++;
+        const day = localDate(c.date);
+        if (holidays.has(day)) holidayCommits++;
+        if (examDays.has(day)) examCommits++;
+        if (hour === 3) witchingCommits++;
+        if (hour >= 22 || hour < 4) p.nightCommits++;
+        if (hour >= 5 && hour < 9) p.earlyCommits++;
+        if (hour === 3) p.witchingCommits++;
+        if (holidays.has(day)) p.holidayCommits++;
+        // Biggest hand-written commit: skip huge ones that are vendored/generated code.
+        const size = c.additions + c.deletions;
+        if (size <= BIGGEST_COMMIT_CAP && size > p.biggestCommit) p.biggestCommit = size;
         touch(c.date);
       }
 
@@ -258,9 +340,18 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
           merged++;
           discussion +=
             pr.comments + pr.reviews.filter((r) => !r.login || !isBot(r.login)).length;
-          mergeHours.push(
-            (Date.parse(pr.mergedAt) - Date.parse(pr.createdAt)) / 3_600_000
-          );
+          const hours = (Date.parse(pr.mergedAt) - Date.parse(pr.createdAt)) / 3_600_000;
+          mergeHours.push(hours);
+          if ((!pr.login || !isBot(pr.login)) && pr.changedFiles <= MEGA_PR_CAP) {
+            const pick = (value: number) => ({
+              number: pr.number,
+              repo: repo.name,
+              value,
+            });
+            if (!fastest || hours < fastest.value) fastest = pick(hours);
+            if (!slowest || hours > slowest.value) slowest = pick(hours);
+            if (!mega || pr.changedFiles > mega.value) mega = pick(pr.changedFiles);
+          }
           touch(pr.mergedAt);
           if (pr.reviews.some((r) => r.login && r.login !== pr.login && !isBot(r.login)))
             reviewed++;
@@ -307,6 +398,11 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       match.commits += p.commits;
       match.additions += p.additions;
       match.deletions += p.deletions;
+      match.nightCommits += p.nightCommits;
+      match.earlyCommits += p.earlyCommits;
+      match.witchingCommits += p.witchingCommits;
+      match.holidayCommits += p.holidayCommits;
+      match.biggestCommit = Math.max(match.biggestCommit, p.biggestCommit);
       p.weeks.forEach((w) => match.weeks.add(w));
       people.delete(key);
     }
@@ -431,6 +527,12 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       startCommits: commitsIn(0, 3),
       finishCommits: isCurrent ? null : commitsIn(termEndWeek - 3, termEndWeek),
       longestStreak,
+      holidayCommits,
+      examCommits,
+      witchingCommits,
+      fastestPr: fastest,
+      slowestPr: slowest,
+      megaPr: mega,
     });
   }
 

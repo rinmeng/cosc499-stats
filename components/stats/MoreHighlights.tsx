@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 
-/** "Show more highlights" toggle that reveals a second grid of highlight cards. */
+/** "Show more highlights" toggle that reveals extra highlight sections. */
 export function MoreHighlights({
   count,
   children,
@@ -31,7 +31,7 @@ export function MoreHighlights({
         </CollapsibleTrigger>
       </div>
       <CollapsibleContent>
-        <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>{children}</div>
+        <div className='space-y-8 pt-2'>{children}</div>
       </CollapsibleContent>
     </Collapsible>
   );

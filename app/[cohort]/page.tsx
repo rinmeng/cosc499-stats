@@ -10,7 +10,13 @@ import {
   Flag,
   Languages,
   MessagesSquare,
+  Boxes,
+  Ghost,
+  Hourglass,
   Moon,
+  NotebookPen,
+  TreePine,
+  Zap,
   PackageCheck,
   Rocket,
   Trophy,
@@ -27,7 +33,6 @@ import { Punchcard } from '@/components/charts/Punchcard';
 import {
   EmptyState,
   Grid,
-  Highlight,
   type HighlightProps,
   PageHeader,
   Section,
@@ -38,7 +43,10 @@ import {
   isSmallCohort,
   MissingTeam,
 } from '@/components/stats/HelpComplete';
-import { MoreHighlights } from '@/components/stats/MoreHighlights';
+import {
+  HighlightSections,
+  type HighlightSection,
+} from '@/components/stats/HighlightSections';
 import { TeamTable } from '@/components/stats/TeamTable';
 import { TopContributors } from '@/components/stats/TopContributors';
 import { Badge } from '@/components/ui/badge';
@@ -89,140 +97,301 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
   const week = currentWeek(c);
   const live = c.isCurrent;
 
-  const collaborative = topTeams(
-    c,
-    (t) => t.collaboration,
-    3,
-    (t) => t.contributors >= 3
-  );
-  const reviewCulture = topTeams(
-    c,
-    (t) => t.reviewCoverage,
-    3,
-    (t) => t.prsMerged >= 10
-  );
-  const fastest = c.teams
-    .filter((t) => t.medianMergeHours !== null && t.prsMerged >= 10)
-    .sort((a, b) => a.medianMergeHours! - b.medianMergeHours!)
-    .slice(0, 3);
-  const activeThisWeek = topTeams(c, (t) => t.thisWeekCommits, 3);
-  const earlyBirds = topTeams(
-    c,
-    (t) => t.earlyBirdShare,
-    3,
-    (t) => t.commits >= 50
-  );
-  const nightOwls = topTeams(
-    c,
-    (t) => t.nightOwlShare,
-    3,
-    (t) => t.commits >= 50
-  );
-
-  // Second tier, behind "Show more highlights".
   const enough = (t: TeamStats) => t.commits >= 50;
-  const more: HighlightProps[] = [
+  const card = (
+    h: Omit<HighlightProps, 'items'>,
+    teams: TeamStats[],
+    item: (t: TeamStats) => { value: string; sub?: string; wrapSub?: boolean }
+  ): HighlightProps => ({
+    ...h,
+    items: teams.map((t) => ({ label: t.name, href: teamHref(c.slug, t), ...item(t) })),
+  });
+  const fmtDays = (h: number) => (h >= 48 ? `${(h / 24).toFixed(0)} days` : fmtHours(h));
+  const fmtSecs = (h: number) => {
+    const s = h * 3600;
+    return s < 120 ? `${Math.max(1, Math.round(s))} s` : fmtHours(h);
+  };
+
+  const sections: HighlightSection[] = [
     {
-      icon: PackageCheck,
-      title: 'PRs shipped',
-      description: 'Of the PRs that were closed, the share merged rather than dropped',
-      items: topTeams(
-        c,
-        (t) => t.shipRate + t.prsMerged / 1e6,
-        3,
-        (t) => t.prsMerged >= 10
-      ).map((t) => ({
-        label: t.name,
-        href: teamHref(c.slug, t),
-        value: pct(t.shipRate),
-        sub: `${fmt(t.prsMerged)} merged, ${fmt(t.prsClosedUnmerged)} closed`,
-      })),
+      title: 'Momentum',
+      description: 'Who got going early, finished strong and had the biggest weeks.',
+      cards: [
+        live
+          ? card(
+              {
+                icon: Sparkles,
+                title: 'Most active this week',
+                description: 'Commits since Sunday',
+              },
+              topTeams(c, (t) => t.thisWeekCommits, 3),
+              (t) => ({ value: fmt(t.thisWeekCommits) })
+            )
+          : null,
+        card(
+          {
+            icon: Rocket,
+            title: 'Fastest start',
+            description: 'Commits in the first 4 weeks of term',
+          },
+          topTeams(c, (t) => t.startCommits, 3),
+          (t) => ({ value: fmt(t.startCommits) })
+        ),
+        card(
+          {
+            icon: Flag,
+            title: 'Strongest finish',
+            description: 'Commits in the last 4 weeks of term',
+          },
+          topTeams(c, (t) => t.finishCommits ?? 0, 3),
+          (t) => ({ value: fmt(t.finishCommits ?? 0) })
+        ),
+        card(
+          {
+            icon: Trophy,
+            title: 'Biggest week',
+            description: 'Most commits in a single week',
+          },
+          topTeams(c, (t) => t.peakWeek?.commits ?? 0, 3),
+          (t) => ({
+            value: fmt(t.peakWeek?.commits ?? 0),
+            sub: `week ${t.peakWeek?.week}`,
+          })
+        ),
+      ],
     },
     {
-      icon: CircleCheckBig,
-      title: 'Closing the loop',
-      description: 'Share of opened issues that are now closed',
-      items: topTeams(
-        c,
-        (t) => t.issueCloseRate + t.issuesTotal / 1e6,
-        3,
-        (t) => t.issuesTotal >= 10
-      ).map((t) => ({
-        label: t.name,
-        href: teamHref(c.slug, t),
-        value: pct(t.issueCloseRate),
-        sub: `${fmt(t.issuesTotal)} issues`,
-      })),
+      title: 'Teamwork',
+      description: 'Sharing the work and reviewing each other’s code.',
+      cards: [
+        card(
+          {
+            icon: Handshake,
+            title: 'Most collaborative',
+            description: 'Commits shared most evenly across the team',
+          },
+          topTeams(
+            c,
+            (t) => t.collaboration,
+            3,
+            (t) => t.contributors >= 3
+          ),
+          (t) => ({
+            value: `${Math.round(t.collaboration * 100)}`,
+            sub: `${t.contributors} people`,
+          })
+        ),
+        card(
+          {
+            icon: MessageSquareCode,
+            title: 'Strongest review culture',
+            description: 'Share of merged PRs reviewed by a teammate',
+          },
+          topTeams(
+            c,
+            (t) => t.reviewCoverage + t.prsMerged / 1e6,
+            3,
+            (t) => t.prsMerged >= 10
+          ),
+          (t) => ({ value: pct(t.reviewCoverage), sub: `${fmt(t.prsMerged)} PRs` })
+        ),
+        card(
+          {
+            icon: MessagesSquare,
+            title: 'Deepest discussions',
+            description: 'Average comments and reviews per merged PR',
+          },
+          topTeams(
+            c,
+            (t) => t.discussionPerPr,
+            3,
+            (t) => t.prsMerged >= 10
+          ),
+          (t) => ({ value: t.discussionPerPr.toFixed(1) })
+        ),
+      ],
     },
     {
-      icon: MessagesSquare,
-      title: 'Deepest discussions',
-      description: 'Average comments and reviews per merged PR',
-      items: topTeams(
-        c,
-        (t) => t.discussionPerPr,
-        3,
-        (t) => t.prsMerged >= 10
-      ).map((t) => ({
-        label: t.name,
-        href: teamHref(c.slug, t),
-        value: t.discussionPerPr.toFixed(1),
-      })),
+      title: 'Shipping',
+      description: 'Getting work merged and issues closed.',
+      cards: [
+        card(
+          {
+            icon: Clock,
+            title: 'Quickest to merge',
+            description: 'Median time from PR opened to merged',
+          },
+          c.teams
+            .filter((t) => t.medianMergeHours !== null && t.prsMerged >= 10)
+            .sort((a, b) => a.medianMergeHours! - b.medianMergeHours!)
+            .slice(0, 3),
+          (t) => ({ value: fmtHours(t.medianMergeHours) })
+        ),
+        card(
+          {
+            icon: PackageCheck,
+            title: 'PRs shipped',
+            description:
+              'Of the PRs that were closed, the share merged rather than dropped',
+          },
+          topTeams(
+            c,
+            (t) => t.shipRate + t.prsMerged / 1e6,
+            3,
+            (t) => t.prsMerged >= 10
+          ),
+          (t) => ({
+            value: pct(t.shipRate),
+            sub: `${fmt(t.prsMerged)} merged, ${fmt(t.prsClosedUnmerged)} closed`,
+          })
+        ),
+        card(
+          {
+            icon: CircleCheckBig,
+            title: 'Closing the loop',
+            description: 'Share of opened issues that are now closed',
+          },
+          topTeams(
+            c,
+            (t) => t.issueCloseRate + t.issuesTotal / 1e6,
+            3,
+            (t) => t.issuesTotal >= 10
+          ),
+          (t) => ({ value: pct(t.issueCloseRate), sub: `${fmt(t.issuesTotal)} issues` })
+        ),
+      ],
     },
     {
-      icon: Rocket,
-      title: 'Fastest start',
-      description: 'Commits in the first 4 weeks of term',
-      items: topTeams(c, (t) => t.startCommits, 3).map((t) => ({
-        label: t.name,
-        href: teamHref(c.slug, t),
-        value: fmt(t.startCommits),
-      })),
+      title: 'Work rhythm',
+      description: 'When teams like to work.',
+      more: true,
+      cards: [
+        card(
+          {
+            icon: Sunrise,
+            title: 'Early birds',
+            description: 'Share of commits made between 5 am and 9 am',
+          },
+          topTeams(c, (t) => t.earlyBirdShare, 3, enough),
+          (t) => ({ value: pct(t.earlyBirdShare) })
+        ),
+        card(
+          {
+            icon: Moon,
+            title: 'Night owls',
+            description: 'Share of commits made between 10 pm and 4 am',
+          },
+          topTeams(c, (t) => t.nightOwlShare, 3, enough),
+          (t) => ({ value: pct(t.nightOwlShare) })
+        ),
+        card(
+          {
+            icon: CalendarDays,
+            title: 'Weekend warriors',
+            description: 'Share of commits made on Saturday or Sunday',
+          },
+          topTeams(c, (t) => t.weekendShare, 3, enough),
+          (t) => ({ value: pct(t.weekendShare) })
+        ),
+      ],
     },
     {
-      icon: Flag,
-      title: 'Strongest finish',
-      description: 'Commits in the last 4 weeks of term',
-      items: topTeams(c, (t) => t.finishCommits ?? 0, 3).map((t) => ({
-        label: t.name,
-        href: teamHref(c.slug, t),
-        value: fmt(t.finishCommits ?? 0),
-      })),
+      title: 'Tech',
+      description: 'What teams built with.',
+      more: true,
+      cards: [
+        card(
+          {
+            icon: Languages,
+            title: 'Polyglots',
+            description: 'Most programming languages across the team’s repos',
+          },
+          topTeams(c, (t) => t.languageCount + t.commits / 1e6, 3),
+          (t) => ({
+            value: String(t.languageCount),
+            sub: t.languages.map((l) => l.name).join(', '),
+            wrapSub: true,
+          })
+        ),
+      ],
     },
     {
-      icon: Trophy,
-      title: 'Biggest week',
-      description: 'Most commits in a single week',
-      items: topTeams(c, (t) => t.peakWeek?.commits ?? 0, 3).map((t) => ({
-        label: t.name,
-        href: teamHref(c.slug, t),
-        value: fmt(t.peakWeek?.commits ?? 0),
-        sub: `week ${t.peakWeek?.week}`,
-      })),
+      title: 'Strangest stats',
+      description: 'The odd, the heroic and the slightly concerning.',
+      more: true,
+      cards: [
+        card(
+          {
+            icon: TreePine,
+            title: 'Holiday heroes',
+            description:
+              c.session === 'summer'
+                ? 'Commits on Victoria Day, Canada Day or BC Day'
+                : 'Commits on Thanksgiving, over Christmas and New Year, or in reading week',
+          },
+          topTeams(c, (t) => t.holidayCommits, 3),
+          (t) => ({ value: fmt(t.holidayCommits) })
+        ),
+        card(
+          {
+            icon: NotebookPen,
+            title: 'Exam-season grinders',
+            description: 'Commits during the December and April exam periods',
+          },
+          topTeams(c, (t) => t.examCommits, 3),
+          (t) => ({ value: fmt(t.examCommits) })
+        ),
+        card(
+          {
+            icon: Ghost,
+            title: 'Witching hour',
+            description: 'Commits made between 3 and 4 am',
+          },
+          topTeams(c, (t) => t.witchingCommits, 3),
+          (t) => ({ value: fmt(t.witchingCommits) })
+        ),
+        card(
+          {
+            icon: Zap,
+            title: 'Speed demon',
+            description: 'Fastest single PR from opened to merged',
+          },
+          c.teams
+            .filter((t) => t.fastestPr)
+            .sort((a, b) => a.fastestPr!.value - b.fastestPr!.value)
+            .slice(0, 3),
+          (t) => ({
+            value: fmtSecs(t.fastestPr!.value),
+            sub: `PR #${t.fastestPr!.number}`,
+          })
+        ),
+        card(
+          {
+            icon: Hourglass,
+            title: 'Patience award',
+            description: 'Longest a PR stayed open before finally being merged',
+          },
+          topTeams(c, (t) => t.slowestPr?.value ?? 0, 3),
+          (t) => ({
+            value: fmtDays(t.slowestPr!.value),
+            sub: `PR #${t.slowestPr!.number}`,
+          })
+        ),
+        card(
+          {
+            icon: Boxes,
+            title: 'Mega PR',
+            description: 'Most files changed in a single merged PR',
+          },
+          topTeams(c, (t) => t.megaPr?.value ?? 0, 3),
+          (t) => ({
+            value: `${fmt(t.megaPr!.value)} files`,
+            sub: `PR #${t.megaPr!.number}`,
+          })
+        ),
+      ],
     },
-    {
-      icon: CalendarDays,
-      title: 'Weekend warriors',
-      description: 'Share of commits made on Saturday or Sunday',
-      items: topTeams(c, (t) => t.weekendShare, 3, enough).map((t) => ({
-        label: t.name,
-        href: teamHref(c.slug, t),
-        value: pct(t.weekendShare),
-      })),
-    },
-    {
-      icon: Languages,
-      title: 'Polyglots',
-      description: 'Most programming languages across the team’s repos',
-      items: topTeams(c, (t) => t.languageCount + t.commits / 1e6, 3).map((t) => ({
-        label: t.name,
-        href: teamHref(c.slug, t),
-        value: String(t.languageCount),
-        sub: t.languages.map((l) => l.name).join(', '),
-        wrapSub: true,
-      })),
-    },
-  ].filter((h) => h.items.length > 0);
+  ];
 
   return (
     <div className='space-y-8'>
@@ -319,88 +488,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         />
       </Section>
 
-      <Grid className='lg:grid-cols-3'>
-        {live && activeThisWeek.length > 0 && (
-          <Highlight
-            icon={Sparkles}
-            title='Most active this week'
-            description='Commits since Sunday'
-            items={activeThisWeek.map((t) => ({
-              label: t.name,
-              href: teamHref(c.slug, t),
-              value: fmt(t.thisWeekCommits),
-            }))}
-          />
-        )}
-        {collaborative.length > 0 && (
-          <Highlight
-            icon={Handshake}
-            title='Most collaborative'
-            description='Commits shared most evenly across the team'
-            items={collaborative.map((t) => ({
-              label: t.name,
-              href: teamHref(c.slug, t),
-              value: `${Math.round(t.collaboration * 100)}`,
-              sub: `${t.contributors} people`,
-            }))}
-          />
-        )}
-        {reviewCulture.length > 0 && (
-          <Highlight
-            icon={MessageSquareCode}
-            title='Strongest review culture'
-            description='Share of merged PRs reviewed by a teammate'
-            items={reviewCulture.map((t) => ({
-              label: t.name,
-              href: teamHref(c.slug, t),
-              value: pct(t.reviewCoverage),
-              sub: `${fmt(t.prsMerged)} PRs`,
-            }))}
-          />
-        )}
-        {fastest.length > 0 && (
-          <Highlight
-            icon={Clock}
-            title='Quickest to merge'
-            description='Median time from PR opened to merged'
-            items={fastest.map((t) => ({
-              label: t.name,
-              href: teamHref(c.slug, t),
-              value: fmtHours(t.medianMergeHours),
-            }))}
-          />
-        )}
-        {earlyBirds.length > 0 && (
-          <Highlight
-            icon={Sunrise}
-            title='Early birds'
-            description='Share of commits made between 5 am and 9 am'
-            items={earlyBirds.map((t) => ({
-              label: t.name,
-              href: teamHref(c.slug, t),
-              value: pct(t.earlyBirdShare),
-            }))}
-          />
-        )}
-        {nightOwls.length > 0 && (
-          <Highlight
-            icon={Moon}
-            title='Night owls'
-            description='Share of commits made between 10 pm and 4 am'
-            items={nightOwls.map((t) => ({
-              label: t.name,
-              href: teamHref(c.slug, t),
-              value: pct(t.nightOwlShare),
-            }))}
-          />
-        )}
-      </Grid>
-
-      <MoreHighlights count={more.length}>
-        {more.map((h) => (
-          <Highlight key={h.title} {...h} />
-        ))}
-      </MoreHighlights>
+      <HighlightSections sections={sections} />
 
       <ActivityChart
         data={c.weekly}

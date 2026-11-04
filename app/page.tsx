@@ -2,6 +2,11 @@ import Link from 'next/link';
 import {
   ArrowRight,
   Calendar,
+  Ghost,
+  Moon,
+  Sunrise,
+  TreePine,
+  FileCode2,
   GitMerge,
   GitPullRequest,
   MessageSquareCode,
@@ -16,6 +21,7 @@ import {
   EmptyState,
   Grid,
   Highlight,
+  type HighlightProps,
   PageHeader,
   StatTile,
 } from '@/components/stats/Blocks';
@@ -28,6 +34,7 @@ import { cohortColor, fmt, fmtDate, fmtCompact, fmtHours, pct } from '@/lib/form
 import type { TeamStats } from '@/lib/types/stats';
 import {
   byTermStart,
+  everyone,
   cohortBars,
   cohortBest,
   currentWeek,
@@ -72,6 +79,65 @@ export default function Overview() {
       languages.set(l.name, (languages.get(l.name) ?? 0) + l.bytes)
     )
   );
+
+  // Individual records across all cohorts (shares need at least 50 commits).
+  const people = everyone(s);
+  const regulars = people.filter((p) => p.m.commits >= 50);
+  const top3 = <T,>(list: T[], value: (x: T) => number) =>
+    [...list]
+      .filter((x) => value(x) > 0)
+      .sort((a, b) => value(b) - value(a))
+      .slice(0, 3);
+  const personItem = (p: (typeof people)[number], value: string) => ({
+    label: p.name,
+    href: `/${p.cohort.slug}/${p.team.team}`,
+    sub: `${p.team.name}, ${p.cohort.label}`,
+    value,
+  });
+  const share = (n: number, d: number) => (d ? n / d : 0);
+  const oddities: HighlightProps[] = [
+    {
+      icon: Moon,
+      title: 'Night owls',
+      description: 'Biggest share of their commits made between 10 pm and 4 am',
+      items: top3(regulars, (p) => share(p.m.nightCommits, p.m.commits)).map((p) =>
+        personItem(p, pct(share(p.m.nightCommits, p.m.commits)))
+      ),
+    },
+    {
+      icon: Sunrise,
+      title: 'Early birds',
+      description: 'Biggest share of their commits made between 5 am and 9 am',
+      items: top3(regulars, (p) => share(p.m.earlyCommits, p.m.commits)).map((p) =>
+        personItem(p, pct(share(p.m.earlyCommits, p.m.commits)))
+      ),
+    },
+    {
+      icon: Ghost,
+      title: '3 am regulars',
+      description: 'Most commits made between 3 and 4 am',
+      items: top3(people, (p) => p.m.witchingCommits).map((p) =>
+        personItem(p, fmt(p.m.witchingCommits))
+      ),
+    },
+    {
+      icon: FileCode2,
+      title: 'Biggest single commit',
+      description:
+        'Most lines changed in one commit (vendored code over 20,000 lines left out)',
+      items: top3(people, (p) => p.m.biggestCommit).map((p) =>
+        personItem(p, `${fmtCompact(p.m.biggestCommit)} lines`)
+      ),
+    },
+    {
+      icon: TreePine,
+      title: 'Holiday heroes',
+      description: 'Most commits on holidays and breaks',
+      items: top3(people, (p) => p.m.holidayCommits).map((p) =>
+        personItem(p, fmt(p.m.holidayCommits))
+      ),
+    },
+  ];
 
   return (
     <div className='space-y-8'>
@@ -240,6 +306,22 @@ export default function Overview() {
               value: fmt(t.prsMerged),
             }))}
           />
+        </Grid>
+      </div>
+
+      <div className='space-y-3'>
+        <div>
+          <h2 className='font-heading text-xl font-semibold'>All-time oddities</h2>
+          <p className='text-sm text-muted-foreground'>
+            The most memorable individual habits across every cohort.
+          </p>
+        </div>
+        <Grid className='md:grid-cols-2 xl:grid-cols-3'>
+          {oddities
+            .filter((h) => h.items.length > 0)
+            .map((h) => (
+              <Highlight key={h.title} {...h} />
+            ))}
         </Grid>
       </div>
 

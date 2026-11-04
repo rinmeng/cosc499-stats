@@ -88,6 +88,13 @@ export interface PersonStats {
   issues: number;
   activeWeeks: number;
   score: number;
+  /** commits 10 pm–4 am, 5–9 am, 3–4 am, and on holidays (local time) */
+  nightCommits: number;
+  earlyCommits: number;
+  witchingCommits: number;
+  holidayCommits: number;
+  /** lines changed in their single biggest commit (≤ 20,000, to skip vendored code) */
+  biggestCommit: number;
 }
 
 export interface WeekPoint {
@@ -98,6 +105,12 @@ export interface WeekPoint {
   commits: number;
   prs: number;
   reviews: number;
+}
+
+export interface PrHighlight {
+  number: number;
+  repo: string;
+  value: number;
 }
 
 export interface TeamStats {
@@ -144,6 +157,16 @@ export interface TeamStats {
   finishCommits: number | null;
   /** most consecutive weeks with at least one commit */
   longestStreak: number;
+  /** commits on holidays / breaks (Thanksgiving, Dec 24–26, Dec 31–Jan 1, reading week; summer: Victoria Day, Canada Day, BC Day) */
+  holidayCommits: number;
+  /** commits during final exam periods (winter only) */
+  examCommits: number;
+  /** commits between 3 and 4 am */
+  witchingCommits: number;
+  /** single merged PRs: fastest / slowest (hours from open to merge) and biggest (files changed) */
+  fastestPr: PrHighlight | null;
+  slowestPr: PrHighlight | null;
+  megaPr: PrHighlight | null;
   lastActivity: string | null;
   languages: { name: string; bytes: number }[];
   weekly: WeekPoint[];
