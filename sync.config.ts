@@ -56,6 +56,7 @@ export const excludeLogins: string[] = [
   'dependabot',
   'copilot',
   'copilot-swe-agent',
+  'copilot-pull-request-reviewer',
   'vercel',
   'coderabbitai',
 ];
@@ -89,3 +90,9 @@ export const scoreWeights = {
 
 /** How many people to highlight per team. */
 export const topN = 5;
+
+/** Public repo, used for "help complete this cohort" links. */
+export const repoUrl = 'https://github.com/rinmeng/cosc499-stats';
+
+/** Past cohorts with fewer teams than this get a "help complete this cohort" prompt. */
+export const smallCohortTeams = 10;

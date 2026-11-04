@@ -9,40 +9,26 @@ and how the current cohort is tracking against past years.
 Built with Next.js, shadcn/ui and shadcn charts (Recharts). Data comes from the GitHub API
 through a sync script and lives in JSON files, with no database.
 
-## Help fill in your cohort 🙌
+## Help complete your cohort 🙌
 
-Some cohorts are incomplete. For example, only two team repositories from **2024–25**
-(`COSC-499-W2024`) are still visible on GitHub, and teams whose repos are private or
-moved elsewhere don't show up at all. If you were in one of those cohorts, you can help:
+Some cohorts look small because their team repositories are private, were deleted, or
+moved off the course org. For example, only two **2024–25** teams are visible right now.
+If you were in one of those cohorts, you can probably see repos we can't.
 
-- **You can still see your cohort's repos** (you're still in the org, or a teammate kept
-  a copy): sync just your year and open a pull request with the result.
+**[Read CONTRIBUTING.md](CONTRIBUTING.md)** for copy-paste steps from start to an open
+pull request (about 15 minutes, no coding needed). In short:
 
-  ```bash
-  pnpm install
-  gh auth login            # your GitHub account, the one with access
-  pnpm sync:year 2024      # only fetches the 2024–25 cohort
-  git add data/raw/COSC-499-W2024
-  ```
+```bash
+gh repo fork rinmeng/cosc499-stats --clone && cd cosc499-stats
+pnpm install
+gh auth login
+pnpm sync:year 2024          # your cohort's start year
+git checkout -b data/2024 && git add data/raw sync.config.ts
+git commit -m "Add 2024–25 cohort data" && git push -u origin data/2024
+gh pr create --fill
+```
 
-  Only aggregated activity (logins, commit/PR/review/issue counts and dates) ends up in
-  `data/raw`. No source code is downloaded.
-
-- **Your team's repo lives somewhere else** (e.g. moved to a personal account): add it to
-  that cohort's `extraRepos` in `sync.config.ts`, then run `pnpm sync:year <year>`.
-
-  ```ts
-  {
-    org: 'COSC-499-W2024',
-    year: 2024,
-    label: '2024–25',
-    extraRepos: [{ repo: 'your-username/capstone-project-team-3', team: 3 }],
-  },
-  ```
-
-- **You have other info** (what a team built, a missing cohort, wrong team numbers, an
-  account that should be excluded): [open an issue](https://github.com/rinmeng/cosc499-stats/issues)
-  or a pull request.
+No access but know something useful? [Open an issue](https://github.com/rinmeng/cosc499-stats/issues/new).
 
 ## Setup
 

@@ -4,7 +4,6 @@ import {
   GitMerge,
   GitPullRequest,
   Handshake,
-  Info,
   MessageSquareCode,
   Moon,
   Sparkles,
@@ -24,9 +23,13 @@ import {
   Section,
   StatTile,
 } from '@/components/stats/Blocks';
+import {
+  HelpComplete,
+  isSmallCohort,
+  MissingTeam,
+} from '@/components/stats/HelpComplete';
 import { TeamTable } from '@/components/stats/TeamTable';
 import { TopContributors } from '@/components/stats/TopContributors';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { getCohort, getSummary } from '@/lib/data';
 import { fmt, fmtCompact, fmtDate, fmtHours, pct } from '@/lib/format';
@@ -77,7 +80,6 @@ export default async function CohortPage({ params }: PageProps<'/[year]'>) {
     .sort((a, b) => a.medianMergeHours! - b.medianMergeHours!)
     .slice(0, 3);
   const activeThisWeek = topTeams(c, (t) => t.thisWeekCommits, 3);
-  const momentum = c.thisWeek.commits - c.lastWeek.commits;
   const nightOwls = topTeams(
     c,
     (t) => t.nightOwlShare,
@@ -109,11 +111,13 @@ export default async function CohortPage({ params }: PageProps<'/[year]'>) {
         )}
       </PageHeader>
 
-      {c.note && (
-        <Alert>
-          <Info />
-          <AlertDescription>{c.note}</AlertDescription>
-        </Alert>
+      {isSmallCohort(c) && (
+        <HelpComplete
+          label={c.label}
+          year={c.year}
+          teams={c.totals.teams}
+          note={c.note}
+        />
       )}
 
       <Grid className='grid-cols-2 md:grid-cols-3 lg:grid-cols-6'>
@@ -146,11 +150,7 @@ export default async function CohortPage({ params }: PageProps<'/[year]'>) {
             icon={Sparkles}
             label='Commits this week'
             value={fmt(c.thisWeek.commits)}
-            hint={
-              c.lastWeek.commits
-                ? `${momentum >= 0 ? '+' : ''}${fmt(momentum)} vs last week`
-                : undefined
-            }
+            hint={c.lastWeek.commits ? `${fmt(c.lastWeek.commits)} last week` : undefined}
           />
         ) : (
           <StatTile
@@ -262,6 +262,8 @@ export default async function CohortPage({ params }: PageProps<'/[year]'>) {
       >
         <TeamTable rows={teamRows(c)} live={live} />
       </Section>
+
+      {!isSmallCohort(c) && <MissingTeam year={c.year} live={live} />}
 
       <Grid className='lg:grid-cols-5'>
         <Section

@@ -19,6 +19,7 @@ import {
   PageHeader,
   StatTile,
 } from '@/components/stats/Blocks';
+import { isSmallCohort } from '@/components/stats/HelpComplete';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getSummary } from '@/lib/data';
@@ -106,6 +107,7 @@ export default function Overview() {
                   />
                   {c.label}
                   {c.isCurrent && <Badge>Week {currentWeek(c)}</Badge>}
+                  {isSmallCohort(c) && <Badge variant='outline'>Help complete</Badge>}
                   <ArrowRight
                     className='ml-auto size-4 text-muted-foreground transition-transform
                       group-hover:translate-x-0.5'
