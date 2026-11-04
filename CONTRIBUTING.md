@@ -87,7 +87,8 @@ pnpm sync:year 2024
 ```
 
 This reads your cohort's repos with your GitHub login and saves the results to
-`data/raw/COSC-499-W2024/`. Large cohorts can take a few minutes. A `✓` line means a repo
+`data/raw/COSC-499-W2024/`. Syncing usually takes **4–6 minutes** if you're only doing your
+own year. A `✓` line means a repo
 was saved; a `✗` line means it couldn't be read (that's okay, the rest still count).
 
 ## Step 5: Check it looks right (optional, but nice)

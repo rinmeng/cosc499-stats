@@ -387,6 +387,11 @@ async function main() {
   }
 
   const started = Date.now();
+  if (yearArg) {
+    console.log(
+      `Syncing ${yearArg} only. This usually takes 4–6 minutes; leave it running.`
+    );
+  }
   let fetched = 0;
   let cached = 0;
   const failures: string[] = [];
