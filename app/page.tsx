@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import {
   ArrowRight,
+  Calendar,
+  GitPullRequest,
   Ghost,
   Moon,
   Sunrise,
@@ -21,9 +23,9 @@ import {
   Highlight,
   type HighlightProps,
   PageHeader,
+  StatTile,
 } from '@/components/stats/Blocks';
 import { isSmallCohort } from '@/components/stats/HelpComplete';
-import { RangeTotals } from '@/components/stats/RangeTotals';
 import { ShowMore } from '@/components/stats/ShowMore';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,8 +42,8 @@ import {
   trendSeries,
 } from '@/lib/views';
 
-/** First year of the headline totals' range on load (2023–24: the first COSC-499-W org). */
-const DEFAULT_RANGE_FROM = 2023;
+/** Headline totals cover this many cohort years, newest first (summer included). */
+const TOTALS_YEARS = 5;
 
 /** Cohort cards shown before "Show more": one full row of the 4-column grid, newest first. */
 const RECENT_COHORT_CARDS = 4;
@@ -58,6 +60,13 @@ export default function Overview() {
 
   const cohorts = s.cohorts.filter((c) => c.teams.length);
   const current = cohorts.find((c) => c.isCurrent);
+
+  // Headline totals: the last few cohort years, each with its summer session.
+  const totalsFrom = s.currentYear - (TOTALS_YEARS - 1);
+  const totalsCohorts = cohorts.filter((c) => c.year >= totalsFrom);
+  const totalOf = (k: 'teams' | 'contributors' | 'commits' | 'prsMerged' | 'reviews') =>
+    totalsCohorts.reduce((a, c) => a + c.totals[k], 0);
+  const yearLabel = (y: number) => `${y}–${String(y + 1).slice(2)}`;
 
   const allTeams = cohorts.flatMap((c) =>
     c.teams.map((t) => ({ ...t, cohort: c }))
@@ -208,17 +217,53 @@ export default function Overview() {
         today. Last synced {fmtDate(s.generatedAt)}.
       </PageHeader>
 
-      <RangeTotals
-        defaultFrom={DEFAULT_RANGE_FROM}
-        cohorts={cohorts.map((c) => ({
-          year: c.year,
-          teams: c.totals.teams,
-          contributors: c.totals.contributors,
-          commits: c.totals.commits,
-          prsMerged: c.totals.prsMerged,
-          reviews: c.totals.reviews,
-        }))}
-      />
+      <div className='space-y-3'>
+        <h2 className='text-sm font-medium'>
+          Last {TOTALS_YEARS} years · {yearLabel(totalsFrom)} to{' '}
+          {yearLabel(s.currentYear)}
+          <span className='font-normal text-muted-foreground'>
+            , summer sessions included
+          </span>
+        </h2>
+        <Grid className='grid-cols-3 gap-2 md:grid-cols-3 md:gap-4 lg:grid-cols-5'>
+          <StatTile
+            compact
+            icon={Calendar}
+            label='Cohorts'
+            value={totalsCohorts.length}
+            unit='sessions'
+          />
+          <StatTile
+            compact
+            icon={Users}
+            label='Contributors'
+            value={fmt(totalOf('contributors'))}
+            unit='people'
+            hint={`across ${fmt(totalOf('teams'))} teams`}
+          />
+          <StatTile
+            compact
+            icon={GitPullRequest}
+            label='Commits'
+            value={fmtCompact(totalOf('commits'))}
+            unit='commits'
+          />
+          <StatTile
+            compact
+            icon={GitMerge}
+            label='Merged PRs'
+            value={fmtCompact(totalOf('prsMerged'))}
+            unit='PRs'
+          />
+          <StatTile
+            compact
+            icon={MessageSquareCode}
+            label='Code reviews'
+            value={fmtCompact(totalOf('reviews'))}
+            unit='reviews'
+          />
+        </Grid>
+      </div>
 
       <div className='space-y-4'>
         <div className={cohortGrid}>{recentCohorts.map(cohortCard)}</div>
