@@ -266,12 +266,12 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           <Highlight
             icon={UsersRound}
             title='Everyone reviews'
-            description='Share of team members who reviewed a teammate’s PR'
+            description='Members who reviewed at least one teammate’s PR this term'
             items={everyoneReviews.map((t) => ({
               label: t.name,
               href: teamHref(c.slug, t),
               value: pct(t.reviewerShare),
-              sub: `${Math.round(t.reviewerShare * t.contributors)} of ${t.contributors} people`,
+              sub: `${Math.round(t.reviewerShare * t.contributors)} of ${t.contributors} people review`,
             }))}
           />
         )}
