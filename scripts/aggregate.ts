@@ -278,6 +278,8 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     let holidayCommits = 0;
     let examCommits = 0;
     let witchingCommits = 0;
+    /** commits per local calendar day, for the team's biggest day */
+    const perDay = new Map<string, number>();
     type PrPick = { number: number; repo: string; value: number } | null;
     let fastest: PrPick = null;
     let slowest: PrPick = null;
@@ -314,6 +316,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
         const { dow, hour } = localSlot(c.date);
         punch[dow][hour]++;
         const day = localDate(c.date);
+        perDay.set(day, (perDay.get(day) ?? 0) + 1);
         if (holidays.has(day)) holidayCommits++;
         if (examDays.has(day)) examCommits++;
         if (hour === 3) witchingCommits++;
@@ -530,6 +533,11 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       startCommits: commitsIn(0, 3),
       finishCommits: isCurrent ? null : commitsIn(termEndWeek - 3, termEndWeek),
       longestStreak,
+      biggestDay: [...perDay].reduce<{ date: string; commits: number } | null>(
+        (best, [date, commits]) =>
+          !best || commits > best.commits ? { date, commits } : best,
+        null
+      ),
       holidayCommits,
       examCommits,
       witchingCommits,

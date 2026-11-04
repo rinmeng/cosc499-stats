@@ -159,6 +159,8 @@ export interface TeamStats {
   finishCommits: number | null;
   /** most consecutive weeks with at least one commit */
   longestStreak: number;
+  /** the local calendar day (YYYY-MM-DD) with the most commits */
+  biggestDay: { date: string; commits: number } | null;
   /** commits on holidays / breaks (Thanksgiving, Dec 24–26, Dec 31–Jan 1, reading week; summer: Victoria Day, Canada Day, BC Day) */
   holidayCommits: number;
   /** commits during final exam periods (winter only) */

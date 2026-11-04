@@ -6,10 +6,13 @@ import {
   Handshake,
   MessageSquareCode,
   CalendarDays,
+  CalendarFold,
   CircleCheckBig,
   Flag,
+  Gem,
   Languages,
   MessagesSquare,
+  ShieldCheck,
   Boxes,
   Ghost,
   Hourglass,
@@ -69,6 +72,34 @@ export function generateStaticParams() {
   return getSummary()?.cohorts.map((c) => ({ cohort: c.slug })) ?? [];
 }
 
+/** GitHub "languages" that are markup, styling or config, not a language a team picked. */
+const NOT_PROGRAMMING = new Set([
+  'HTML',
+  'CSS',
+  'SCSS',
+  'Sass',
+  'Less',
+  'Dockerfile',
+  'Makefile',
+  'Procfile',
+  'Batchfile',
+  'Shell',
+  'PowerShell',
+  'Jupyter Notebook',
+  'Handlebars',
+  'EJS',
+  'Mustache',
+  'Twig',
+  'Blade',
+  'HCL',
+  'Nix',
+  'CMake',
+  'Roff',
+  'TeX',
+  'Smarty',
+  'Pug',
+]);
+
 export async function generateMetadata({ params }: PageProps<'/[cohort]'>) {
   const { cohort } = await params;
   const c = getCohort(cohort);
@@ -116,6 +147,25 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     const s = h * 3600;
     return s < 120 ? `${Math.max(1, Math.round(s))} s` : fmtHours(h);
   };
+
+  // Tech: language share helpers.
+  const langBytes = (t: TeamStats, name: string) =>
+    t.languages.find((l) => l.name === name)?.bytes ?? 0;
+  const codeBytes = (t: TeamStats) => t.languages.reduce((a, l) => a + l.bytes, 0);
+  // Type-safe: TypeScript's share of a team's JavaScript + TypeScript code.
+  const jsTs = (t: TeamStats) => langBytes(t, 'TypeScript') + langBytes(t, 'JavaScript');
+  const tsShare = (t: TeamStats) => (jsTs(t) ? langBytes(t, 'TypeScript') / jsTs(t) : 0);
+  // Rare pick: a programming language (≥ 1% of the team's code) no other team used.
+  const used = (t: TeamStats) =>
+    t.languages.filter(
+      (l) => !NOT_PROGRAMMING.has(l.name) && l.bytes >= codeBytes(t) * 0.01
+    );
+  const teamsUsing = new Map<string, number>();
+  c.teams.forEach((t) =>
+    used(t).forEach((l) => teamsUsing.set(l.name, (teamsUsing.get(l.name) ?? 0) + 1))
+  );
+  const rarePicks = (t: TeamStats) =>
+    c.teams.length > 1 ? used(t).filter((l) => teamsUsing.get(l.name) === 1) : [];
 
   const allSections: HighlightSection[] = [
     {
@@ -190,6 +240,19 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             value: fmt(t.megaPr!.value),
             unit: 'files',
             sub: `PR #${t.megaPr!.number}`,
+          })
+        ),
+        card(
+          {
+            icon: CalendarFold,
+            title: 'Biggest day',
+            description: 'Most commits a team made in a single day',
+          },
+          topTeams(c, (t) => t.biggestDay?.commits ?? 0, 3),
+          (t) => ({
+            value: fmt(t.biggestDay!.commits),
+            unit: 'commits',
+            sub: `on ${fmtDate(t.biggestDay!.date)}`,
           })
         ),
       ],
@@ -407,6 +470,37 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             sub: t.languages.map((l) => l.name).join(', '),
             wrapSub: true,
           })
+        ),
+        card(
+          {
+            icon: ShieldCheck,
+            title: 'Type-safe',
+            description:
+              'Highest share of TypeScript in their JavaScript + TypeScript code',
+          },
+          topTeams(
+            c,
+            (t) => tsShare(t) + jsTs(t) / 1e12,
+            3,
+            (t) => langBytes(t, 'TypeScript') > 0 && jsTs(t) >= codeBytes(t) * 0.2
+          ),
+          (t) => ({ value: pct(tsShare(t)), unit: 'TypeScript', sub: 'of their JS + TS' })
+        ),
+        card(
+          {
+            icon: Gem,
+            title: 'Rare pick',
+            description: 'A programming language no other team in this cohort used',
+          },
+          topTeams(c, (t) => rarePicks(t).reduce((a, l) => a + l.bytes, 0), 3),
+          (t) => {
+            const [top, ...rest] = rarePicks(t);
+            return {
+              value: top.name,
+              unit: `${pct(top.bytes / codeBytes(t))} of code`,
+              sub: rest.length ? `also ${rest.map((l) => l.name).join(', ')}` : undefined,
+            };
+          }
         ),
       ],
     },
