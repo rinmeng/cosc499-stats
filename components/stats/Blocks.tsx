@@ -69,7 +69,7 @@ export function StatTile({
   icon: Icon,
   compact = false,
 }: {
-  label: string;
+  label: React.ReactNode;
   value: React.ReactNode;
   unit?: string;
   hint?: React.ReactNode;

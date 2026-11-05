@@ -20,6 +20,27 @@ export const overviewSeo = (): PageSeo => ({
   path: '/',
 });
 
+export const insightsSeo = (): PageSeo => ({
+  title: 'AI impact',
+  description:
+    'How UBCO COSC 499 capstone coding changed from before AI tools, through Copilot and ChatGPT, to the agentic era. Era medians of team rates, with no ranking of people.',
+  path: '/insights',
+});
+
+export const fingerprintsSeo = (): PageSeo => ({
+  title: 'AI fingerprints',
+  description:
+    'AI co-author trailers and bot reviews in UBCO COSC 499 capstones, as cohort medians. Unscanned repositories stay unknown, not zero.',
+  path: '/insights/fingerprints',
+});
+
+export const trendsSeo = (): PageSeo => ({
+  title: 'Trends',
+  description:
+    'Cross-year COSC 499 trends: when work lands in the term, pull request adoption, night and weekend commits, and summer versus winter.',
+  path: '/insights/trends',
+});
+
 export const aboutSeo = (): PageSeo => ({
   title: 'About',
   description:

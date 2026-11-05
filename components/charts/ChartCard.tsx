@@ -38,6 +38,7 @@ export function ChartCard<K extends string>({
   action,
   className,
   stacked = false,
+  wideMetrics = false,
   children,
 }: {
   title: string;
@@ -49,6 +50,8 @@ export function ChartCard<K extends string>({
   className?: string;
   /** Put the metrics in their own full-width row under the title (for many metrics) */
   stacked?: boolean;
+  /** Desktop: metrics take half the header instead of their minimum width */
+  wideMetrics?: boolean;
   children: React.ReactNode;
 }) {
   const plain = metrics?.filter((m) => !m.emphasis).length ?? 0;
@@ -90,7 +93,8 @@ export function ChartCard<K extends string>({
                 ? // phones: wrap 3 per row and let the last row stretch (no empty cells)
                   `flex flex-wrap lg:grid
                     lg:grid-cols-[repeat(var(--cols-lg),minmax(0,1fr))]`
-                : 'lg:flex lg:border-t-0 lg:border-l'
+                : 'lg:flex lg:border-t-0 lg:border-l',
+              wideMetrics && !stacked && 'lg:w-1/2 lg:shrink-0'
             )}
             style={
               stacked

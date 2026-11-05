@@ -98,6 +98,7 @@ const HISTORY_QUERY = /* GraphQL */ `
                 parents {
                   totalCount
                 }
+                message
                 author {
                   name
                   email
@@ -256,24 +257,50 @@ async function paginate<T>(
   return out;
 }
 
+const TRAILER_TOOLS: { id: string; re: RegExp }[] = [
+  { id: 'claude', re: /claude|anthropic\.com/i },
+  { id: 'copilot', re: /copilot/i },
+  { id: 'cursor', re: /cursor/i },
+  { id: 'codex', re: /codex/i },
+  { id: 'gemini', re: /gemini/i },
+  { id: 'aider', re: /aider/i },
+  { id: 'devin', re: /devin/i },
+];
+
+/** Tool ids named in Co-authored-by lines. The message itself is never stored. */
+function aiTrailersFrom(message: string | null | undefined): string[] | undefined {
+  if (!message) return undefined;
+  const found: string[] = [];
+  for (const line of message.split(/\r?\n/)) {
+    const match = line.match(/^co-authored-by:\s*(.+)$/i);
+    if (!match) continue;
+    for (const tool of TRAILER_TOOLS) {
+      if (tool.re.test(match[1]) && !found.includes(tool.id)) found.push(tool.id);
+    }
+  }
+  return found.length ? found : undefined;
+}
+
 function fetchCommits(owner: string, name: string): Promise<RawCommit[]> {
   return paginate(
     HISTORY_QUERY,
     { owner, name },
     (res) => res.repository.defaultBranchRef?.target?.history,
-    (c): RawCommit | null =>
+    (c): RawCommit | null => {
       // skip merge commits (matches GitHub's contributor graph)
-      c.parents.totalCount > 1
-        ? null
-        : {
-            oid: c.oid,
-            login: c.author?.user?.login ?? null,
-            name: c.author?.name ?? null,
-            email: c.author?.email ?? null,
-            date: c.authoredDate,
-            additions: c.additions,
-            deletions: c.deletions,
-          }
+      if (c.parents.totalCount > 1) return null;
+      const aiTrailers = aiTrailersFrom(c.message);
+      return {
+        oid: c.oid,
+        login: c.author?.user?.login ?? null,
+        name: c.author?.name ?? null,
+        email: c.author?.email ?? null,
+        date: c.authoredDate,
+        additions: c.additions,
+        deletions: c.deletions,
+        ...(aiTrailers ? { aiTrailers } : {}),
+      };
+    }
   );
 }
 
@@ -344,6 +371,7 @@ async function fetchRepo(org: string, name: string, team: number): Promise<RawRe
       stars: r.stargazerCount,
       sizeKb: r.diskUsage ?? 0,
       description: r.description,
+      trailersScanned: true,
     },
     languages: Object.fromEntries(
       r.languages.edges.map((e: Json) => [e.node.name, e.size as number])

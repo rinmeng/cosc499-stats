@@ -178,6 +178,26 @@ export const minRepoSizeKb = 50;
 /** Pulls the team number out of a repo name. Several repos can map to one team. */
 export const teamPattern = /team-?(\d+)/i;
 
+/**
+ * AI agents that review or open pull requests. They stay in `excludeLogins` so they
+ * never count as people. Insights reads them before that filter.
+ */
+export const AI_BOTS: string[] = [
+  'copilot',
+  'copilot-swe-agent',
+  'copilot-pull-request-reviewer',
+  'cursoragent',
+];
+
+/**
+ * Cohort start-year bounds for the insights eras. A cohort is pre-AI at or below
+ * `preAiMax`, early-AI at or below `earlyAiMax`, and agentic after that.
+ */
+export const ERA_BOUNDS = {
+  preAiMax: 2021,
+  earlyAiMax: 2023,
+} as const;
+
 /** Accounts that are never counted (bots, instructors, TAs). Case-insensitive. */
 export const excludeLogins: string[] = [
   'github-classroom',

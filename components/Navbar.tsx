@@ -37,10 +37,15 @@ const winter = cohorts
   .filter((c) => c.session !== 'summer')
   .sort((a, b) => b.year - a.year);
 
-/** Tabs: overview and about. Year-long sessions live in one selector. */
+/** Tabs: overview and about. Insights and the year selectors are dropdowns. */
 const links: NavLink[] = [
   { href: '/', label: 'Overview', live: false },
   { href: '/about', label: 'About', live: false },
+];
+const insightLinks: NavLink[] = [
+  { href: '/insights', label: 'AI impact', live: false },
+  { href: '/insights/fingerprints', label: 'AI fingerprints', live: false },
+  { href: '/insights/trends', label: 'Trends', live: false },
 ];
 const yearLinks = winter.map((c) => {
   const link = toLink(c);
@@ -146,7 +151,21 @@ export function Navbar() {
         <Brand />
         <div className='flex items-center gap-2 lg:gap-1'>
           <div className='hidden items-center gap-1 lg:flex'>
-            {items()}
+            {items(
+              undefined,
+              undefined,
+              links.filter((l) => l.href === '/')
+            )}
+            <NavDropdown
+              label='Insights'
+              links={insightLinks}
+              active={pathname === '/insights' || pathname.startsWith('/insights/')}
+            />
+            {items(
+              undefined,
+              undefined,
+              links.filter((l) => l.href === '/about')
+            )}
             {groups.map((g) => {
               const selected = g.links.find((l) => isActive(l.href));
               const shown =
@@ -181,7 +200,20 @@ export function Navbar() {
                 </SheetTitle>
               </SheetHeader>
               <div className={cn('flex flex-col items-center gap-2 px-4 pb-6')}>
-                {items(() => setOpen(false), 'w-full justify-center')}
+                {items(
+                  () => setOpen(false),
+                  'w-full justify-center',
+                  links.filter((l) => l.href === '/')
+                )}
+                <p className='mt-2 text-center text-xs font-medium text-muted-foreground'>
+                  Insights
+                </p>
+                {items(() => setOpen(false), 'w-full justify-center', insightLinks)}
+                {items(
+                  () => setOpen(false),
+                  'w-full justify-center',
+                  links.filter((l) => l.href === '/about')
+                )}
                 {groups.map((g) => (
                   <Fragment key={g.key}>
                     <p
