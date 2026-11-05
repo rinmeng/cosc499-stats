@@ -111,6 +111,7 @@ export function CohortTrendChart({
   highlight,
   compareTo,
   valueLabel = 'avg commits per team',
+  markerLabel = 'Today',
   action,
 }: {
   series: TrendSeries[];
@@ -123,6 +124,8 @@ export function CohortTrendChart({
   compareTo?: string;
   /** What the highlighted value counts, for its hint */
   valueLabel?: string;
+  /** Label on the comparison week's reference line */
+  markerLabel?: string;
   action?: React.ReactNode;
 }) {
   const shapeOf = new Map(series.map((s, i) => [s.slug, SHAPES[i % SHAPES.length]]));
@@ -224,7 +227,7 @@ export function CohortTrendChart({
               stroke='var(--muted-foreground)'
               strokeOpacity={0.5}
               label={{
-                value: 'Today',
+                value: markerLabel,
                 position: 'insideTopRight',
                 fill: 'var(--muted-foreground)',
                 fontSize: 11,

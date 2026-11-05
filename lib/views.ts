@@ -414,6 +414,8 @@ export interface InsightsView {
   bots: TimelineSeries[];
   curves: TrendSeries[];
   curveLabel: string;
+  /** Week the curves are compared at: midway, since every curve ends at 100% */
+  curveWeek: number;
   prsPer100: TimelineSeries[];
   prWeeks: TimelineSeries[];
   nightOwl: TimelineSeries[];
@@ -507,7 +509,8 @@ export function insightsView(s: Summary): InsightsView {
         color: cohortColor(curve.year, s.currentYear, curve.session),
       }))
       .sort((a, b) => (start.get(a.slug) ?? '').localeCompare(start.get(b.slug) ?? '')),
-    curveLabel: `% of weeks 0–${insights.window.week}`,
+    curveLabel: `% of weeks 0–${insights.window.week} commits`,
+    curveWeek: Math.ceil(insights.window.week / 2),
     prsPer100: [timelineSeries(s, 'prsPer100')],
     prWeeks: [timelineSeries(s, 'prWeeks')],
     nightOwl: [timelineSeries(s, 'nightOwl')],
