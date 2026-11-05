@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useSyncExternalStore } from 'react';
+import Image from 'next/image';
 import { Check, Copy, Share2 } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -46,8 +47,8 @@ const messageText = (item: ShareItem) => {
 function LinkCard({ item }: { item: ShareItem }) {
   return (
     <div className='w-64 overflow-hidden rounded-2xl bg-black text-left text-white'>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
+        unoptimized
         src={`${item.path === '/' ? '' : item.path}/opengraph-image`}
         alt=''
         width={1200}
@@ -178,21 +179,26 @@ export function ShareDialog({
 }
 
 /**
- * "Share" button for a page. It stays fixed at the top middle of the screen, just under
+ * "Share" button for a page. It stays fixed at the top right of the screen, just under
  * the navbar, so sharing is one click away wherever you are on the page.
  */
 export function ShareButton({ item }: { item: ShareItem }) {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button
-        size='sm'
-        className='fixed top-[4.25rem] left-1/2 z-40 -translate-x-1/2 rounded-full
-          shadow-lg'
-        onClick={() => setOpen(true)}
-      >
-        <Share2 className='size-4' /> Share
-      </Button>
+      {/* Same width and gutters as the page, so the button lines up with the content. */}
+      <div className='pointer-events-none fixed inset-x-0 top-18 z-40'>
+        <div className='page-container flex justify-end'>
+          <Button
+            size='sm'
+            variant='outline'
+            className='pointer-events-auto rounded-full shadow-lg'
+            onClick={() => setOpen(true)}
+          >
+            <Share2 className='size-4' /> Share
+          </Button>
+        </div>
+      </div>
       <ShareDialog item={item} open={open} onOpenChange={setOpen} />
     </>
   );

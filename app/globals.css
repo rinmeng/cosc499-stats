@@ -7,6 +7,12 @@
 @custom-variant dark (&:is(.dark *));
 
 @layer components {
+  /* Page width and side gutters, shared by the navbar, banner, main content, footer and
+     anything that should line up with them (e.g. the Share button). */
+  .page-container {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
   .nb-padding {
     @apply py-24;
   }

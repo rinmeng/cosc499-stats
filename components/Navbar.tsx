@@ -150,10 +150,7 @@ export function Navbar() {
 
   return (
     <nav className='fixed z-50 w-full border-b bg-background'>
-      <div
-        className='mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6
-          lg:px-8'
-      >
+      <div className='page-container flex items-center justify-between py-3'>
         <Brand />
         <div className='flex items-center gap-2 lg:gap-1'>
           <div className='hidden items-center gap-1 lg:flex'>
