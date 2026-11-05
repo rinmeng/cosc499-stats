@@ -42,7 +42,7 @@ export function MetricBarChart({
   className,
 }: {
   title: string;
-  description?: string;
+  description?: React.ReactNode;
   rows: BarRow[];
   metrics: BarMetric[];
   sortDesc?: boolean;

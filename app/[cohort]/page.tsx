@@ -652,7 +652,14 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
 
       <MetricBarChart
         title='Team output'
-        description='Highest first. Overall weighs commits, merged PRs, reviews and issues.'
+        description={
+          <>
+            Highest first. Overall weighs commits, merged PRs, reviews and issues.
+            <div className='mt-1 -ml-2'>
+              <ScoreInfo weights={summary.scoreWeights} />
+            </div>
+          </>
+        }
         {...teamBars(c)}
         sortDesc
       />
