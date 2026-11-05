@@ -55,7 +55,7 @@ Use the GitHub account that was in your capstone org:
 gh auth login
 ```
 
-Pick **GitHub.com**, then **HTTPS**, then **Login with a web browser**, and follow the
+Pick **GitHub.com**, then **Login with a web browser**, then **HTTPS**, and follow the
 prompts.
 
 Now check that you can see your cohort's repos:
