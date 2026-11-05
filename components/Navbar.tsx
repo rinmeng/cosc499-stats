@@ -36,8 +36,9 @@ type NavLink = ReturnType<typeof toLink>;
 /** Year-long cohorts in the "Past 5 years" dropdown; older ones go under "More years". */
 const RECENT_YEARS = 5;
 
+// The running cohort already has its own tab, so the dropdowns skip it.
 const winter = cohorts
-  .filter((c) => c.session !== 'summer')
+  .filter((c) => c.session !== 'summer' && cohortSlug(c) !== currentCohort)
   .sort((a, b) => b.year - a.year);
 const current = cohorts.find((c) => cohortSlug(c) === currentCohort);
 
