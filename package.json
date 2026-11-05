@@ -16,7 +16,7 @@
     "sync:current": "tsx scripts/sync.ts --current",
     "sync:year": "tsx scripts/sync.ts --year",
     "typecheck": "tsc --noEmit",
-    "vercel-build": "tsx scripts/sync.ts --current && next build"
+    "vercel-build": "tsx scripts/aggregate.ts && next build"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

@@ -109,10 +109,11 @@ engines (`noindex`). To remove someone's page and search entry, add their login 
 ## Privacy & deployment
 
 - Cohorts' raw data (`data/raw/COSC-499-W2023` etc.) is committed so contributions can be
-  merged. The current cohort (`data/raw/COSC-499-W2026/`) is committed too, and it is
-  re-synced on each deploy. The Vercel build (`vercel-build`) runs `pnpm sync:current`
-  first, which needs a `GITHUB_TOKEN` environment variable from an account in that org.
-- `data/summary.json` is always regenerated, by `pnpm build` locally or by the sync.
+  merged. The current cohort (`data/raw/COSC-499-W2026/`) is committed too. A deploy does
+  not re-fetch it. Run `pnpm sync:current` when you want newer activity, then commit the
+  raw files. That command needs a `GITHUB_TOKEN` from an account in the org, or `gh auth`.
+- `data/summary.json` is always regenerated from those files, by `pnpm build` locally and
+  by the Vercel build.
 
 ## SEO
 
