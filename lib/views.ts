@@ -414,8 +414,11 @@ export interface InsightsView {
   bots: TimelineSeries[];
   curves: TrendSeries[];
   curveLabel: string;
-  adoption: TimelineSeries[];
-  habits: TimelineSeries[];
+  prsPer100: TimelineSeries[];
+  prWeeks: TimelineSeries[];
+  nightOwl: TimelineSeries[];
+  weekend: TimelineSeries[];
+  holiday: TimelineSeries[];
   session: EraSeries[];
 }
 
@@ -468,14 +471,14 @@ export function insightsView(s: Summary): InsightsView {
     termScale: insights.termScale,
     commitSize: [eraSeries(s, 'commitSize'), eraSeries(s, 'largeCommitShare')],
     pullRequests: [
+      eraSeries(s, 'prHours'),
       eraSeries(s, 'prAdditions'),
       eraSeries(s, 'prFiles'),
-      eraSeries(s, 'prHours'),
     ],
     output: [
+      eraSeries(s, 'linesPerPw'),
       eraSeries(s, 'commitsPerPw'),
       eraSeries(s, 'prsPerPw'),
-      eraSeries(s, 'linesPerPw'),
     ],
     churn: [timelineSeries(s, 'churn')],
     ramp: [eraSeries(s, 'earlyOutput'), eraSeries(s, 'weekToQuarter')],
@@ -505,12 +508,11 @@ export function insightsView(s: Summary): InsightsView {
       }))
       .sort((a, b) => (start.get(a.slug) ?? '').localeCompare(start.get(b.slug) ?? '')),
     curveLabel: `% of weeks 0–${insights.window.week}`,
-    adoption: [timelineSeries(s, 'prsPer100'), timelineSeries(s, 'prWeeks')],
-    habits: [
-      timelineSeries(s, 'nightOwl'),
-      timelineSeries(s, 'weekend'),
-      timelineSeries(s, 'holiday'),
-    ],
+    prsPer100: [timelineSeries(s, 'prsPer100')],
+    prWeeks: [timelineSeries(s, 'prWeeks')],
+    nightOwl: [timelineSeries(s, 'nightOwl')],
+    weekend: [timelineSeries(s, 'weekend')],
+    holiday: [timelineSeries(s, 'holiday')],
     session: [
       {
         key: 'session',

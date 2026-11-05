@@ -251,41 +251,139 @@ export const WHY = {
     ],
     method: 'Every line ends at 100% of its own window. Summer cohorts are dashed.',
   },
-  adoption: {
+  prsPer100: {
     measures:
-      'How much of the work goes through pull requests: merged pull requests per 100 commits, and the share of active weeks in which a pull request was merged.',
+      'How many pull requests a team merges for every 100 commits it makes. A higher number means the work is split into more, smaller merges.',
     reasons: [
       {
         title: 'Required by the course',
         detail:
-          'Recent cohorts are asked to work on branches and merge through pull requests instead of pushing to main.',
+          'Recent cohorts are asked to work on branches and merge through pull requests instead of pushing straight to main.',
       },
       {
         title: 'Smaller, more frequent merges',
         detail:
-          'Merging a pull request every week keeps branches short-lived and conflicts small.',
+          'Merging often keeps branches short-lived and conflicts small, which raises the number of merges per commit.',
+      },
+      {
+        title: 'Squashed commits',
+        detail:
+          'Squashing a pull request into one commit lowers the commit count, which raises this number with no change in how the team works.',
+      },
+      {
+        title: 'Tooling that nudges you',
+        detail:
+          'Branch protection and review requests make a direct push harder than opening a pull request.',
       },
     ],
     method:
-      'These are proxies: commits aren’t linked to pull requests, so this shows how often the two appear together.',
+      'A proxy: pull requests aren’t linked to individual commits, so this shows how often the two appear together, not which commits went through review. Only merged pull requests count.',
   },
-  habits: {
+  prWeeks: {
     measures:
-      'The share of commits made at night (10 pm–4 am), on weekends, and on holidays or breaks, in Vancouver time.',
+      'The share of a team’s active weeks in which at least one pull request was merged. 100% means that every week the team worked, something was merged.',
     reasons: [
       {
-        title: 'Less late-night crunch',
+        title: 'A weekly rhythm',
         detail:
-          'Steadier progress through the term can mean fewer all-nighters before a deadline.',
+          'Sprint-style courses ask for something working each week, which pushes teams to merge weekly.',
       },
       {
-        title: 'Weekends fit around other classes',
+        title: 'Smaller changes',
         detail:
-          'Students with full timetables or jobs often save project work for the weekend.',
+          'When a change takes less time to build, it is easier to finish and merge it within the same week.',
+      },
+      {
+        title: 'Continuous deployment',
+        detail:
+          'Teams that deploy every merge to a live site have a reason to merge often.',
+      },
+      {
+        title: 'Few weeks to count',
+        detail:
+          'A team with only a handful of active weeks can hit 0% or 100% easily, which is why this is shown as a median across teams.',
+      },
+    ],
+    method:
+      'Active weeks are weeks with at least one commit or opened pull request. A proxy for how steadily work is merged, not for how well it is reviewed.',
+  },
+  nightOwl: {
+    measures:
+      'The share of a team’s commits made between 10 pm and 4 am, in Vancouver time.',
+    reasons: [
+      {
+        title: 'Steadier progress',
+        detail:
+          'Work that is spread across the term leaves fewer all-nighters before a deadline.',
+      },
+      {
+        title: 'Faster to finish a task',
+        detail:
+          'When a feature takes an hour instead of an evening, it is easier to stop before midnight.',
+      },
+      {
+        title: 'Deadlines and demos',
+        detail:
+          'Late-night spikes usually line up with a milestone due date, which changes by year.',
+      },
+      {
+        title: 'Time zones',
+        detail:
+          'A teammate working from another time zone can make late commits look like night work.',
       },
     ],
     method:
       'Full term only, so the in-progress cohort is hollow and left out of the era medians.',
+  },
+  weekend: {
+    measures: 'The share of a team’s commits made on a Saturday or Sunday.',
+    reasons: [
+      {
+        title: 'Weekdays are full',
+        detail:
+          'Students with a full timetable or a job often save project work for the weekend.',
+      },
+      {
+        title: 'Working in blocks',
+        detail:
+          'Longer, less frequent sessions fit a weekend better than a few spare hours in a weekday.',
+      },
+      {
+        title: 'Remote teamwork',
+        detail:
+          'Teams that meet online instead of on campus can schedule work sessions on weekends more easily.',
+      },
+      {
+        title: 'Summer terms',
+        detail:
+          'A summer capstone is often the only class, so there is less reason to wait for the weekend.',
+      },
+    ],
+    method:
+      'Full term only, so the in-progress cohort is hollow and left out of the era medians.',
+  },
+  holiday: {
+    measures:
+      'The share of a team’s commits made on a holiday or break: Thanksgiving, Christmas and New Year, reading week, and in summer Victoria Day, Canada Day and BC Day.',
+    reasons: [
+      {
+        title: 'Fewer commits to begin with',
+        detail:
+          'Holidays are only a few days a term, so even small changes in a handful of commits move this share.',
+      },
+      {
+        title: 'Breaks are catch-up time',
+        detail:
+          'Reading week and winter break are the longest stretches free of other classes, so teams use them to catch up.',
+      },
+      {
+        title: 'Deadlines near a break',
+        detail:
+          'A milestone due just after a holiday pulls work into it, and that changes by year.',
+      },
+    ],
+    method:
+      'Full term only, so the in-progress cohort is hollow and left out of the era medians. A holiday that falls on a weekend is counted once.',
   },
   session: {
     measures:

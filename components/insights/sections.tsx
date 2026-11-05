@@ -147,14 +147,21 @@ export function TrendCharts({ view }: { view: InsightsView }) {
         action={<WhyDialog title='When the work lands' why={WHY.curves} />}
       />
       <CohortTimelineChart
-        title='Pull request adoption'
-        why={WHY.adoption}
-        series={view.adoption}
+        title='Pull requests per 100 commits'
+        why={WHY.prsPer100}
+        series={view.prsPer100}
       />
       <CohortTimelineChart
-        title='Night owls through the years'
-        why={WHY.habits}
-        series={view.habits}
+        title='Weeks with a merged pull request'
+        why={WHY.prWeeks}
+        series={view.prWeeks}
+      />
+      <CohortTimelineChart title='Night owls' why={WHY.nightOwl} series={view.nightOwl} />
+      <CohortTimelineChart title='Weekends' why={WHY.weekend} series={view.weekend} />
+      <CohortTimelineChart
+        title='Holidays and breaks'
+        why={WHY.holiday}
+        series={view.holiday}
       />
       <EraCompareChart
         title='Summer and winter'
