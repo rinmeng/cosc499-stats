@@ -52,6 +52,7 @@ import {
   type HighlightSection,
 } from '@/components/stats/HighlightSections';
 import { TeamTable } from '@/components/stats/TeamTable';
+import { ScoreInfo } from '@/components/stats/ScoreInfo';
 import { TopContributors } from '@/components/stats/TopContributors';
 import { Badge } from '@/components/ui/badge';
 import { getCohort, getSummary } from '@/lib/data';
@@ -657,7 +658,8 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
 
       <Section
         title='Top contributors'
-        description={`“Overall” weighs commits ×${summary.scoreWeights.commits}, merged PRs ×${summary.scoreWeights.prsMerged}, reviews ×${summary.scoreWeights.reviews} and issues ×${summary.scoreWeights.issuesOpened}. Top 10 across the cohort, or the top ${summary.topN} on each team. Switch the measure to rank by just one thing.`}
+        description={`Top 10 across the cohort, or the top ${summary.topN} on each team. Switch the measure to rank by just one thing.`}
+        action={<ScoreInfo weights={summary.scoreWeights} />}
       >
         <TopContributors
           teams={teamTopViews(c, summary.topN)}

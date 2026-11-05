@@ -27,6 +27,7 @@ import {
   StatTile,
 } from '@/components/stats/Blocks';
 import { isSmallCohort } from '@/components/stats/HelpComplete';
+import { ScoreInfo } from '@/components/stats/ScoreInfo';
 import { ShowMore } from '@/components/stats/ShowMore';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -381,6 +382,7 @@ export default function Overview() {
               value: fmtCompact(t.score),
               unit: 'pts',
             }))}
+            footer={<ScoreInfo weights={s.scoreWeights} />}
           />
           <Highlight
             icon={GitMerge}

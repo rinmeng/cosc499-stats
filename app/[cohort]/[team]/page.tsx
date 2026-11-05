@@ -24,6 +24,7 @@ import {
   Section,
   StatTile,
 } from '@/components/stats/Blocks';
+import { ScoreInfo } from '@/components/stats/ScoreInfo';
 import { TopContributors } from '@/components/stats/TopContributors';
 import { getCohort, getSummary, getTeam } from '@/lib/data';
 import { pageMetadata, teamSeo } from '@/lib/seo';
@@ -161,6 +162,7 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
           className='lg:col-span-3'
           title={`Top ${summary.topN} contributors`}
           description='Switch the measure to see who leads on each.'
+          action={<ScoreInfo weights={summary.scoreWeights} />}
         >
           <TopContributorsSingle view={view} />
         </Section>

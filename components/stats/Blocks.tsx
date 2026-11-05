@@ -155,10 +155,18 @@ export interface HighlightProps {
   description: string;
   icon: LucideIcon;
   items: HighlightItem[];
+  /** Shown under the list, e.g. a "How points are calculated" button */
+  footer?: React.ReactNode;
 }
 
 /** A small "top 3" list for a positive team superlative. */
-export function Highlight({ title, description, icon: Icon, items }: HighlightProps) {
+export function Highlight({
+  title,
+  description,
+  icon: Icon,
+  items,
+  footer,
+}: HighlightProps) {
   return (
     <Card size='sm'>
       <CardHeader>
@@ -201,6 +209,7 @@ export function Highlight({ title, description, icon: Icon, items }: HighlightPr
             </li>
           ))}
         </ol>
+        {footer && <div className='mt-3 -ml-2'>{footer}</div>}
       </CardContent>
     </Card>
   );

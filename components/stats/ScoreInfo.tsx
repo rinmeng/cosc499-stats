@@ -1,0 +1,118 @@
+'use client';
+
+import { CircleHelp } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+
+const ROWS: { key: string; label: string; detail: string }[] = [
+  {
+    key: 'commits',
+    label: 'Commit',
+    detail:
+      'Each commit you authored during the term, counted once even if it’s in several branches.',
+  },
+  {
+    key: 'prsMerged',
+    label: 'Merged PR',
+    detail: 'Each pull request you opened that was merged.',
+  },
+  {
+    key: 'reviews',
+    label: 'Review',
+    detail: 'Each pull request you reviewed for someone else (once per PR).',
+  },
+  {
+    key: 'issuesOpened',
+    label: 'Issue opened',
+    detail: 'Each issue you created.',
+  },
+  {
+    key: 'issuesClosed',
+    label: 'Issue closed',
+    detail: 'Each closed issue you were assigned to.',
+  },
+];
+
+/** "?" button that opens a dialog explaining how the Overall score is calculated. */
+export function ScoreInfo({ weights }: { weights: Record<string, number> }) {
+  const example = {
+    commits: 40,
+    prsMerged: 10,
+    reviews: 8,
+    issuesOpened: 5,
+    issuesClosed: 6,
+  };
+  const parts = ROWS.map((r) => ({
+    ...r,
+    n: example[r.key as keyof typeof example],
+    w: weights[r.key] ?? 0,
+  }));
+  const total = parts.reduce((a, p) => a + p.n * p.w, 0);
+
+  return (
+    <Dialog>
+      <DialogTrigger
+        render={<Button variant='ghost' size='sm' className='text-muted-foreground' />}
+      >
+        <CircleHelp />
+        How points are calculated
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>How points are calculated</DialogTitle>
+          <DialogDescription>
+            The Overall score adds up each person’s GitHub activity, with weights so that
+            shipping and reviewing work counts for more than a single commit. A team’s
+            score is the sum of its members’ scores.
+          </DialogDescription>
+        </DialogHeader>
+
+        <table className='w-full text-sm'>
+          <tbody className='divide-y'>
+            {parts.map((p) => (
+              <tr key={p.key}>
+                <td className='py-2 pr-3 align-top'>
+                  <div className='font-medium'>{p.label}</div>
+                  <div className='text-xs text-muted-foreground'>{p.detail}</div>
+                </td>
+                <td
+                  className='py-2 text-right align-top font-mono whitespace-nowrap
+                    tabular-nums'
+                >
+                  {p.w} {p.w === 1 ? 'pt' : 'pts'}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <div className='space-y-1.5 rounded-lg bg-muted p-3 text-xs'>
+          <div className='font-medium'>Example</div>
+          <div className='font-mono leading-relaxed text-muted-foreground'>
+            {parts.map((p, i) => (
+              <span key={p.key}>
+                {i > 0 && ' + '}
+                {p.n}×{p.w}
+              </span>
+            ))}{' '}
+            = <span className='font-semibold text-foreground'>{total} pts</span>
+          </div>
+        </div>
+
+        <p className='text-xs text-muted-foreground'>
+          Lines of code aren’t part of the score, since they say more about generated
+          files than effort. Bots and course staff aren’t counted. Only activity during
+          the term is included.
+        </p>
+      </DialogContent>
+    </Dialog>
+  );
+}
