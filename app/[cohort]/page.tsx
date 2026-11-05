@@ -6,6 +6,7 @@ import {
   Handshake,
   MessageSquareCode,
   CalendarDays,
+  ExternalLink,
   CalendarFold,
   CircleCheckBig,
   Flag,
@@ -107,6 +108,21 @@ export async function generateMetadata({ params }: PageProps<'/[cohort]'>) {
   return pageMetadata(cohortSeo(c));
 }
 
+/** The cohort's GitHub organization, linked; nothing for sessions that had no org. */
+function OrgLink({ org }: { org?: string }) {
+  if (!org) return null;
+  return (
+    <a
+      href={`https://github.com/${org}`}
+      target='_blank'
+      rel='noreferrer'
+      className='inline-flex items-center gap-1 underline-offset-2 hover:underline'
+    >
+      {org} <ExternalLink className='size-3.5' />
+    </a>
+  );
+}
+
 export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
   const { cohort } = await params;
   const summary = getSummary();
@@ -118,7 +134,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
   if (c.teams.length === 0)
     return (
       <div className='space-y-8'>
-        <PageHeader eyebrow={c.org} title={`${c.label} cohort`}>
+        <PageHeader eyebrow={<OrgLink org={c.org} />} title={`${c.label} cohort`}>
           No team repositories from this session are visible on GitHub yet.
         </PageHeader>
         <HelpComplete label={c.label} cohort={c.slug} teams={0} note={c.note} />
@@ -518,7 +534,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       <PageHeader
         eyebrow={
           <span className='flex items-center gap-2'>
-            {c.org}
+            <OrgLink org={c.org} />
             {live && <Badge>In progress · week {week}</Badge>}
           </span>
         }
