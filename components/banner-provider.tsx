@@ -88,8 +88,7 @@ export function Banner() {
   if (dismissed) return null;
   return (
     <div className={`${STRIP} border-t bg-muted/60 text-sm`}>
-      <div className='mx-auto flex h-full max-w-7xl items-center gap-3 px-4 sm:px-6
-        lg:px-8'>
+      <div className='page-container flex h-full items-center gap-3'>
         <Sparkles className='size-4 shrink-0 text-muted-foreground' />
         <p className='min-w-0 flex-1 truncate'>
           <span className='hidden sm:inline'>

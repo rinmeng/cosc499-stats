@@ -51,6 +51,7 @@ import {
   HighlightSections,
   type HighlightSection,
 } from '@/components/stats/HighlightSections';
+import { ShareButton } from '@/components/ShareDialog';
 import { TeamTable } from '@/components/stats/TeamTable';
 import { ScoreInfo } from '@/components/stats/ScoreInfo';
 import { TopContributors } from '@/components/stats/TopContributors';
@@ -138,7 +139,21 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
   if (c.teams.length === 0)
     return (
       <div className='space-y-8'>
-        <PageHeader eyebrow='COSC 499 capstone' title={`${c.label} cohort`}>
+        <PageHeader
+          eyebrow='COSC 499 capstone'
+          title={
+            <span className='flex flex-wrap items-center gap-x-4 gap-y-2'>
+              {c.label} cohort
+              <ShareButton
+                item={{
+                  path: cohortSeo(c).path,
+                  title: cohortSeo(c).title,
+                  description: cohortSeo(c).description,
+                }}
+              />
+            </span>
+          }
+        >
           <OrgLink org={c.hasOrg ? c.org : undefined} />
           No team repositories from this session are visible on GitHub yet.
         </PageHeader>
@@ -549,7 +564,18 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             {live && <Badge>In progress · week {week}</Badge>}
           </span>
         }
-        title={`${c.label} cohort`}
+        title={
+          <span className='flex flex-wrap items-center gap-x-4 gap-y-2'>
+            {c.label} cohort
+            <ShareButton
+              item={{
+                path: cohortSeo(c).path,
+                title: cohortSeo(c).title,
+                description: cohortSeo(c).description,
+              }}
+            />
+          </span>
+        }
       >
         <OrgLink org={c.hasOrg ? c.org : undefined} />
         {live ? (

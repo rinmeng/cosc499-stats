@@ -16,6 +16,7 @@ export default function InsightsImpactPage() {
   return (
     <InsightsPage
       title='How AI changed the way teams code'
+      share={insightsSeo()}
       intro={
         <p>
           Copilot and ChatGPT showed up in 2022 and coding agents in 2024. Here is what

@@ -12,6 +12,7 @@ import {
   Users,
 } from 'lucide-react';
 
+import { ShareButton } from '@/components/ShareDialog';
 import { MemberRadars, type RadarMember } from '@/components/charts/MemberRadars';
 import { ActivityChart } from '@/components/charts/ActivityChart';
 import { CohortTrendChart } from '@/components/charts/CohortTrendChart';
@@ -98,7 +99,21 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
         <ArrowLeft className='size-4' /> {c.label} cohort
       </Link>
 
-      <PageHeader eyebrow={c.org} title={t.name}>
+      <PageHeader
+        eyebrow={c.org}
+        title={
+          <span className='flex flex-wrap items-center gap-x-4 gap-y-2'>
+            {t.name}
+            <ShareButton
+              item={{
+                path: teamSeo(c, t).path,
+                title: teamSeo(c, t).title,
+                description: teamSeo(c, t).description,
+              }}
+            />
+          </span>
+        }
+      >
         <div className='space-y-2'>
           {t.description && !/created by GitHub Classroom/i.test(t.description) && (
             <p>{t.description}</p>

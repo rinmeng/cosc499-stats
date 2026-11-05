@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import Fuse from 'fuse.js';
-import { Search } from 'lucide-react';
+import { Search, Share2, Users } from 'lucide-react';
 
+import { ShareDialog } from '@/components/ShareDialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +18,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Kbd, KbdGroup } from '@/components/ui/kbd';
+import type { ShareItem } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 interface Entry {
@@ -26,6 +28,15 @@ interface Entry {
   cohorts: string[];
   /** In the cohort that's still running; /people.json lists these first */
   current: boolean;
+  description: string;
+}
+
+interface TeamEntry {
+  name: string;
+  cohort: string;
+  current: boolean;
+  description: string;
+  path: string;
 }
 
 /** The platform never changes while the page is open, so there's nothing to subscribe to. */
@@ -34,7 +45,13 @@ const noSubscribe = () => () => {};
 /** How many people to mount at once. The index itself stays in memory. */
 const PAGE_SIZE = 20;
 
-/** Find a person by name or GitHub username and open their page (/u/<login>). */
+/** How many team matches to show next to the people. */
+const TEAM_LIMIT = 6;
+
+/**
+ * Find a person (/u/<login>) or a team by name and open their page, or share it.
+ * Sharing opens a preview of the text message the link becomes.
+ */
 export function PeopleSearch({
   className,
   onOpen,
@@ -47,6 +64,9 @@ export function PeopleSearch({
   const listRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [people, setPeople] = useState<Entry[] | null>(null);
+  const [teams, setTeams] = useState<TeamEntry[]>([]);
+  const [sharing, setSharing] = useState<ShareItem | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
   // "⌘" on Apple devices, "Ctrl" elsewhere. The server renders "⌘"; the client corrects it.
@@ -75,6 +95,10 @@ export function PeopleSearch({
       .then((r) => r.json())
       .then(setPeople)
       .catch(() => setPeople([]));
+    fetch('/teams.json')
+      .then((r) => r.json())
+      .then(setTeams)
+      .catch(() => setTeams([]));
   }, [open, people]);
 
   useEffect(() => {
@@ -93,6 +117,16 @@ export function PeopleSearch({
     [people]
   );
 
+  const teamFuse = useMemo(
+    () =>
+      new Fuse(teams, {
+        keys: ['name', 'cohort'],
+        threshold: 0.35,
+        ignoreLocation: true,
+      }),
+    [teams]
+  );
+
   const filtered = useMemo(() => {
     if (!people) return [];
     const q = query.trim();
@@ -105,6 +139,17 @@ export function PeopleSearch({
   const start = (safePage - 1) * PAGE_SIZE;
   const visible = filtered.slice(start, start + PAGE_SIZE);
   const searching = query.trim().length > 0;
+  const q = query.trim();
+  const teamMatches = (
+    searching ? teamFuse.search(q).map((r) => r.item) : teams.filter((t) => t.current)
+  ).slice(0, TEAM_LIMIT);
+  const share = (item: ShareItem) => {
+    setOpen(false);
+    setQuery('');
+    setPage(1);
+    setSharing(item);
+    setShareOpen(true);
+  };
   const groups = searching
     ? [{ heading: 'Matches', list: visible }]
     : [
@@ -124,8 +169,8 @@ export function PeopleSearch({
         }}
       >
         <Search className='size-4' />
-        <span className='hidden xl:inline'>Find yourself</span>
-        <span className='sr-only xl:hidden'>Find yourself</span>
+        <span className='hidden xl:inline'>Find yourself or your team</span>
+        <span className='sr-only xl:hidden'>Find yourself or your team</span>
         <KbdGroup className='ml-1 hidden xl:inline-flex'>
           <Kbd>{modKey}</Kbd>
           <Kbd>K</Kbd>
@@ -140,14 +185,14 @@ export function PeopleSearch({
             setPage(1);
           }
         }}
-        title='Find a person'
-        description='Search by name or GitHub username'
+        title='Find yourself or your team'
+        description='Search by name, GitHub username or team name'
       >
         {/* This CommandDialog doesn't add a cmdk root itself; input and list need one. */}
         {/* Filtering is ours, so cmdk never mounts the people who aren't on this page. */}
         <Command shouldFilter={false}>
           <CommandInput
-            placeholder='Name or GitHub username…'
+            placeholder='Name, GitHub username or team…'
             value={query}
             onValueChange={(value) => {
               // A new query starts back at the first page.
@@ -156,8 +201,45 @@ export function PeopleSearch({
             }}
           />
           <CommandList ref={listRef}>
-            {(!people || filtered.length === 0) && (
+            {(!people || (filtered.length === 0 && teamMatches.length === 0)) && (
               <CommandEmpty>{people ? 'No one found.' : 'Loading…'}</CommandEmpty>
+            )}
+            {teamMatches.length > 0 && (
+              <CommandGroup heading={searching ? 'Teams' : 'Teams in the current cohort'}>
+                {teamMatches.map((t) => (
+                  <CommandItem
+                    key={t.path}
+                    value={`team ${t.name} ${t.cohort}`}
+                    onSelect={() => {
+                      setOpen(false);
+                      router.push(t.path);
+                    }}
+                  >
+                    <span
+                      className='flex size-7 shrink-0 items-center justify-center
+                        rounded-full bg-muted'
+                    >
+                      <Users className='size-3.5' />
+                    </span>
+                    <div className='flex min-w-0 flex-1 flex-col'>
+                      <span className='truncate'>{t.name}</span>
+                      <span className='truncate text-xs text-muted-foreground'>
+                        {t.cohort}
+                      </span>
+                    </div>
+                    <ShareRowButton
+                      label={`Share ${t.name}`}
+                      onClick={() =>
+                        share({
+                          path: t.path,
+                          title: `${t.name} · ${t.cohort}`,
+                          description: t.description,
+                        })
+                      }
+                    />
+                  </CommandItem>
+                ))}
+              </CommandGroup>
             )}
             {groups.map((g) => (
               <CommandGroup key={g.heading} heading={g.heading}>
@@ -176,7 +258,7 @@ export function PeopleSearch({
                         {p.name.slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <div className='flex min-w-0 flex-col'>
+                    <div className='flex min-w-0 flex-1 flex-col'>
                       <span className='truncate'>
                         {p.name}
                         {p.name.toLowerCase() !== p.login.toLowerCase() && (
@@ -187,6 +269,16 @@ export function PeopleSearch({
                         {p.cohorts.join(', ')}
                       </span>
                     </div>
+                    <ShareRowButton
+                      label={`Share ${p.name}`}
+                      onClick={() =>
+                        share({
+                          path: `/u/${p.login}`,
+                          title: p.name,
+                          description: p.description,
+                        })
+                      }
+                    />
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -221,6 +313,27 @@ export function PeopleSearch({
           )}
         </Command>
       </CommandDialog>
+      <ShareDialog item={sharing} open={shareOpen} onOpenChange={setShareOpen} />
     </>
+  );
+}
+
+/** Small share icon at the end of a search row; doesn't open the row's page. */
+function ShareRowButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <Button
+      type='button'
+      variant='ghost'
+      size='icon-xs'
+      className='shrink-0 text-muted-foreground'
+      aria-label={label}
+      title={label}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+    >
+      <Share2 className='size-3.5' />
+    </Button>
   );
 }

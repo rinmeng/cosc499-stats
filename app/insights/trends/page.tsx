@@ -14,6 +14,7 @@ export default function TrendsPage() {
   return (
     <InsightsPage
       title='Trends across the years'
+      share={trendsSeo()}
       intro={
         <p>
           Same course, different rhythm. See how fast teams get going, how much of their

@@ -1,5 +1,6 @@
 import { ExternalLink } from 'lucide-react';
 
+import { ShareButton } from '@/components/ShareDialog';
 import { SmallCohortsDialog } from '@/components/insights/SmallCohortsDialog';
 import { PageHeader } from '@/components/stats/Blocks';
 import { contributingUrl } from '@/components/stats/HelpComplete';
@@ -10,6 +11,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { getSummary } from '@/lib/data';
+import type { ShareItem } from '@/lib/types';
 import { insightsView } from '@/lib/views';
 
 /**
@@ -19,11 +21,14 @@ import { insightsView } from '@/lib/views';
  */
 export function InsightsPage({
   title,
+  share,
   intro,
   notes,
   children,
 }: {
   title: string;
+  /** Link preview for the Share button (the page's SEO title, description and path) */
+  share: ShareItem;
   intro: React.ReactNode;
   /** Short caveats shown under the intro as "Things to know" */
   notes?: React.ReactNode[];
@@ -43,7 +48,21 @@ export function InsightsPage({
 
   return (
     <div className='space-y-8'>
-      <PageHeader eyebrow='Insights' title={title}>
+      <PageHeader
+        eyebrow='Insights'
+        title={
+          <span className='flex flex-wrap items-center gap-x-4 gap-y-2'>
+            {title}
+            <ShareButton
+              item={{
+                path: share.path,
+                title: share.title,
+                description: share.description,
+              }}
+            />
+          </span>
+        }
+      >
         {intro}
         {notes && notes.length > 0 && (
           <div className='mt-4 space-y-1.5'>

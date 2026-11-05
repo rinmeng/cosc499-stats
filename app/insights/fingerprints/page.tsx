@@ -12,6 +12,7 @@ export default function FingerprintsPage() {
   return (
     <InsightsPage
       title='Traces of AI in the commit history'
+      share={fingerprintsSeo()}
       intro={
         <p>
           Sometimes the AI signs its work. These charts count the commits and pull

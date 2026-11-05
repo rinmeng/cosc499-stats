@@ -11,6 +11,7 @@ import {
   MessageSquareCode,
 } from 'lucide-react';
 
+import { ShareButton } from '@/components/ShareDialog';
 import { Grid, PageHeader, Section, StatTile } from '@/components/stats/Blocks';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { fmt, fmtCompact, pct } from '@/lib/format';
@@ -147,12 +148,19 @@ export default async function PersonPage({ params }: PageProps<'/u/[login]'>) {
       <PageHeader
         eyebrow='COSC 499 capstone'
         title={
-          <span className='flex items-center gap-4'>
+          <span className='flex flex-wrap items-center gap-x-4 gap-y-2'>
             <Avatar className='size-12 md:size-14'>
               {p.avatarUrl && <AvatarImage src={p.avatarUrl} alt='' />}
               <AvatarFallback>{p.name.slice(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
             {p.name}
+            <ShareButton
+              item={{
+                path: personSeo(p).path,
+                title: personSeo(p).title,
+                description: personSeo(p).description,
+              }}
+            />
           </span>
         }
       >

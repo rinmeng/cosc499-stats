@@ -14,10 +14,7 @@ export function Footer() {
 
   return (
     <footer className='border-t'>
-      <div
-        className='mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-8
-          text-center sm:px-6 lg:px-8'
-      >
+      <div className='page-container flex flex-col items-center gap-3 py-8 text-center'>
         <p className='text-sm text-muted-foreground'>&copy; {yearLabel} rin</p>
 
         <Link
