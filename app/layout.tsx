@@ -126,7 +126,7 @@ export default function RootLayout({
           <TooltipProvider>
             <BannerProvider>
               <Navbar />
-              <main className='page-container pt-24 pb-16'>
+              <main className='page-container pt-26 pb-16'>
                 <BannerSpacer />
                 {children}
               </main>

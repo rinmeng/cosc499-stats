@@ -187,7 +187,7 @@ export function ShareButton({ item }: { item: ShareItem }) {
   return (
     <>
       {/* Same width and gutters as the page, so the button lines up with the content. */}
-      <div className='pointer-events-none fixed inset-x-0 top-18 z-40'>
+      <div className='pointer-events-none fixed inset-x-0 top-16 z-40'>
         <div className='page-container flex justify-end'>
           <Button
             size='sm'
