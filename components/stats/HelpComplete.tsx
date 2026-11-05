@@ -1,5 +1,6 @@
 import { ExternalLink, BookOpen, HandHeart, MessageSquarePlus } from 'lucide-react';
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { repoUrl, smallCohortTeams } from '@/sync.config';
@@ -25,11 +26,14 @@ export function HelpComplete({
   cohort,
   teams,
   note,
+  contributors = [],
 }: {
   label: string;
   cohort: string;
   teams: number;
   note?: string | null;
+  /** GitHub logins of people who already added data for this cohort */
+  contributors?: string[];
 }) {
   return (
     <Card className='border-chart-3/40 bg-chart-3/5 ring-chart-3/20'>
@@ -51,6 +55,33 @@ export function HelpComplete({
             </code>{' '}
             and open a pull request. No coding needed.
           </p>
+          {contributors.length > 0 && (
+            <p
+              className='flex flex-wrap items-center gap-x-2 gap-y-1 pt-1 text-sm
+                text-muted-foreground'
+            >
+              {contributors.length === 1 ? 'Recent contributor:' : 'Recent contributors:'}
+              {contributors.map((login) => (
+                <a
+                  key={login}
+                  href={`https://github.com/${login}`}
+                  target='_blank'
+                  rel='noreferrer'
+                  className='inline-flex items-center gap-1.5 font-medium text-foreground
+                    underline-offset-2 hover:underline'
+                >
+                  <Avatar className='size-5'>
+                    <AvatarImage src={`https://github.com/${login}.png?size=40`} alt='' />
+                    <AvatarFallback className='text-[10px]'>
+                      {login.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  @{login}
+                  <ExternalLink className='size-3.5' />
+                </a>
+              ))}
+            </p>
+          )}
         </div>
         <div className='flex flex-wrap gap-2'>
           <Button

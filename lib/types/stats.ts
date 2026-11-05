@@ -189,6 +189,10 @@ export interface CohortStats {
   year: number;
   label: string;
   note: string | null;
+  /** False for sessions with no course org (`org` is then a display label) */
+  hasOrg: boolean;
+  /** GitHub logins of people who added this cohort's data */
+  contributors: string[];
   isCurrent: boolean;
   termStart: string;
   teams: TeamStats[];

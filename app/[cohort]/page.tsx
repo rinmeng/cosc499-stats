@@ -138,10 +138,16 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     return (
       <div className='space-y-8'>
         <PageHeader eyebrow='COSC 499 capstone' title={`${c.label} cohort`}>
-          <OrgLink org={c.org} />
+          <OrgLink org={c.hasOrg ? c.org : undefined} />
           No team repositories from this session are visible on GitHub yet.
         </PageHeader>
-        <HelpComplete label={c.label} cohort={c.slug} teams={0} note={c.note} />
+        <HelpComplete
+          label={c.label}
+          cohort={c.slug}
+          teams={0}
+          note={c.note}
+          contributors={c.contributors}
+        />
       </div>
     );
 
@@ -544,7 +550,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         }
         title={`${c.label} cohort`}
       >
-        <OrgLink org={c.org} />
+        <OrgLink org={c.hasOrg ? c.org : undefined} />
         {live ? (
           <>
             {c.totals.teams} teams building right now. Term started {fmtDate(c.termStart)}
@@ -565,6 +571,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           cohort={c.slug}
           teams={c.totals.teams}
           note={c.note}
+          contributors={c.contributors}
         />
       )}
 

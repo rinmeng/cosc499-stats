@@ -578,6 +578,8 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     year: cfg.year,
     label: cfg.label,
     note: cfg.note ?? null,
+    hasOrg: !!cfg.org,
+    contributors: cfg.contributors ?? [],
     isCurrent,
     termStart: termStart.toISOString().slice(0, 10),
     teams,

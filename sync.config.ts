@@ -20,6 +20,11 @@ export interface CohortConfig {
   /** Optional caveat shown on the cohort page */
   note?: string;
   /**
+   * GitHub logins of people who added this cohort's data (credited on the cohort
+   * page). Add yourself when you send a pull request with new data.
+   */
+  contributors?: string[];
+  /**
    * Team repos that live outside the org (e.g. moved to a personal account).
    * `repo` is "owner/name"; your token needs read access to it.
    */
@@ -131,7 +136,7 @@ export const cohorts: CohortConfig[] = [
     year: 2025,
     session: 'summer',
     label: 'Summer 2025',
-    note: 'Only one team repository from this session is visible on GitHub.',
+    contributors: ['KeeranNaidu12'],
   },
   // No summer 2026: the UBCO-COSC499-S2026 org has no team repos, so the session
   // most likely didn't run.
