@@ -44,6 +44,7 @@ const current = cohorts.find((c) => cohortSlug(c) === currentCohort);
 /** Tabs: the overview and the cohort that's running now (with the live dot). */
 const links: NavLink[] = [
   { href: '/', label: 'Overview', live: false },
+  { href: '/about', label: 'About', live: false },
   ...(current ? [toLink(current)] : []),
 ];
 const recentLinks = winter.slice(0, RECENT_YEARS).map(toLink);
@@ -52,7 +53,6 @@ const summerLinks = cohorts
   .filter((c) => c.session === 'summer')
   .sort((a, b) => b.year - a.year)
   .map(toLink);
-const aboutLinks: NavLink[] = [{ href: '/about', label: 'About', live: false }];
 
 /** Dropdowns after the tabs (desktop) and labelled sections (mobile menu). */
 const groups = [
@@ -159,14 +159,14 @@ export function Navbar() {
               active={g.links.some((l) => isActive(l.href))}
             />
           ))}
-          {items(undefined, undefined, aboutLinks)}
           <PeopleSearch />
           <ModeToggle />
         </div>
         <div className='flex items-center gap-2 lg:hidden'>
-          <PeopleSearch className='h-9 w-9 px-0' />
+          <PeopleSearch className='size-9 px-0' />
+          <ModeToggle className='size-9' />
           <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger render={<Button variant='outline' size='icon' />}>
+            <SheetTrigger render={<Button variant='outline' size='icon-lg' />}>
               <Menu className='size-5' />
               <span className='sr-only'>Toggle menu</span>
             </SheetTrigger>
@@ -189,10 +189,6 @@ export function Navbar() {
                     {items(() => setOpen(false), 'w-full justify-center', g.links)}
                   </Fragment>
                 ))}
-                <div className='mt-2 w-full border-t pt-2'>
-                  {items(() => setOpen(false), 'w-full justify-center', aboutLinks)}
-                </div>
-                <ModeToggle />
               </div>
             </SheetContent>
           </Sheet>
