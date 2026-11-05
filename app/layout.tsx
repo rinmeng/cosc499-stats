@@ -7,6 +7,7 @@ import { Navbar } from '@/components/Navbar';
 
 import './globals.css';
 
+import { BannerProvider, BannerSpacer } from '@/components/banner-provider';
 import { ThemeProvider } from '@/components/theme-provider';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import {
@@ -123,12 +124,15 @@ export default function RootLayout({
         />
         <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
           <TooltipProvider>
-            <Navbar />
-            <main className='mx-auto max-w-7xl px-4 pt-24 pb-16 sm:px-6 lg:px-8'>
-              {children}
-            </main>
-            <Footer />
-            <Analytics />
+            <BannerProvider>
+              <Navbar />
+              <main className='mx-auto max-w-7xl px-4 pt-24 pb-16 sm:px-6 lg:px-8'>
+                <BannerSpacer />
+                {children}
+              </main>
+              <Footer />
+              <Analytics />
+            </BannerProvider>
           </TooltipProvider>
         </ThemeProvider>
       </body>

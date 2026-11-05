@@ -24,6 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Banner } from '@/components/banner-provider';
 import { cn } from '@/lib/utils';
 import { cohortSlug, cohorts, currentCohort } from '@/sync.config';
 
@@ -249,6 +250,7 @@ export function Navbar() {
           </Sheet>
         </div>
       </div>
+      <Banner />
     </nav>
   );
 }
