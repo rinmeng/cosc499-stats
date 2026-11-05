@@ -227,11 +227,12 @@ export default function Overview() {
     <div className='space-y-8'>
       <PageHeader
         eyebrow='UBC Okanagan · COSC 499'
-        title='Capstone contributions, every cohort'
+        title='UBCO COSC 499 capstone stats, every cohort'
       >
-        Contribution highlights from {cohorts.length} capstone cohorts on GitHub,
-        year-long and summer sessions, from {[...cohorts].sort(byTermStart)[0]?.label} to
-        today. Last synced {fmtDate(s.generatedAt)}.
+        Contribution highlights from {cohorts.length} UBC Okanagan COSC 499 capstone
+        cohorts on GitHub, year-long and summer sessions, from{' '}
+        {[...cohorts].sort(byTermStart)[0]?.label} to today. Last synced{' '}
+        {fmtDate(s.generatedAt)}.
       </PageHeader>
 
       <div className='space-y-3'>

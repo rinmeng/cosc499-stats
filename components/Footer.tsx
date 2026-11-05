@@ -29,7 +29,8 @@ export function Footer() {
         </Link>
 
         <p className='max-w-md text-xs text-muted-foreground'>
-          A student-made project, not affiliated with UBC. Built from GitHub activity.{' '}
+          A student-made project for COSC 499 (COSC_O 499), the UBC Okanagan (UBCO)
+          capstone. Not affiliated with UBC. Built from GitHub activity.{' '}
           <a
             href={repoUrl}
             target='_blank'

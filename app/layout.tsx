@@ -53,6 +53,10 @@ export const metadata: Metadata = {
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
   },
+  // Google Search Console HTML-tag verification (optional; DNS verification works too)
+  verification: process.env.GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.GOOGLE_SITE_VERIFICATION }
+    : undefined,
   robots: {
     index: true,
     follow: true,
@@ -72,14 +76,22 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: SITE_NAME,
-  alternateName: ['UBCO COSC499 Stats', 'COSC 499 Capstone Stats'],
+  alternateName: [
+    'UBCO COSC499 Stats',
+    'COSC 499 Capstone Stats',
+    'UBCO Capstone Stats',
+    'UBC Okanagan Capstone Stats',
+  ],
   url: SITE_URL,
   description: SITE_DESCRIPTION,
   inLanguage: 'en-CA',
   about: {
     '@type': 'Course',
     name: 'COSC 499: Capstone Software Engineering Project',
+    alternateName: ['COSC_O 499', 'COSC499', 'UBCO capstone', 'UBC Okanagan capstone'],
     courseCode: 'COSC 499',
+    description:
+      'The UBC Okanagan computer science capstone: student teams build a software project for a client over a full term or summer session.',
     provider: {
       '@type': 'CollegeOrUniversity',
       name: 'University of British Columbia Okanagan',
