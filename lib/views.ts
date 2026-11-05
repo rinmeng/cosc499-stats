@@ -481,7 +481,7 @@ export function insightsView(s: Summary): InsightsView {
       eraSeries(s, 'prsPerPw'),
     ],
     churn: [timelineSeries(s, 'churn')],
-    ramp: [eraSeries(s, 'earlyOutput'), eraSeries(s, 'weekToQuarter')],
+    ramp: [eraSeries(s, 'weekToQuarter'), eraSeries(s, 'earlyOutput')],
     review: [eraSeries(s, 'reviewCoverage'), eraSeries(s, 'discussionPerPr')],
     languages,
     languageSample: coverage(insights.metrics.languagesPerTeam),

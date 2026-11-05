@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const ROWS: { key: string; label: string; detail: string }[] = [
   {
@@ -65,7 +66,7 @@ export function ScoreInfo({ weights }: { weights: Record<string, number> }) {
         <CircleHelp />
         How points are calculated
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className='gap-4 overflow-hidden sm:max-w-lg'>
         <DialogHeader>
           <DialogTitle>How points are calculated</DialogTitle>
           <DialogDescription>
@@ -75,43 +76,52 @@ export function ScoreInfo({ weights }: { weights: Record<string, number> }) {
           </DialogDescription>
         </DialogHeader>
 
-        <table className='w-full text-sm'>
-          <tbody className='divide-y'>
-            {parts.map((p) => (
-              <tr key={p.key}>
-                <td className='py-2 pr-3 align-top'>
-                  <div className='font-medium'>{p.label}</div>
-                  <div className='text-xs text-muted-foreground'>{p.detail}</div>
-                </td>
-                <td
-                  className='py-2 text-right align-top font-mono whitespace-nowrap
-                    tabular-nums'
-                >
-                  {p.w} {p.w === 1 ? 'pt' : 'pts'}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {/* Title and description stay put; only this part scrolls. The viewport needs
+            the same max-height as the root, or it grows past the dialog. */}
+        <ScrollArea
+          className='-mx-6 max-h-[min(55vh,28rem)]
+            [&>[data-slot=scroll-area-viewport]]:max-h-[inherit]'
+        >
+          <div className='space-y-4 px-6 pb-1'>
+            <table className='w-full text-sm'>
+              <tbody className='divide-y'>
+                {parts.map((p) => (
+                  <tr key={p.key}>
+                    <td className='py-2 pr-3 align-top'>
+                      <div className='font-medium'>{p.label}</div>
+                      <div className='text-xs text-muted-foreground'>{p.detail}</div>
+                    </td>
+                    <td
+                      className='py-2 text-right align-top font-mono whitespace-nowrap
+                        tabular-nums'
+                    >
+                      {p.w} {p.w === 1 ? 'pt' : 'pts'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-        <div className='space-y-1.5 rounded-lg bg-muted p-3 text-xs'>
-          <div className='font-medium'>Example</div>
-          <div className='font-mono leading-relaxed text-muted-foreground'>
-            {parts.map((p, i) => (
-              <span key={p.key}>
-                {i > 0 && ' + '}
-                {p.n}×{p.w}
-              </span>
-            ))}{' '}
-            = <span className='font-semibold text-foreground'>{total} pts</span>
+            <div className='space-y-1.5 rounded-lg bg-muted p-3 text-xs'>
+              <div className='font-medium'>Example</div>
+              <div className='font-mono leading-relaxed text-muted-foreground'>
+                {parts.map((p, i) => (
+                  <span key={p.key}>
+                    {i > 0 && ' + '}
+                    {p.n}×{p.w}
+                  </span>
+                ))}{' '}
+                = <span className='font-semibold text-foreground'>{total} pts</span>
+              </div>
+            </div>
+
+            <p className='text-xs text-muted-foreground'>
+              Lines of code aren’t part of the score, since they say more about generated
+              files than effort. Bots and course staff aren’t counted. Only activity
+              during the term is included.
+            </p>
           </div>
-        </div>
-
-        <p className='text-xs text-muted-foreground'>
-          Lines of code aren’t part of the score, since they say more about generated
-          files than effort. Bots and course staff aren’t counted. Only activity during
-          the term is included.
-        </p>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

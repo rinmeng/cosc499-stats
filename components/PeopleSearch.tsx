@@ -77,11 +77,6 @@ export function PeopleSearch({
       .catch(() => setPeople([]));
   }, [open, people]);
 
-  // A new query starts back at the first page.
-  useEffect(() => {
-    setPage(1);
-  }, [query]);
-
   useEffect(() => {
     listRef.current?.scrollTo(0, 0);
   }, [page, query]);
@@ -154,7 +149,11 @@ export function PeopleSearch({
           <CommandInput
             placeholder='Name or GitHub username…'
             value={query}
-            onValueChange={setQuery}
+            onValueChange={(value) => {
+              // A new query starts back at the first page.
+              setQuery(value);
+              setPage(1);
+            }}
           />
           <CommandList ref={listRef}>
             {(!people || filtered.length === 0) && (
