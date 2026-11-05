@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import Fuse from 'fuse.js';
-import { Search, Share2, Users } from 'lucide-react';
+import { ChevronDown, Search, Share2, Users } from 'lucide-react';
 
 import { ShareDialog } from '@/components/ShareDialog';
 import {
@@ -75,6 +75,8 @@ export function PeopleSearch({
   const [teams, setTeams] = useState<TeamEntry[]>([]);
   const [sharing, setSharing] = useState<ShareItem | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
+  // The current cohort's team list is a drop-down while the search box is empty.
+  const [teamsOpen, setTeamsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
   // "⌘" on Apple devices, "Ctrl" elsewhere. The server renders "⌘"; the client corrects it.
@@ -217,54 +219,80 @@ export function PeopleSearch({
               <CommandEmpty>{people ? 'No one found.' : 'Loading…'}</CommandEmpty>
             )}
             {teamMatches.length > 0 && (
-              <CommandGroup heading={searching ? 'Teams' : 'Teams in the current cohort'}>
-                {teamMatches.map((t) => (
-                  <CommandItem
-                    key={t.path}
-                    value={`team ${t.name} ${t.cohort}`}
-                    onSelect={() => {
-                      setOpen(false);
-                      router.push(t.path);
-                    }}
-                  >
-                    <div className='flex min-w-0 flex-1 flex-col'>
-                      <span className='truncate'>{t.name}</span>
-                      <span className='truncate text-xs text-muted-foreground'>
-                        {t.cohort}
-                      </span>
-                    </div>
-                    <AvatarGroup className='shrink-0'>
-                      {t.members.map((m) => (
-                        <Avatar key={m.avatarUrl} size='sm'>
-                          <AvatarImage src={m.avatarUrl} alt='' loading='lazy' />
-                          <AvatarFallback className='text-[9px]'>
-                            {m.name.slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                      ))}
-                      {t.memberCount > t.members.length && (
-                        <AvatarGroupCount className='text-[10px]'>
-                          +{t.memberCount - t.members.length}
-                        </AvatarGroupCount>
-                      )}
-                      {t.members.length === 0 && (
-                        <AvatarGroupCount>
-                          <Users />
-                        </AvatarGroupCount>
-                      )}
-                    </AvatarGroup>
-                    <ShareRowButton
-                      label={`Share ${t.name}`}
-                      onClick={() =>
-                        share({
-                          path: t.path,
-                          title: `${t.name} · ${t.cohort}`,
-                          description: t.description,
-                        })
-                      }
-                    />
-                  </CommandItem>
-                ))}
+              <CommandGroup
+                heading={
+                  searching ? (
+                    'Teams'
+                  ) : (
+                    <button
+                      type='button'
+                      aria-expanded={teamsOpen}
+                      onClick={() => setTeamsOpen((o) => !o)}
+                      className='-mx-1 flex w-[calc(100%+0.5rem)] items-center
+                        justify-between rounded-md px-1 py-0.5 text-left
+                        hover:text-foreground'
+                    >
+                      Teams in the current cohort ({teamMatches.length})
+                      <ChevronDown
+                        className={cn(
+                          'size-4 transition-transform',
+                          teamsOpen && 'rotate-180'
+                        )}
+                      />
+                    </button>
+                  )
+                }
+              >
+                {(searching || teamsOpen) &&
+                  teamMatches.map((t) => (
+                    <CommandItem
+                      key={t.path}
+                      value={`team ${t.name} ${t.cohort}`}
+                      onSelect={() => {
+                        setOpen(false);
+                        router.push(t.path);
+                      }}
+                    >
+                      <div className='flex min-w-0 flex-1 flex-col'>
+                        <div className='flex min-w-0 items-center gap-2'>
+                          <span className='truncate'>{t.name}</span>
+                          <AvatarGroup className='shrink-0'>
+                            {t.members.map((m) => (
+                              <Avatar key={m.avatarUrl} size='sm'>
+                                <AvatarImage src={m.avatarUrl} alt='' loading='lazy' />
+                                <AvatarFallback className='text-[9px]'>
+                                  {m.name.slice(0, 2).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                            ))}
+                            {t.memberCount > t.members.length && (
+                              <AvatarGroupCount className='text-[10px]'>
+                                +{t.memberCount - t.members.length}
+                              </AvatarGroupCount>
+                            )}
+                            {t.members.length === 0 && (
+                              <AvatarGroupCount>
+                                <Users />
+                              </AvatarGroupCount>
+                            )}
+                          </AvatarGroup>
+                        </div>
+                        <span className='truncate text-xs text-muted-foreground'>
+                          {t.cohort}
+                        </span>
+                      </div>
+                      <ShareRowButton
+                        label={`Share ${t.name}`}
+                        onClick={() =>
+                          share({
+                            path: t.path,
+                            title: `${t.name} · ${t.cohort}`,
+                            description: t.description,
+                          })
+                        }
+                      />
+                    </CommandItem>
+                  ))}
               </CommandGroup>
             )}
             {groups.map((g) => (
@@ -349,9 +377,9 @@ function ShareRowButton({ label, onClick }: { label: string; onClick: () => void
   return (
     <Button
       type='button'
-      variant='ghost'
-      size='icon-xs'
-      className='shrink-0 text-muted-foreground'
+      variant='outline'
+      size='icon-sm'
+      className='shrink-0'
       aria-label={label}
       title={label}
       onClick={(e) => {
