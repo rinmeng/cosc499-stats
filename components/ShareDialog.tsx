@@ -177,12 +177,20 @@ export function ShareDialog({
   );
 }
 
-/** "Share" button for a page header. */
+/**
+ * "Share" button for a page. It stays fixed at the top middle of the screen, just under
+ * the navbar, so sharing is one click away wherever you are on the page.
+ */
 export function ShareButton({ item }: { item: ShareItem }) {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button variant='outline' size='sm' onClick={() => setOpen(true)}>
+      <Button
+        size='sm'
+        className='fixed top-[4.25rem] left-1/2 z-40 -translate-x-1/2 rounded-full
+          shadow-lg'
+        onClick={() => setOpen(true)}
+      >
         <Share2 className='size-4' /> Share
       </Button>
       <ShareDialog item={item} open={open} onOpenChange={setOpen} />
