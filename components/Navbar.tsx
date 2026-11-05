@@ -33,19 +33,19 @@ const toLink = (c: (typeof cohorts)[number]) => ({
 
 type NavLink = ReturnType<typeof toLink>;
 
-// The running cohort already has its own tab, so the dropdowns skip it.
 const winter = cohorts
-  .filter((c) => c.session !== 'summer' && cohortSlug(c) !== currentCohort)
+  .filter((c) => c.session !== 'summer')
   .sort((a, b) => b.year - a.year);
-const current = cohorts.find((c) => cohortSlug(c) === currentCohort);
 
-/** Tabs: the overview and the cohort that's running now (with the live dot). */
+/** Tabs: overview and about. Year-long sessions live in one selector. */
 const links: NavLink[] = [
   { href: '/', label: 'Overview', live: false },
   { href: '/about', label: 'About', live: false },
-  ...(current ? [toLink(current)] : []),
 ];
-const olderLinks = winter.map(toLink);
+const yearLinks = winter.map((c) => {
+  const link = toLink(c);
+  return link.live ? { ...link, label: 'This year' } : link;
+});
 const summerLinks = cohorts
   .filter((c) => c.session === 'summer')
   .sort((a, b) => b.year - a.year)
@@ -53,7 +53,7 @@ const summerLinks = cohorts
 
 /** Dropdowns after the tabs (desktop) and labelled sections (mobile menu). */
 const groups = [
-  { key: 'older', label: 'More years', heading: 'Earlier years', links: olderLinks },
+  { key: 'older', label: 'Full year', heading: 'Full year', links: yearLinks },
   { key: 'summer', label: 'Summer', heading: 'Summer sessions', links: summerLinks },
 ].filter((g) => g.links.length > 0);
 
@@ -74,17 +74,21 @@ function NavDropdown({
   label,
   links,
   active,
+  live,
 }: {
   label: string;
   links: NavLink[];
   active: boolean;
+  live?: boolean;
 }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={<Button variant={active ? 'secondary' : 'ghost'} size='sm' />}
       >
-        {label} <ChevronDown className='size-3.5' />
+        {label}
+        {live && <LiveDot />}
+        <ChevronDown className='size-3.5' />
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end'>
         {links.map((l) => (
@@ -143,14 +147,22 @@ export function Navbar() {
         <div className='flex items-center gap-2 lg:gap-1'>
           <div className='hidden items-center gap-1 lg:flex'>
             {items()}
-            {groups.map((g) => (
-              <NavDropdown
-                key={g.key}
-                label={g.label}
-                links={g.links}
-                active={g.links.some((l) => isActive(l.href))}
-              />
-            ))}
+            {groups.map((g) => {
+              const selected = g.links.find((l) => isActive(l.href));
+              const shown =
+                g.key === 'older'
+                  ? (selected ?? yearLinks.find((l) => l.live))
+                  : undefined;
+              return (
+                <NavDropdown
+                  key={g.key}
+                  label={g.label ?? ''}
+                  links={g.links}
+                  active={!!selected}
+                  live={!!shown?.live}
+                />
+              );
+            })}
           </div>
           {/* One instance for every screen size: each copy would add its own ⌘K listener. */}
           <PeopleSearch className='size-9 px-0 lg:h-7 lg:w-auto lg:px-3' />
