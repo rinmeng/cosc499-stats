@@ -191,7 +191,7 @@ export default function Overview() {
             {c.session === 'summer' && !isSmallCohort(c) && (
               <Badge variant='secondary'>Summer</Badge>
             )}
-            {isSmallCohort(c) && <Badge variant='outline'>Help complete</Badge>}
+            {isSmallCohort(c) && <Badge variant='outline'>Incomplete</Badge>}
             <ArrowRight
               className='ml-auto size-4 text-muted-foreground transition-transform
                 group-hover:translate-x-0.5'
@@ -417,6 +417,25 @@ export default function Overview() {
           />
         </Grid>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>How AI changed capstone</CardTitle>
+        </CardHeader>
+        <CardContent className='space-y-3'>
+          <p className='text-sm text-muted-foreground'>
+            The same cohorts, lined up as before AI tools, the Copilot and ChatGPT years,
+            and the agentic era. Medians of teams, not a ranking of people.
+          </p>
+          <Link
+            href='/insights'
+            className='inline-flex items-center gap-1 text-sm font-medium'
+          >
+            See the comparison
+            <ArrowRight className='size-4' />
+          </Link>
+        </CardContent>
+      </Card>
 
       <p className='text-xs text-muted-foreground'>
         Counts cover the default branch (merge commits excluded), pull requests and issues

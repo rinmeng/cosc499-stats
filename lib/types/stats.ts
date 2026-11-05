@@ -1,3 +1,5 @@
+import type { Insights } from './insights';
+
 /* ---------- Raw data written by scripts/sync.ts (data/raw/<org>/<repo>.json) ---------- */
 
 export interface RawCommit {
@@ -10,6 +12,11 @@ export interface RawCommit {
   date: string;
   additions: number;
   deletions: number;
+  /**
+   * Tool ids parsed from Co-authored-by trailers (claude, copilot, …).
+   * Absent on files synced before trailer scanning. The message itself is never stored.
+   */
+  aiTrailers?: string[];
 }
 
 export interface RawReview {
@@ -58,6 +65,8 @@ export interface RawRepo {
     stars: number;
     sizeKb: number;
     description: string | null;
+    /** True once sync has parsed commit messages for AI co-author trailers. */
+    trailersScanned?: boolean;
   };
   /** language → bytes */
   languages: Record<string, number>;
@@ -232,4 +241,5 @@ export interface Summary {
   lineOutlierThreshold: number;
   timezone: string;
   cohorts: CohortStats[];
+  insights: Insights;
 }

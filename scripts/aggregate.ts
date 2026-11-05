@@ -30,6 +30,7 @@ import {
   timezone,
   topN,
 } from '../sync.config';
+import { buildInsights } from './insights';
 
 /** PRs touching more files than this are almost always vendored/generated code. */
 const MEGA_PR_CAP = 1000;
@@ -632,6 +633,7 @@ export function aggregate() {
     lineOutlierThreshold,
     timezone,
     cohorts: built,
+    insights: buildInsights(built, now),
   };
   writeFileSync(path.join(DATA_DIR, 'summary.json'), JSON.stringify(summary));
 

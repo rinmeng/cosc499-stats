@@ -1,3 +1,5 @@
+import type { Era } from '@/lib/types/insights';
+
 const nf = new Intl.NumberFormat('en-US');
 const compact = new Intl.NumberFormat('en-US', {
   notation: 'compact',
@@ -46,6 +48,34 @@ export const displayName = (p: { login: string | null; name: string | null }) =>
  * Fixed color per cohort (color follows entity). The ramp is ordinal: the
  * current cohort gets the strongest step, older cohorts step back.
  */
+/**
+ * One color per era. chart-2 and chart-3 are almost the same green in light mode,
+ * so the three eras use the steps that actually separate.
+ */
+export const ERA_COLOR: Record<Era, string> = {
+  'pre-ai': 'var(--chart-5)',
+  'early-ai': 'var(--chart-3)',
+  agentic: 'var(--chart-1)',
+};
+
+export function eraLabel(era: Era): string {
+  if (era === 'pre-ai') return 'Before AI';
+  if (era === 'early-ai') return 'Early AI';
+  return 'Agentic';
+}
+
+export type InsightKind = 'share' | 'hours' | 'count' | 'week';
+
+export function fmtInsight(n: number | null | undefined, kind: InsightKind): string {
+  if (n == null || !Number.isFinite(n)) return '—';
+  if (kind === 'share') return pct(n);
+  if (kind === 'hours') return fmtHours(n);
+  if (kind === 'week') return String(Math.round(n));
+  if (Math.abs(n) >= 100) return fmt(n);
+  const rounded = Math.round(n * 10) / 10;
+  return Number.isInteger(rounded) ? fmt(rounded) : rounded.toFixed(1);
+}
+
 export function cohortColor(
   year: number,
   currentYear: number,

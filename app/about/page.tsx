@@ -127,6 +127,8 @@ export default function AboutPage() {
           testing by hand, writing docs and pair programming rarely show up as commits,
           and teams work differently: some squash every PR into one commit, some commit
           every few minutes. So please read these as a picture of activity, not a grade.
+          The insights page reads commit messages while syncing, only to note when an AI
+          tool is named as a co-author, and the message itself is never stored.
         </p>
         <p>
           That&apos;s also why the site celebrates, and never ranks anyone from the

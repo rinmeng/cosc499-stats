@@ -10,6 +10,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const pages: MetadataRoute.Sitemap = [
     { url: SITE_URL, lastModified, changeFrequency: 'daily', priority: 1 },
     { url: `${SITE_URL}/about`, lastModified, changeFrequency: 'monthly', priority: 0.6 },
+    {
+      url: `${SITE_URL}/insights`,
+      lastModified,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${SITE_URL}/insights/fingerprints`,
+      lastModified,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    {
+      url: `${SITE_URL}/insights/trends`,
+      lastModified,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
   ];
 
   for (const c of s?.cohorts ?? []) {

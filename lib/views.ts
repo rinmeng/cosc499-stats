@@ -1,12 +1,25 @@
 import 'server-only';
 
+import type { EraSeries } from '@/components/charts/EraCompareChart';
 import type { TrendSeries } from '@/components/charts/CohortTrendChart';
+import type { TimelineSeries } from '@/components/charts/CohortTimelineChart';
 import type { BarMetric, BarRow } from '@/components/charts/MetricBarChart';
+import type { ShareRow } from '@/components/charts/StackedShareChart';
 import type { RadialItem } from '@/components/charts/TeamRadial';
 import type { TeamRow } from '@/components/stats/TeamTable';
 import type { TeamTopView, TopEntryView } from '@/components/stats/TopContributors';
 import { topByMetric } from '@/lib/data';
-import { cohortColor, displayName, fmt, fmtCompact } from '@/lib/format';
+import {
+  ERA_COLOR,
+  cohortColor,
+  displayName,
+  fmt,
+  fmtCompact,
+  fmtInsight,
+  type InsightKind,
+} from '@/lib/format';
+import { finding, FINDING_KEYS, sessionFinding } from '@/lib/findings';
+import type { Era, Estimate, InsightMetric } from '@/lib/types/insights';
 import type { CohortStats, MetricKey, Summary, TeamStats } from '@/lib/types/stats';
 
 export const teamHref = (slug: string, t: TeamStats) => `/${slug}/${t.team}`;
@@ -251,6 +264,277 @@ export function cohortBest(c: CohortStats, key: MetricKey) {
       if (!best || m[key] > best.value)
         best = { name: displayName(m), login: m.login, team: t, value: m[key] };
   return best;
+}
+
+const INSIGHT_KIND: Record<string, InsightKind> = {
+  commitSize: 'count',
+  largeCommitShare: 'share',
+  prAdditions: 'count',
+  prFiles: 'count',
+  prHours: 'hours',
+  commitsPerPw: 'count',
+  prsPerPw: 'count',
+  linesPerPw: 'count',
+  churn: 'count',
+  earlyOutput: 'share',
+  weekToQuarter: 'week',
+  reviewCoverage: 'share',
+  discussionPerPr: 'count',
+  languagesPerTeam: 'count',
+  aiTrailers: 'share',
+  aiBots: 'share',
+  prsPer100: 'count',
+  prWeeks: 'share',
+  nightOwl: 'share',
+  weekend: 'share',
+  holiday: 'share',
+  pwWinter: 'count',
+  pwSummer: 'count',
+};
+
+function coverage(metric: InsightMetric) {
+  let nTeams = 0;
+  let nCohorts = 0;
+  for (const estimate of Object.values(metric.eras) as (Estimate | null)[]) {
+    if (!estimate) continue;
+    nTeams += estimate.nTeams;
+    nCohorts += estimate.nCohorts;
+  }
+  return { nTeams, nCohorts };
+}
+
+function eraSeries(s: Summary, key: string): EraSeries {
+  const metric = s.insights.metrics[key];
+  const kind = INSIGHT_KIND[key] ?? 'count';
+  const bars = (Object.entries(metric.eras) as [Era, Estimate | null][])
+    .filter((entry): entry is [Era, Estimate] => !!entry[1])
+    .map(([era, estimate]) => ({ era, ...estimate }));
+  const { nTeams, nCohorts } = coverage(metric);
+  return {
+    key,
+    label: metric.label,
+    headline: fmtInsight(metric.eras.agentic?.value, kind),
+    finding: finding(s.insights, key),
+    kind,
+    nTeams,
+    nCohorts,
+    bars,
+    dots: metric.cohorts
+      .filter((c) => c.value != null)
+      .map((c) => ({
+        era: c.era,
+        label: c.label,
+        value: c.value!,
+        nTeams: c.nTeams,
+        faded: c.faded,
+        hollow: c.inProgress,
+        session: c.session,
+        color: cohortColor(c.year, s.currentYear, c.session),
+      })),
+  };
+}
+
+function timelineSeries(s: Summary, key: string): TimelineSeries {
+  const metric = s.insights.metrics[key];
+  const kind = INSIGHT_KIND[key] ?? 'count';
+  const bySlug = new Map(s.cohorts.map((c) => [c.slug, c]));
+  const { nTeams, nCohorts } = coverage(metric);
+  return {
+    key,
+    label: metric.label,
+    headline: fmtInsight(metric.eras.agentic?.value, kind),
+    finding: finding(s.insights, key),
+    kind,
+    nTeams,
+    nCohorts,
+    points: metric.cohorts
+      .filter((c) => c.value != null)
+      .flatMap((c) => {
+        const src = bySlug.get(c.slug);
+        if (!src) return [];
+        return [
+          {
+            termStart: src.termStart,
+            label: c.label,
+            value: c.value!,
+            nTeams: c.nTeams,
+            faded: c.faded,
+            hollow: c.inProgress,
+            color: cohortColor(c.year, s.currentYear, c.session),
+            session: c.session,
+          },
+        ];
+      })
+      .sort((a, b) => a.termStart.localeCompare(b.termStart)),
+  };
+}
+
+/**
+ * "1.6×" + "more commits per person-week in the agentic era than before AI".
+ * A drop reads as "24%" + "fewer …" rather than "×0.8".
+ */
+function ratioTile(
+  agentic: number | undefined,
+  before: number | undefined,
+  noun: string
+) {
+  const tail = `${noun} in agentic vs before AI.`;
+  if (agentic == null || before == null || before === 0)
+    return { value: '—', unit: `${noun} in ageantic era vs before AI era.` };
+  const r = agentic / before;
+  if (Math.abs(r - 1) < 0.1) return { value: '≈', unit: `as many ${tail}` };
+  if (r > 1)
+    return { value: `${r.toFixed(1).replace(/\.0$/, '')}×`, unit: `more ${tail}` };
+  return { value: `${Math.round((1 - r) * 100)}%`, unit: `fewer ${tail}` };
+}
+
+export interface InsightsView {
+  windowWeek: number;
+  eras: { key: Era; label: string; years: string; color: string }[];
+  faded: { slug: string; label: string; nTeams: number }[];
+  /** `hint` marks the numbers to bold with **…** (render with FindingText) */
+  ratios: { label: string; value: string; unit: string; hint: string }[];
+  /** "Here's what we found" sentences per tab */
+  findings: { impact: string[]; fingerprints: string[]; trends: string[] };
+  trailersScanned: boolean;
+  termScale: { fullYearWeeks: number; summerWeeks: number };
+  commitSize: EraSeries[];
+  pullRequests: EraSeries[];
+  output: EraSeries[];
+  churn: TimelineSeries[];
+  ramp: EraSeries[];
+  review: EraSeries[];
+  languages: ShareRow[];
+  languageSample: { nTeams: number; nCohorts: number };
+  languagesPerTeam: EraSeries[];
+  trailers: TimelineSeries[];
+  tools: ShareRow[];
+  toolSample: { nTeams: number; nCohorts: number };
+  botTiles: { era: Era; label: string; value: string; hint: string }[];
+  bots: TimelineSeries[];
+  curves: TrendSeries[];
+  curveLabel: string;
+  /** % of term the curves cover (same share of every cohort's own term) */
+  curveSpan: number;
+  /** % of term the curves are compared at: midway, since every curve ends at 100% */
+  curveMid: number;
+  prsPer100: TimelineSeries[];
+  prWeeks: TimelineSeries[];
+  nightOwl: TimelineSeries[];
+  weekend: TimelineSeries[];
+  holiday: TimelineSeries[];
+  session: EraSeries[];
+}
+
+const RATIO_KEYS = [
+  { key: 'commitsPerPw', label: 'Commits per person-week', noun: 'commits' },
+  { key: 'prsPerPw', label: 'Merged PRs per person-week', noun: 'merged PRs' },
+  { key: 'linesPerPw', label: 'Lines per person-week', noun: 'lines changed' },
+] as const;
+
+export function insightsView(s: Summary): InsightsView {
+  const insights = s.insights;
+  const kind = (key: string) => INSIGHT_KIND[key] ?? 'count';
+  const winter = eraSeries(s, 'pwWinter');
+  const summer = eraSeries(s, 'pwSummer');
+  const start = new Map(s.cohorts.map((c) => [c.slug, c.termStart]));
+  const sentences = (keys: readonly string[]) =>
+    keys.map((key) => finding(insights, key)).filter((f): f is string => !!f);
+
+  const languages: ShareRow[] = insights.eras
+    .map((era) => ({ label: era.label, slices: insights.languages[era.key] }))
+    .filter((row) => row.slices.length);
+
+  return {
+    windowWeek: insights.window.week,
+    eras: insights.eras.map((era) => ({
+      ...era,
+      color: ERA_COLOR[era.key],
+    })),
+    faded: insights.metrics.commitSize.cohorts
+      .filter((c) => c.faded)
+      .map((c) => ({ slug: c.slug, label: c.label, nTeams: c.nTeams })),
+    ratios: RATIO_KEYS.map(({ key, label, noun }) => {
+      const metric = insights.metrics[key];
+      const agentic = metric.eras.agentic?.value;
+      const before = metric.eras['pre-ai']?.value;
+      return {
+        label,
+        ...ratioTile(agentic, before, noun),
+        hint: `**${fmtInsight(agentic, kind(key))}** a week in the agentic era · **${fmtInsight(before, kind(key))}** before AI`,
+      };
+    }),
+    findings: {
+      impact: sentences(FINDING_KEYS.impact),
+      fingerprints: sentences(FINDING_KEYS.fingerprints),
+      trends: [...sentences(FINDING_KEYS.trends), sessionFinding(insights)].filter(
+        (f): f is string => !!f
+      ),
+    },
+    trailersScanned: insights.trailersScanned,
+    termScale: insights.termScale,
+    commitSize: [eraSeries(s, 'commitSize'), eraSeries(s, 'largeCommitShare')],
+    pullRequests: [
+      eraSeries(s, 'prHours'),
+      eraSeries(s, 'prAdditions'),
+      eraSeries(s, 'prFiles'),
+    ],
+    output: [
+      eraSeries(s, 'linesPerPw'),
+      eraSeries(s, 'commitsPerPw'),
+      eraSeries(s, 'prsPerPw'),
+    ],
+    churn: [timelineSeries(s, 'churn')],
+    ramp: [eraSeries(s, 'weekToQuarter'), eraSeries(s, 'earlyOutput')],
+    review: [eraSeries(s, 'reviewCoverage'), eraSeries(s, 'discussionPerPr')],
+    languages,
+    languageSample: coverage(insights.metrics.languagesPerTeam),
+    languagesPerTeam: [eraSeries(s, 'languagesPerTeam')],
+    trailers: [timelineSeries(s, 'aiTrailers')],
+    tools: insights.tools.length ? [{ label: 'Agentic', slices: insights.tools }] : [],
+    toolSample: coverage(insights.metrics.aiTrailers),
+    botTiles: insights.eras.map((era) => {
+      const estimate = insights.metrics.aiBots.eras[era.key];
+      return {
+        era: era.key,
+        label: era.label,
+        value: fmtInsight(estimate?.value, 'share'),
+        hint: estimate
+          ? `n = ${estimate.nTeams} teams · ${estimate.nCohorts} cohorts`
+          : 'Not enough cohorts',
+      };
+    }),
+    bots: [timelineSeries(s, 'aiBots')],
+    curves: insights.curves
+      .map((curve) => ({
+        ...curve,
+        points: curve.points.map((p) => ({ week: p.x, value: p.value })),
+        color: cohortColor(curve.year, s.currentYear, curve.session),
+      }))
+      .sort((a, b) => (start.get(a.slug) ?? '').localeCompare(start.get(b.slug) ?? '')),
+    curveLabel: 'of early-term commits made by the halfway point',
+    curveSpan: insights.window.termPct,
+    curveMid: Math.round(insights.window.termPct / 2),
+    prsPer100: [timelineSeries(s, 'prsPer100')],
+    prWeeks: [timelineSeries(s, 'prWeeks')],
+    nightOwl: [timelineSeries(s, 'nightOwl')],
+    weekend: [timelineSeries(s, 'weekend')],
+    holiday: [timelineSeries(s, 'holiday')],
+    session: [
+      {
+        key: 'session',
+        label: 'Per person-week',
+        headline: winter.headline,
+        finding: sessionFinding(insights),
+        kind: 'count' as const,
+        nTeams: winter.nTeams + summer.nTeams,
+        nCohorts: winter.nCohorts + summer.nCohorts,
+        bars: winter.bars,
+        summerBars: summer.bars,
+        dots: [...winter.dots, ...summer.dots],
+      },
+    ],
+  };
 }
 
 export function topTeams<T>(
