@@ -378,7 +378,7 @@ function ratioTile(
   before: number | undefined,
   noun: string
 ) {
-  const tail = `${noun} in agentic era vs before AI era.`;
+  const tail = `${noun} in agentic vs before AI.`;
   if (agentic == null || before == null || before === 0)
     return { value: '—', unit: `${noun} in ageantic era vs before AI era.` };
   const r = agentic / before;

@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { BarChart3, ChevronDown, Menu } from 'lucide-react';
@@ -13,6 +13,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -214,16 +219,30 @@ export function Navbar() {
                   'w-full justify-center',
                   links.filter((l) => l.href === '/about')
                 )}
+                {/* Full year and Summer are long lists, so they fold away. The one holding
+                    the page you're on starts open. */}
                 {groups.map((g) => (
-                  <Fragment key={g.key}>
-                    <p
-                      className='mt-2 text-center text-xs font-medium
-                        text-muted-foreground'
+                  <Collapsible
+                    key={g.key}
+                    defaultOpen={g.links.some((l) => isActive(l.href))}
+                    className='mt-2 flex w-full flex-col items-center gap-2'
+                  >
+                    <CollapsibleTrigger
+                      className='group/trigger flex w-full items-center justify-center
+                        gap-1 rounded-md py-1 text-xs font-medium text-muted-foreground
+                        hover:text-foreground'
                     >
                       {g.heading}
-                    </p>
-                    {items(() => setOpen(false), 'w-full justify-center', g.links)}
-                  </Fragment>
+                      {g.links.some((l) => l.live) && <LiveDot />}
+                      <ChevronDown
+                        className='size-3.5 transition-transform
+                          group-data-[panel-open]/trigger:rotate-180'
+                      />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className='flex w-full flex-col gap-2'>
+                      {items(() => setOpen(false), 'w-full justify-center', g.links)}
+                    </CollapsibleContent>
+                  </Collapsible>
                 ))}
               </div>
             </SheetContent>
