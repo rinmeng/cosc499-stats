@@ -138,8 +138,12 @@ export const cohorts: CohortConfig[] = [
     label: 'Summer 2025',
     contributors: ['KeeranNaidu12'],
   },
-  // No summer 2026: the UBCO-COSC499-S2026 org has no team repos, so the session
-  // most likely didn't run.
+  {
+    org: 'UBCO-COSC499-S2026',
+    year: 2026,
+    session: 'summer',
+    label: 'Summer 2026',
+  },
 ];
 
 /** URL slug and CLI name for a cohort: winter "2024", summer "summer-2024". */
@@ -164,6 +168,8 @@ export const repoExclude: RegExp[] = [
   /^docker-examples$/i,
   /^Team7_002$/,
   /^year-long-project-team-12-1$/,
+  // 2026 team 10 side project. The course repo is capstone-project-team-10.
+  /^capstone-funding-tracker-team-10$/,
 ];
 
 /** Repos smaller than this (KB, GitHub `size`) are treated as empty and skipped. */

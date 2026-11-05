@@ -22,6 +22,7 @@ import {
   currentYear,
   teamPattern,
   excludeLogins,
+  repoExclude,
   lineOutlierThreshold,
   scoreWeights,
   staffTeamShare,
@@ -158,7 +159,8 @@ function loadRaw(org: string): RawRepo[] {
   if (!existsSync(dir)) return [];
   return readdirSync(dir)
     .filter((f) => f.endsWith('.json'))
-    .map((f) => JSON.parse(readFileSync(path.join(dir, f), 'utf8')) as RawRepo);
+    .map((f) => JSON.parse(readFileSync(path.join(dir, f), 'utf8')) as RawRepo)
+    .filter((repo) => !repoExclude.some((re) => re.test(repo.name)));
 }
 
 function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | null {
