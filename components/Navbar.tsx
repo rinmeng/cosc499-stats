@@ -33,9 +33,6 @@ const toLink = (c: (typeof cohorts)[number]) => ({
 
 type NavLink = ReturnType<typeof toLink>;
 
-/** Year-long cohorts in the "Past 5 years" dropdown; older ones go under "More years". */
-const RECENT_YEARS = 5;
-
 // The running cohort already has its own tab, so the dropdowns skip it.
 const winter = cohorts
   .filter((c) => c.session !== 'summer' && cohortSlug(c) !== currentCohort)
@@ -48,8 +45,7 @@ const links: NavLink[] = [
   { href: '/about', label: 'About', live: false },
   ...(current ? [toLink(current)] : []),
 ];
-const recentLinks = winter.slice(0, RECENT_YEARS).map(toLink);
-const olderLinks = winter.slice(RECENT_YEARS).map(toLink);
+const olderLinks = winter.map(toLink);
 const summerLinks = cohorts
   .filter((c) => c.session === 'summer')
   .sort((a, b) => b.year - a.year)
@@ -57,12 +53,6 @@ const summerLinks = cohorts
 
 /** Dropdowns after the tabs (desktop) and labelled sections (mobile menu). */
 const groups = [
-  {
-    key: 'recent',
-    label: `Past ${RECENT_YEARS} years`,
-    heading: `Past ${RECENT_YEARS} years`,
-    links: recentLinks,
-  },
   { key: 'older', label: 'More years', heading: 'Earlier years', links: olderLinks },
   { key: 'summer', label: 'Summer', heading: 'Summer sessions', links: summerLinks },
 ].filter((g) => g.links.length > 0);
