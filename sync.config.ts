@@ -188,6 +188,8 @@ export const excludeLogins: string[] = [
   'sfazackerley',
   'ayhchen',
   'bohuie',
+  // Project clients / partners who committed to a team repo.
+  'michaelwkudla', // 2026 team 1 (BC Cancer)
 ];
 
 /**
