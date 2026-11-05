@@ -406,7 +406,6 @@ export interface InsightsView {
   review: EraSeries[];
   languages: ShareRow[];
   languageSample: { nTeams: number; nCohorts: number };
-  languageDonut: { name: string; bytes: number }[];
   languagesPerTeam: EraSeries[];
   trailers: TimelineSeries[];
   tools: ShareRow[];
@@ -483,10 +482,6 @@ export function insightsView(s: Summary): InsightsView {
     review: [eraSeries(s, 'reviewCoverage'), eraSeries(s, 'discussionPerPr')],
     languages,
     languageSample: coverage(insights.metrics.languagesPerTeam),
-    languageDonut: insights.languages.agentic.map((slice) => ({
-      name: slice.name,
-      bytes: slice.share,
-    })),
     languagesPerTeam: [eraSeries(s, 'languagesPerTeam')],
     trailers: [timelineSeries(s, 'aiTrailers')],
     tools: insights.tools.length ? [{ label: 'Agentic', slices: insights.tools }] : [],

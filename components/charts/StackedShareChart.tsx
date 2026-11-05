@@ -134,7 +134,9 @@ export function StackedShareChart({
                 />
               }
             />
-            <ChartLegend content={<ChartLegendContent />} />
+            <ChartLegend
+              content={<ChartLegendContent className='flex-wrap gap-x-4 gap-y-1.5' />}
+            />
             {names.map((name) => (
               <Bar
                 key={name}

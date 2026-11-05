@@ -2,7 +2,6 @@ import { CohortTimelineChart } from '@/components/charts/CohortTimelineChart';
 import { EraShape } from '@/components/charts/EraShape';
 import { CohortTrendChart } from '@/components/charts/CohortTrendChart';
 import { EraCompareChart } from '@/components/charts/EraCompareChart';
-import { LanguageDonut } from '@/components/charts/LanguageDonut';
 import { StackedShareChart } from '@/components/charts/StackedShareChart';
 import { Grid, StatTile } from '@/components/stats/Blocks';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -63,20 +62,14 @@ export function ImpactCharts({ view }: { view: InsightsView }) {
       <CohortTimelineChart title='Churn' why={WHY.churn} series={view.churn} />
       <EraCompareChart title='Ramp-up' why={WHY.ramp} series={view.ramp} />
       <EraCompareChart title='Review culture' why={WHY.review} series={view.review} />
-      <div className='grid gap-4 lg:grid-cols-2'>
-        <StackedShareChart
-          title='Languages by era'
-          description='Share of code in the top six languages, plus everything else.'
-          why={WHY.languages}
-          rows={view.languages}
-          nTeams={view.languageSample.nTeams}
-          nCohorts={view.languageSample.nCohorts}
-        />
-        <LanguageDonut
-          languages={view.languageDonut}
-          description='Agentic era, the same teams as the stacked bars'
-        />
-      </div>
+      <StackedShareChart
+        title='Languages by era'
+        description='Share of code by language: the top six, plus everything else.'
+        why={WHY.languages}
+        rows={view.languages}
+        nTeams={view.languageSample.nTeams}
+        nCohorts={view.languageSample.nCohorts}
+      />
       <EraCompareChart
         title='Languages per team'
         why={WHY.languagesPerTeam}
