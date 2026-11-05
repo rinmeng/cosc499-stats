@@ -2,10 +2,16 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ExternalLink } from 'lucide-react';
+import { ArrowRight, ExternalLink } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
@@ -172,6 +178,18 @@ export function TopContributors({
                 {t.name}
               </Link>
             </CardTitle>
+            <CardAction>
+              <Link
+                href={t.href}
+                className='group inline-flex items-center gap-1 text-xs
+                  text-muted-foreground hover:text-foreground'
+              >
+                View team
+                <ArrowRight
+                  className='size-3 transition-transform group-hover:translate-x-0.5'
+                />
+              </Link>
+            </CardAction>
           </CardHeader>
           <CardContent>
             <TopList entries={t.top[metric]} unit={unit} />
