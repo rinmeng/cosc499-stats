@@ -34,6 +34,8 @@ const previewTitle = (item: ShareItem) => `UBCO COSC 499 · ${item.title}`;
 /** The line sent above the link. */
 const messageText = (item: ShareItem) => {
   if (item.path.startsWith('/u/')) return 'look at my capstone stats lol';
+  if (item.path.startsWith('/insights'))
+    return 'look at what AI did to capstone teams lol';
   // /<cohort>/<team> is a team page; /<cohort> is a whole cohort.
   return item.path.split('/').filter(Boolean).length > 1
     ? 'look at our team’s capstone stats lol'
