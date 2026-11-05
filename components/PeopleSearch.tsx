@@ -6,7 +6,13 @@ import Fuse from 'fuse.js';
 import { Search, Share2, Users } from 'lucide-react';
 
 import { ShareDialog } from '@/components/ShareDialog';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarGroup,
+  AvatarGroupCount,
+  AvatarImage,
+} from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -37,6 +43,8 @@ interface TeamEntry {
   current: boolean;
   description: string;
   path: string;
+  members: { name: string; avatarUrl: string }[];
+  memberCount: number;
 }
 
 /** The platform never changes while the page is open, so there's nothing to subscribe to. */
@@ -45,7 +53,7 @@ const noSubscribe = () => () => {};
 /** How many people to mount at once. The index itself stays in memory. */
 const PAGE_SIZE = 20;
 
-/** How many team matches to show next to the people. */
+/** How many team matches to show next to the people while searching. */
 const TEAM_LIMIT = 6;
 
 /**
@@ -140,9 +148,13 @@ export function PeopleSearch({
   const visible = filtered.slice(start, start + PAGE_SIZE);
   const searching = query.trim().length > 0;
   const q = query.trim();
-  const teamMatches = (
-    searching ? teamFuse.search(q).map((r) => r.item) : teams.filter((t) => t.current)
-  ).slice(0, TEAM_LIMIT);
+  // Search shows the best few matches; the idle list shows every current-cohort team.
+  const teamMatches = searching
+    ? teamFuse
+        .search(q)
+        .map((r) => r.item)
+        .slice(0, TEAM_LIMIT)
+    : teams.filter((t) => t.current);
   const share = (item: ShareItem) => {
     setOpen(false);
     setQuery('');
@@ -215,18 +227,32 @@ export function PeopleSearch({
                       router.push(t.path);
                     }}
                   >
-                    <span
-                      className='flex size-7 shrink-0 items-center justify-center
-                        rounded-full bg-muted'
-                    >
-                      <Users className='size-3.5' />
-                    </span>
                     <div className='flex min-w-0 flex-1 flex-col'>
                       <span className='truncate'>{t.name}</span>
                       <span className='truncate text-xs text-muted-foreground'>
                         {t.cohort}
                       </span>
                     </div>
+                    <AvatarGroup className='shrink-0'>
+                      {t.members.map((m) => (
+                        <Avatar key={m.avatarUrl} size='sm'>
+                          <AvatarImage src={m.avatarUrl} alt='' loading='lazy' />
+                          <AvatarFallback className='text-[9px]'>
+                            {m.name.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      ))}
+                      {t.memberCount > t.members.length && (
+                        <AvatarGroupCount className='text-[10px]'>
+                          +{t.memberCount - t.members.length}
+                        </AvatarGroupCount>
+                      )}
+                      {t.members.length === 0 && (
+                        <AvatarGroupCount>
+                          <Users />
+                        </AvatarGroupCount>
+                      )}
+                    </AvatarGroup>
                     <ShareRowButton
                       label={`Share ${t.name}`}
                       onClick={() =>

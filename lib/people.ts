@@ -46,7 +46,14 @@ export interface TeamIndexEntry {
   /** Link-preview text for sharing the team page */
   description: string;
   path: string;
+  /** A few members for the stacked avatars (first in the team's own ordering) */
+  members: { name: string; avatarUrl: string }[];
+  /** Everyone on the team with a GitHub account, for the "+N" count */
+  memberCount: number;
 }
+
+/** How many avatars to stack per team in search. */
+const TEAM_AVATARS = 4;
 
 const hidden = new Set(hiddenPeople.map((l) => l.toLowerCase()));
 
@@ -124,12 +131,20 @@ export function teamIndex(): TeamIndexEntry[] {
         .sort((x, y) => x.team - y.team)
         .map((t) => {
           const seo = teamSeo(c, t);
+          const people = t.members.filter(
+            (m) => m.login && !hidden.has(m.login.toLowerCase())
+          );
           return {
             name: t.name,
             cohort: c.label,
             current: c.isCurrent,
             description: seo.description,
             path: seo.path,
+            members: people.slice(0, TEAM_AVATARS).map((m) => ({
+              name: displayName(m),
+              avatarUrl: m.avatarUrl ?? `https://github.com/${m.login}.png?size=64`,
+            })),
+            memberCount: people.length,
           };
         })
     );
