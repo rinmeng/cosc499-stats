@@ -2,6 +2,7 @@ import 'server-only';
 
 import { getSummary } from '@/lib/data';
 import { displayName } from '@/lib/format';
+import { personSeo, teamSeo } from '@/lib/seo';
 import type { CohortStats, PersonStats, TeamStats } from '@/lib/types/stats';
 import { hiddenPeople } from '@/sync.config';
 
@@ -32,6 +33,19 @@ export interface PersonIndexEntry {
   cohorts: string[];
   /** In the cohort that's still running (listed first in search) */
   current: boolean;
+  /** Link-preview text for sharing their page */
+  description: string;
+}
+
+/** Entry in /teams.json, the client-side team search index. */
+export interface TeamIndexEntry {
+  name: string;
+  /** Cohort label, e.g. "2024–25" */
+  cohort: string;
+  current: boolean;
+  /** Link-preview text for sharing the team page */
+  description: string;
+  path: string;
 }
 
 const hidden = new Set(hiddenPeople.map((l) => l.toLowerCase()));
@@ -87,6 +101,7 @@ export function peopleIndex(): PersonIndexEntry[] {
         avatarUrl: p.avatarUrl ?? `https://github.com/${p.login}.png?size=64`,
         cohorts: p.capstones.map((x) => x.cohort.label),
         current: p.capstones.some((x) => x.cohort.isCurrent),
+        description: personSeo(p).description,
       }))
       // Current cohort first, then everyone else; A–Z within each.
       .sort(
@@ -95,4 +110,27 @@ export function peopleIndex(): PersonIndexEntry[] {
           a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
       )
   );
+}
+
+/** Every team page, newest cohort first, for the navbar search. */
+export function teamIndex(): TeamIndexEntry[] {
+  const s = getSummary();
+  if (!s) return [];
+  return [...s.cohorts]
+    .sort(byTermStart)
+    .reverse()
+    .flatMap((c) =>
+      [...c.teams]
+        .sort((x, y) => x.team - y.team)
+        .map((t) => {
+          const seo = teamSeo(c, t);
+          return {
+            name: t.name,
+            cohort: c.label,
+            current: c.isCurrent,
+            description: seo.description,
+            path: seo.path,
+          };
+        })
+    );
 }
