@@ -296,7 +296,25 @@ export default function Overview() {
 
       <CohortTrendChart
         title={current ? `How ${current.label} is tracking` : 'Cohorts through the year'}
-        description='The last 4 year-long and 3 summer cohorts. Average cumulative commits per team by week of term (week 0 = first week of September, or of May for summer sessions; summer is dashed). Click a cohort to bring it forward.'
+        description={
+          <>
+            The last 4 year-long and 3 summer cohorts. Average cumulative commits per team
+            by week of term (week 0 = first week of September, or of May for summer
+            sessions; summer is dashed). Click a cohort to bring it forward.
+            {current && (
+              <Link
+                href={`/${current.slug}#tracking`}
+                className='group mt-2 flex w-fit items-center gap-1 font-medium
+                  text-foreground hover:underline'
+              >
+                View this year’s benchmark
+                <ArrowRight
+                  className='size-4 transition-transform group-hover:translate-x-0.5'
+                />
+              </Link>
+            )}
+          </>
+        }
         series={trendSeries(s)}
         currentWeek={current ? currentWeek(current) : undefined}
       />
@@ -391,9 +409,10 @@ export default function Overview() {
             items={mostPrs.map((t) => ({
               label: t.name,
               href: `/${t.cohort.slug}/${t.team}`,
-              sub: `${t.cohort.label} · ${pct(t.reviewCoverage)} reviewed · ${fmtHours(t.medianMergeHours)}`,
+              sub: `${t.cohort.label} · ${pct(t.reviewCoverage)} reviewed · ${fmtHours(t.medianMergeHours)} to merge`,
               value: fmt(t.prsMerged),
               unit: 'PRs',
+              wrapSub: true,
             }))}
           />
         </Grid>

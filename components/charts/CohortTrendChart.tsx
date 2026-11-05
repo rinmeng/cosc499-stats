@@ -3,10 +3,14 @@
 import { useState } from 'react';
 import {
   Circle,
+  Club,
   Diamond,
+  Heart,
   Hexagon,
   Octagon,
   Pentagon,
+  Shield,
+  Spade,
   Square,
   Star,
   Triangle,
@@ -51,7 +55,17 @@ const SHAPES: LucideIcon[] = [
   Hexagon,
   Pentagon,
   Octagon,
+  Heart,
+  Shield,
+  Spade,
+  Club,
 ];
+
+/**
+ * With more series than this, the header keeps just two tiles (the highlighted series
+ * and the one in focus, or the one it's compared with) and the legend does the picking.
+ */
+const MAX_TILES = 5;
 
 /** How often (in weeks) a shape marker is drawn along each line. */
 const MARKER_EVERY = 4;
@@ -94,16 +108,30 @@ export function CohortTrendChart({
   currentWeek,
   title,
   description,
+  highlight,
+  compareTo,
+  valueLabel = 'avg commits per team',
+  action,
 }: {
   series: TrendSeries[];
   currentWeek?: number;
   title: string;
-  description?: string;
+  description?: React.ReactNode;
+  /** Series shown first, emphasized and focused (default: the current cohort) */
+  highlight?: string;
+  /** Series the highlighted one is compared with (default: the previous cohort of its kind) */
+  compareTo?: string;
+  /** What the highlighted value counts, for its hint */
+  valueLabel?: string;
+  action?: React.ReactNode;
 }) {
   const shapeOf = new Map(series.map((s, i) => [s.slug, SHAPES[i % SHAPES.length]]));
   const lastWeekOf = new Map(series.map((s) => [s.slug, s.points.at(-1)?.week]));
-  const initial = series.find((s) => s.isCurrent) ?? series.at(-1);
-  const [focus, setFocus] = useState(initial?.slug ?? '');
+  const main =
+    series.find((s) => s.slug === highlight) ??
+    series.find((s) => s.isCurrent) ??
+    series.at(-1);
+  const [focus, setFocus] = useState(main?.slug ?? '');
 
   const config: ChartConfig = Object.fromEntries(
     series.map((s) => [keyOf(s), { label: s.label, color: s.color }])
@@ -129,34 +157,49 @@ export function CohortTrendChart({
     return pts.at(-1)?.value ?? 0;
   };
 
-  // Context for the current cohort, compared with the latest past cohort of the same kind.
-  const nowHint = (s: TrendSeries) => {
-    const prev = series.filter((x) => !x.isCurrent && x.session === s.session).at(-1);
-    const base = `avg commits per team by week ${currentWeek ?? '—'}`;
+  // Context for the highlighted series, compared with the one before it of the same kind.
+  const previousOf = (s: TrendSeries) =>
+    series.find((x) => x.slug === compareTo) ??
+    series
+      .slice(0, series.indexOf(s))
+      .filter((x) => !x.isCurrent && x.session === s.session)
+      .at(-1);
+  const hint = (s: TrendSeries) => {
+    const prev = previousOf(s);
+    const when = currentWeek !== undefined ? 'at this point' : 'by the end of term';
+    const base =
+      currentWeek !== undefined
+        ? `${valueLabel} by week ${currentWeek}`
+        : `${valueLabel} by the end of term`;
     if (!prev) return base;
     const diff = Math.round(valueAt(s) - valueAt(prev));
     return diff > 0
-      ? `${base} · ${diff.toLocaleString()} ahead of ${prev.label} at this point`
-      : `${base} · ${prev.label} was at ${Math.round(valueAt(prev)).toLocaleString()} at this point`;
+      ? `${base} · ${diff.toLocaleString()} ahead of ${prev.label} ${when}`
+      : `${base} · ${prev.label} was at ${Math.round(valueAt(prev)).toLocaleString()} ${when}`;
   };
 
-  // Header: current cohort first, then newest to oldest.
+  // Header: highlighted series first, then newest to oldest.
   const ordered = [...series]
     .reverse()
-    .sort((a, b) => Number(b.isCurrent) - Number(a.isCurrent));
+    .sort((a, b) => Number(b === main) - Number(a === main));
+  const compact = series.length > MAX_TILES;
+  const second =
+    series.find((s) => s.slug === focus && s !== main) ?? (main && previousOf(main));
+  const tiles = compact ? ordered.filter((s) => s === main || s === second) : ordered;
 
   return (
     <ChartCard
       title={title}
       description={description}
-      stacked={series.length > 4}
-      metrics={ordered.map((s) => ({
+      stacked={tiles.length > 4}
+      action={action}
+      metrics={tiles.map((s) => ({
         key: s.slug,
         label: s.isCurrent ? `${s.label} · now` : s.label,
         icon: <ShapeIcon Icon={shapeOf.get(s.slug)!} color={s.color} size={11} />,
         value: Math.round(valueAt(s)).toLocaleString(),
-        emphasis: s.isCurrent,
-        hint: s.isCurrent ? nowHint(s) : undefined,
+        emphasis: s === main,
+        hint: s === main ? hint(s) : undefined,
       }))}
       active={focus}
       onActive={setFocus}
@@ -271,14 +314,16 @@ export function CohortTrendChart({
             })}
         </LineChart>
       </ChartContainer>
-      <div className='mt-3 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs'>
+      <div className='mt-3 flex flex-wrap justify-center gap-x-1 gap-y-1 text-xs'>
         {series.map((s) => (
           <button
             key={s.slug}
             type='button'
             onClick={() => setFocus(s.slug)}
-            className='flex items-center gap-1.5 text-muted-foreground
-              hover:text-foreground'
+            aria-pressed={s.slug === focus}
+            className='flex items-center gap-1.5 rounded-full px-2 py-1
+              text-muted-foreground hover:text-foreground aria-pressed:bg-muted
+              aria-pressed:font-medium aria-pressed:text-foreground'
           >
             <ShapeIcon Icon={shapeOf.get(s.slug)!} color={s.color} size={12} />
             <svg width='18' height='4' aria-hidden>

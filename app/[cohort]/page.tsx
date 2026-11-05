@@ -633,14 +633,15 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         )}
       </Grid>
 
-      {live && (
+      <div id='tracking' className='scroll-mt-20'>
         <CohortTrendChart
-          title='How this cohort is tracking'
-          description='Average cumulative commits per team by week of term, next to past cohorts at the same point in their term (summer sessions dashed). Click a cohort to bring it forward.'
-          series={trendSeries(summary)}
-          currentWeek={week}
+          title={live ? 'How this cohort is tracking' : 'How this cohort tracked'}
+          description={`Average cumulative commits per team by week of term, next to ${live ? `past ${c.session === 'summer' ? 'summer' : 'year-long'} cohorts at the same point in their term` : `every other ${c.session === 'summer' ? 'summer' : 'year-long'} cohorts`}. Click a cohort to bring it forward.`}
+          series={trendSeries(summary, c.slug)}
+          highlight={c.slug}
+          currentWeek={live ? week : undefined}
         />
-      )}
+      </div>
 
       <ActivityChart
         data={c.weekly}

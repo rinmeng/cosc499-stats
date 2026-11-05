@@ -14,6 +14,7 @@ import {
 
 import { MemberRadars, type RadarMember } from '@/components/charts/MemberRadars';
 import { ActivityChart } from '@/components/charts/ActivityChart';
+import { CohortTrendChart } from '@/components/charts/CohortTrendChart';
 import { LanguageDonut } from '@/components/charts/LanguageDonut';
 import { Punchcard } from '@/components/charts/Punchcard';
 import { TeamRadial } from '@/components/charts/TeamRadial';
@@ -30,7 +31,13 @@ import { getCohort, getSummary, getTeam } from '@/lib/data';
 import { pageMetadata, teamSeo } from '@/lib/seo';
 import { displayName, fmt, fmtDate, fmtHours, pct } from '@/lib/format';
 import type { PersonStats } from '@/lib/types/stats';
-import { teamHabits, teamTopViews } from '@/lib/views';
+import {
+  currentWeek,
+  teamHabits,
+  teamTopViews,
+  teamTrend,
+  trendSeries,
+} from '@/lib/views';
 
 export function generateStaticParams() {
   return (
@@ -183,6 +190,16 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
           <MemberRadars members={radars} />
         </section>
       )}
+
+      <CohortTrendChart
+        title={c.isCurrent ? 'How this team is tracking' : 'How this team tracked'}
+        description={`Cumulative commits by week of term, next to the average team in ${c.label} and every other ${c.session === 'summer' ? 'summer' : 'year-long'} cohorts. Click a line to bring it forward.`}
+        series={[...trendSeries(summary, c.slug), teamTrend(c, t)]}
+        highlight={`team-${t.key}`}
+        compareTo={c.slug}
+        valueLabel='commits'
+        currentWeek={c.isCurrent ? currentWeek(c) : undefined}
+      />
 
       <ActivityChart
         data={t.weekly}

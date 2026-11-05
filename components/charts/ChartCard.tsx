@@ -73,7 +73,12 @@ export function ChartCard<K extends string>({
           {description && <CardDescription>{description}</CardDescription>}
         </div>
         {action && (
-          <div className='flex items-center px-4 pb-4 sm:px-6 lg:py-5 lg:pl-0'>
+          <div
+            className={cn(
+              'flex items-center px-4 pb-4 sm:px-6',
+              !stacked && 'lg:py-5 lg:pl-0'
+            )}
+          >
             {action}
           </div>
         )}

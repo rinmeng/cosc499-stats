@@ -181,13 +181,20 @@ const TREND_SUMMER_YEARS = 3;
  * Recent cohorts with data, oldest first. Summer sessions are a shorter term, so their
  * lines simply end earlier; the chart draws them dashed.
  */
-export function trendSeries(s: Summary): TrendSeries[] {
+/**
+ * With `include` (a cohort's own page), every cohort of that session is shown instead
+ * of just the recent ones: summer next to summer, year-long next to year-long.
+ */
+export function trendSeries(s: Summary, include?: string): TrendSeries[] {
+  const session = s.cohorts.find((c) => c.slug === include)?.session;
   return s.cohorts
     .filter((c) => c.teams.length)
+    .filter((c) => !session || c.session === session)
     .filter(
       (c) =>
+        !!session ||
         s.currentYear - c.year <
-        (c.session === 'summer' ? TREND_SUMMER_YEARS : TREND_WINTER_YEARS)
+          (c.session === 'summer' ? TREND_SUMMER_YEARS : TREND_WINTER_YEARS)
     )
     .sort(byTermStart)
     .map((c) => ({
@@ -199,6 +206,23 @@ export function trendSeries(s: Summary): TrendSeries[] {
       isCurrent: c.isCurrent,
       points: c.cumulative.filter((p) => p.week <= 34),
     }));
+}
+
+/** One team's cumulative commits by term week, on the same weeks as its cohort's line. */
+export function teamTrend(c: CohortStats, t: TeamStats): TrendSeries {
+  const byWeek = new Map(t.weekly.map((w) => [w.week, w.commits]));
+  let running = 0;
+  return {
+    slug: `team-${t.key}`,
+    session: c.session,
+    year: c.year,
+    label: t.name,
+    color: 'var(--foreground)',
+    isCurrent: false,
+    points: c.cumulative
+      .map((p) => ({ week: p.week, value: (running += byWeek.get(p.week) ?? 0) }))
+      .filter((p) => p.week <= 34),
+  };
 }
 
 export function currentWeek(c: CohortStats, now = Date.now()) {
