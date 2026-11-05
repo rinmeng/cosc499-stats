@@ -150,24 +150,25 @@ export function Navbar() {
           lg:px-8'
       >
         <Brand />
-        <div className='hidden items-center gap-1 lg:flex'>
-          {items()}
-          {groups.map((g) => (
-            <NavDropdown
-              key={g.key}
-              label={g.label}
-              links={g.links}
-              active={g.links.some((l) => isActive(l.href))}
-            />
-          ))}
-          <PeopleSearch />
-          <ModeToggle />
-        </div>
-        <div className='flex items-center gap-2 lg:hidden'>
-          <PeopleSearch className='size-9 px-0' />
-          <ModeToggle className='size-9' />
+        <div className='flex items-center gap-2 lg:gap-1'>
+          <div className='hidden items-center gap-1 lg:flex'>
+            {items()}
+            {groups.map((g) => (
+              <NavDropdown
+                key={g.key}
+                label={g.label}
+                links={g.links}
+                active={g.links.some((l) => isActive(l.href))}
+              />
+            ))}
+          </div>
+          {/* One instance for every screen size: each copy would add its own ⌘K listener. */}
+          <PeopleSearch className='size-9 px-0 lg:h-7 lg:w-auto lg:px-3' />
+          <ModeToggle className='size-9 lg:size-8' />
           <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger render={<Button variant='outline' size='icon-lg' />}>
+            <SheetTrigger
+              render={<Button variant='outline' size='icon-lg' className='lg:hidden' />}
+            >
               <Menu className='size-5' />
               <span className='sr-only'>Toggle menu</span>
             </SheetTrigger>
