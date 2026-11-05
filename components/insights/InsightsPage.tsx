@@ -20,10 +20,13 @@ import { insightsView } from '@/lib/views';
 export function InsightsPage({
   title,
   intro,
+  notes,
   children,
 }: {
   title: string;
   intro: React.ReactNode;
+  /** Short caveats shown under the intro as "Things to know" */
+  notes?: React.ReactNode[];
   children: React.ReactNode;
 }) {
   const summary = getSummary();
@@ -42,6 +45,18 @@ export function InsightsPage({
     <div className='space-y-8'>
       <PageHeader eyebrow='Insights' title={title}>
         {intro}
+        {notes && notes.length > 0 && (
+          <div className='mt-4 space-y-1.5'>
+            <div className='text-xs font-medium tracking-wider uppercase'>
+              Things to know
+            </div>
+            <ul className='list-disc space-y-1 pl-5 text-sm'>
+              {notes.map((note, i) => (
+                <li key={i}>{note}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </PageHeader>
 
       {view.faded.length > 0 && (
@@ -49,16 +64,18 @@ export function InsightsPage({
           <SmallCohortsDialog cohorts={view.faded} />{' '}
           {view.faded.length === 1 ? 'is' : 'are'} too small to move the medians, so{' '}
           {view.faded.length === 1 ? 'it is' : 'they are'} drawn faded and left out of
-          every era median. Repositories that were deleted or made private are missing.{' '}
+          every era median. Repositories that were deleted or made private are missing.
+          Click{' '}
           <a
             href={contributingUrl}
             target='_blank'
             rel='noreferrer'
             className='inline-flex items-center gap-1 font-medium text-foreground'
           >
-            Add a missing team
+            here
             <ExternalLink className='size-3.5' />
-          </a>
+          </a>{' '}
+          to add a missing team.
         </p>
       )}
 

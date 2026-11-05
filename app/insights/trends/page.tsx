@@ -9,18 +9,25 @@ export const metadata = pageMetadata(trendsSeo());
 export default function TrendsPage() {
   const summary = getSummary();
   if (!summary?.insights) return null;
+  const view = insightsView(summary);
+  const current = summary.cohorts.find((c) => c.isCurrent)?.label ?? 'this year';
   return (
     <InsightsPage
       title='Trends across the years'
       intro={
         <p>
-          How the rhythm of the work has changed: when it lands in the term, how much goes
-          through pull requests, and when teams commit. Each point is one cohort, colored
-          by its era.
+          Same course, different rhythm. See how fast teams get going, how much of their
+          work goes through pull requests, and whether they code late at night or on
+          weekends.
         </p>
       }
+      notes={[
+        'Each point or line is one cohort, colored by its era.',
+        `Time-based charts cover the same early stretch of term for every cohort, because ${current} is only ${view.windowWeek} weeks in.`,
+        'Summer sessions are shorter, so they are scaled to line up with a full year.',
+      ]}
     >
-      <TrendCharts view={insightsView(summary)} />
+      <TrendCharts view={view} />
     </InsightsPage>
   );
 }

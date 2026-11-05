@@ -14,11 +14,15 @@ export default function FingerprintsPage() {
       title='Traces of AI in the commit history'
       intro={
         <p>
-          Two signals GitHub can see: commits that name an AI tool as a co-author, and
-          pull requests opened or reviewed by an AI bot. Both undercount, since most AI
-          help happens in the editor before anything is committed.
+          Sometimes the AI signs its work. These charts count the commits and pull
+          requests where it did, and which tools left their name.
         </p>
       }
+      notes={[
+        'Two signals: commits that name an AI tool in a Co-authored-by line, and pull requests opened or reviewed by an AI bot.',
+        'Both undercount. Most AI help happens in the editor and leaves no trace in the history.',
+        'A repository that hasn’t been re-fetched since trailers were scanned counts as unknown, not zero.',
+      ]}
     >
       <FingerprintCharts view={insightsView(summary)} />
     </InsightsPage>
