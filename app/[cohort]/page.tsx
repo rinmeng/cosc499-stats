@@ -112,14 +112,17 @@ export async function generateMetadata({ params }: PageProps<'/[cohort]'>) {
 function OrgLink({ org }: { org?: string }) {
   if (!org) return null;
   return (
-    <a
-      href={`https://github.com/${org}`}
-      target='_blank'
-      rel='noreferrer'
-      className='inline-flex items-center gap-1 underline-offset-2 hover:underline'
-    >
-      {org} <ExternalLink className='size-3.5' />
-    </a>
+    <>
+      <a
+        href={`https://github.com/${org}`}
+        target='_blank'
+        rel='noreferrer'
+        className='inline-flex items-center gap-1 underline-offset-2 hover:underline'
+      >
+        {org} <ExternalLink className='size-3.5' />
+      </a>
+      {' · '}
+    </>
   );
 }
 
@@ -134,7 +137,8 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
   if (c.teams.length === 0)
     return (
       <div className='space-y-8'>
-        <PageHeader eyebrow={<OrgLink org={c.org} />} title={`${c.label} cohort`}>
+        <PageHeader eyebrow='COSC 499 capstone' title={`${c.label} cohort`}>
+          <OrgLink org={c.org} />
           No team repositories from this session are visible on GitHub yet.
         </PageHeader>
         <HelpComplete label={c.label} cohort={c.slug} teams={0} note={c.note} />
@@ -534,12 +538,13 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       <PageHeader
         eyebrow={
           <span className='flex items-center gap-2'>
-            <OrgLink org={c.org} />
+            COSC 499 capstone
             {live && <Badge>In progress · week {week}</Badge>}
           </span>
         }
         title={`${c.label} cohort`}
       >
+        <OrgLink org={c.org} />
         {live ? (
           <>
             {c.totals.teams} teams building right now. Term started {fmtDate(c.termStart)}
