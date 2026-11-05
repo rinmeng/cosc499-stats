@@ -41,7 +41,8 @@ export interface InsightCurve {
   year: number;
   label: string;
   isCurrent: boolean;
-  points: { week: number; value: number }[];
+  /** x: % of the cohort's own term; value: running % of commits in 0–window.termPct */
+  points: { x: number; value: number }[];
 }
 
 export interface ShareSlice {
@@ -50,7 +51,8 @@ export interface ShareSlice {
 }
 
 export interface Insights {
-  window: { week: number };
+  /** Weeks the current cohort is into term, and that as a % of its term */
+  window: { week: number; termPct: number };
   eras: { key: Era; label: string; years: string }[];
   /** False until at least one repo has been re-synced with trailer parsing. */
   trailersScanned: boolean;

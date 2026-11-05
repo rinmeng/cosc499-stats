@@ -391,7 +391,7 @@ function ratioTile(
 export interface InsightsView {
   windowWeek: number;
   eras: { key: Era; label: string; years: string; color: string }[];
-  faded: { label: string; nTeams: number }[];
+  faded: { slug: string; label: string; nTeams: number }[];
   /** `hint` marks the numbers to bold with **…** (render with FindingText) */
   ratios: { label: string; value: string; unit: string; hint: string }[];
   /** "Here's what we found" sentences per tab */
@@ -414,8 +414,10 @@ export interface InsightsView {
   bots: TimelineSeries[];
   curves: TrendSeries[];
   curveLabel: string;
-  /** Week the curves are compared at: midway, since every curve ends at 100% */
-  curveWeek: number;
+  /** % of term the curves cover (same share of every cohort's own term) */
+  curveSpan: number;
+  /** % of term the curves are compared at: midway, since every curve ends at 100% */
+  curveMid: number;
   prsPer100: TimelineSeries[];
   prWeeks: TimelineSeries[];
   nightOwl: TimelineSeries[];
@@ -451,7 +453,7 @@ export function insightsView(s: Summary): InsightsView {
     })),
     faded: insights.metrics.commitSize.cohorts
       .filter((c) => c.faded)
-      .map((c) => ({ label: c.label, nTeams: c.nTeams })),
+      .map((c) => ({ slug: c.slug, label: c.label, nTeams: c.nTeams })),
     ratios: RATIO_KEYS.map(({ key, label, noun }) => {
       const metric = insights.metrics[key];
       const agentic = metric.eras.agentic?.value;
@@ -506,11 +508,13 @@ export function insightsView(s: Summary): InsightsView {
     curves: insights.curves
       .map((curve) => ({
         ...curve,
+        points: curve.points.map((p) => ({ week: p.x, value: p.value })),
         color: cohortColor(curve.year, s.currentYear, curve.session),
       }))
       .sort((a, b) => (start.get(a.slug) ?? '').localeCompare(start.get(b.slug) ?? '')),
-    curveLabel: `% of weeks 0–${insights.window.week} commits`,
-    curveWeek: Math.ceil(insights.window.week / 2),
+    curveLabel: 'of early-term commits made by the halfway point',
+    curveSpan: insights.window.termPct,
+    curveMid: Math.round(insights.window.termPct / 2),
     prsPer100: [timelineSeries(s, 'prsPer100')],
     prWeeks: [timelineSeries(s, 'prWeeks')],
     nightOwl: [timelineSeries(s, 'nightOwl')],

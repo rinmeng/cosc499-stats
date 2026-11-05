@@ -63,6 +63,8 @@ function authorKey(login: string | null, email: string | null, name: string | nu
 
 interface CommitRow {
   week: number;
+  /** Exact weeks since term start (fractional), for term-relative curves. */
+  at: number;
   /** Lines changed, or -1 when the commit is over the outlier cap. */
   lines: number;
   scanned: boolean;
@@ -105,7 +107,8 @@ function scanCohort(c: CohortStats): {
     const t = Date.parse(iso);
     return t >= windowStart && t <= windowEnd;
   };
-  const weekOf = (iso: string) => Math.floor((Date.parse(iso) - termStart) / WEEK);
+  const weeksIn = (iso: string) => (Date.parse(iso) - termStart) / WEEK;
+  const weekOf = (iso: string) => Math.floor(weeksIn(iso));
   const staff = new Set(c.staffExcluded.map((s) => s.toLowerCase()));
   const skip = (login: string | null) => {
     if (!login) return false;
@@ -152,6 +155,7 @@ function scanCohort(c: CohortStats): {
         const size = commit.additions + commit.deletions;
         commits.push({
           week,
+          at: weeksIn(commit.date),
           lines: size <= lineOutlierThreshold ? size : -1,
           scanned: !!repo.meta.trailersScanned,
           trailers: repo.meta.trailersScanned ? (commit.aiTrailers ?? []) : [],
@@ -564,22 +568,31 @@ export function buildInsights(cohorts: CohortStats[], now: Date): Insights {
     ])
   );
 
+  // Curves run on % of term, not weeks: weeks 0–W of a ~34-week year are its first
+  // quarter, but over half of a ~14-week summer. Every cohort covers the same share
+  // of its own term that the current cohort has had so far.
+  const currentTerm = current?.session === 'summer' ? summerWeeks : fullYearWeeks;
+  const curveSpan = Math.max(1, Math.round((W / currentTerm) * 100));
   const curves = cohorts
     .filter((c) => c.teams.length > 0)
     .map((c) => {
-      const byWeek = new Map<number, number>();
-      for (const team of c.teams)
-        for (const point of team.weekly) {
-          if (point.week < 0 || point.week > W) continue;
-          byWeek.set(point.week, (byWeek.get(point.week) ?? 0) + point.commits);
+      const term = termWeeks(c.year, c.session === 'summer');
+      const pcts: number[] = [];
+      for (const team of c.teams) {
+        const f = facts(c.slug, team.team);
+        if (!f) continue;
+        for (const commit of f.commits) {
+          const pct = (commit.at / term) * 100;
+          if (pct >= 0 && pct <= curveSpan) pcts.push(pct);
         }
-      const total = [...byWeek.values()].reduce((a, b) => a + b, 0);
-      if (!total) return null;
-      let running = 0;
+      }
+      if (!pcts.length) return null;
+      pcts.sort((a, b) => a - b);
       const points = [];
-      for (let week = 0; week <= W; week++) {
-        running += byWeek.get(week) ?? 0;
-        points.push({ week, value: Math.round((running / total) * 1000) / 10 });
+      let i = 0;
+      for (let x = 0; x <= curveSpan; x++) {
+        while (i < pcts.length && pcts[i] <= x) i++;
+        points.push({ x, value: Math.round((i / pcts.length) * 1000) / 10 });
       }
       return {
         slug: c.slug,
@@ -622,7 +635,7 @@ export function buildInsights(cohorts: CohortStats[], now: Date): Insights {
   const tools = shareSlices(toolCounts, TOOL_ORDER, TOOL_ORDER.length);
 
   return {
-    window: { week: W },
+    window: { week: W, termPct: curveSpan },
     eras: [
       { key: 'pre-ai', label: 'Before AI', years: '2017–2021' },
       { key: 'early-ai', label: 'Early AI', years: '2022–2023' },

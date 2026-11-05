@@ -1,5 +1,6 @@
 import { ExternalLink } from 'lucide-react';
 
+import { SmallCohortsDialog } from '@/components/insights/SmallCohortsDialog';
 import { PageHeader } from '@/components/stats/Blocks';
 import { contributingUrl } from '@/components/stats/HelpComplete';
 import {
@@ -8,13 +9,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { getSummary } from '@/lib/data';
 import { insightsView } from '@/lib/views';
 
 /**
- * Shared frame for the insights pages: this page's own header, then the small-cohort
- * notice, the page content, and the methodology accordion. Each page passes its own
+ * Shared frame for the insights pages: this page's own header, a one-line note on
+ * faded cohorts, the page content, and the methodology accordion. Each page passes its own
  * title and intro so the three tabs don't share a heading.
  */
 export function InsightsPage({
@@ -36,7 +36,6 @@ export function InsightsPage({
   }
 
   const view = insightsView(summary);
-  const fadedLabels = view.faded.map((c) => `${c.label} (n = ${c.nTeams})`).join(', ');
   const current = summary.cohorts.find((c) => c.isCurrent)?.label ?? 'the current cohort';
 
   return (
@@ -46,27 +45,21 @@ export function InsightsPage({
       </PageHeader>
 
       {view.faded.length > 0 && (
-        <Alert>
-          <AlertTitle>A few cohorts are too small to move the medians</AlertTitle>
-          <AlertDescription>
-            <p>
-              {fadedLabels} {view.faded.length === 1 ? 'is' : 'are'} drawn faded and left
-              out of every era median. Repositories that were deleted or made private are
-              missing.
-            </p>
-            <p>
-              <a
-                href={contributingUrl}
-                target='_blank'
-                rel='noreferrer'
-                className='inline-flex items-center gap-1 font-medium text-foreground'
-              >
-                Add a missing team
-                <ExternalLink className='size-3.5' />
-              </a>
-            </p>
-          </AlertDescription>
-        </Alert>
+        <p className='text-sm text-muted-foreground'>
+          <SmallCohortsDialog cohorts={view.faded} />{' '}
+          {view.faded.length === 1 ? 'is' : 'are'} too small to move the medians, so{' '}
+          {view.faded.length === 1 ? 'it is' : 'they are'} drawn faded and left out of
+          every era median. Repositories that were deleted or made private are missing.{' '}
+          <a
+            href={contributingUrl}
+            target='_blank'
+            rel='noreferrer'
+            className='inline-flex items-center gap-1 font-medium text-foreground'
+          >
+            Add a missing team
+            <ExternalLink className='size-3.5' />
+          </a>
+        </p>
       )}
 
       {children}
@@ -90,8 +83,9 @@ export function InsightsPage({
             </p>
             <p>
               Time-based charts use weeks 0–{view.windowWeek} for every cohort, because{' '}
-              {current} is only that far in. Full-term charts draw that cohort as a hollow
-              dot and leave it out of the median.
+              {current} is only that far in. The commit curve uses the same share of each
+              cohort’s own term instead, so summer lines up with a full year. Full-term
+              charts draw that cohort as a hollow dot and leave it out of the median.
             </p>
             <p>
               Summer sessions are mixed in, with weekly rates scaled to a full year. A

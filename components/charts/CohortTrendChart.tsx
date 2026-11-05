@@ -36,6 +36,7 @@ export interface TrendSeries {
   /** CSS color for this cohort (ordinal: newer cohorts are stronger) */
   color: string;
   isCurrent: boolean;
+  /** `week` is the x position: week of term, or % of term when xUnit is 'term' */
   points: { week: number; value: number }[];
 }
 
@@ -112,6 +113,7 @@ export function CohortTrendChart({
   compareTo,
   valueLabel = 'avg commits per team',
   markerLabel = 'Today',
+  xUnit = 'week',
   action,
 }: {
   series: TrendSeries[];
@@ -126,6 +128,8 @@ export function CohortTrendChart({
   valueLabel?: string;
   /** Label on the comparison week's reference line */
   markerLabel?: string;
+  /** What the x axis counts: weeks of term, or % of each cohort's own term */
+  xUnit?: 'week' | 'term';
   action?: React.ReactNode;
 }) {
   const shapeOf = new Map(series.map((s, i) => [s.slug, SHAPES[i % SHAPES.length]]));
@@ -167,8 +171,19 @@ export function CohortTrendChart({
       .slice(0, series.indexOf(s))
       .filter((x) => !x.isCurrent && x.session === s.session)
       .at(-1);
+  // On a % of term axis the values are shares: show them with %, and the caller's
+  // valueLabel already says where they're read, so no "by week N" is added.
+  const pct = xUnit === 'term';
+  const fmt = (v: number) => `${Math.round(v).toLocaleString()}${pct ? '%' : ''}`;
   const hint = (s: TrendSeries) => {
     const prev = previousOf(s);
+    if (pct) {
+      if (!prev) return valueLabel;
+      const diff = Math.round(valueAt(s) - valueAt(prev));
+      return diff > 0
+        ? `${valueLabel} · ${diff} points ahead of ${prev.label}`
+        : `${valueLabel} · ${prev.label} was at ${fmt(valueAt(prev))}`;
+    }
     const when = currentWeek !== undefined ? 'at this point' : 'by the end of term';
     const base =
       currentWeek !== undefined
@@ -200,7 +215,7 @@ export function CohortTrendChart({
         key: s.slug,
         label: s.isCurrent ? `${s.label} · now` : s.label,
         icon: <ShapeIcon Icon={shapeOf.get(s.slug)!} color={s.color} size={11} />,
-        value: Math.round(valueAt(s)).toLocaleString(),
+        value: fmt(valueAt(s)),
         emphasis: s === main,
         hint: s === main ? hint(s) : undefined,
       }))}
@@ -218,7 +233,7 @@ export function CohortTrendChart({
             axisLine={false}
             tickMargin={8}
             minTickGap={24}
-            tickFormatter={(w) => `Wk ${w}`}
+            tickFormatter={(w) => (xUnit === 'term' ? `${w}%` : `Wk ${w}`)}
           />
           <YAxis tickLine={false} axisLine={false} width={40} />
           {currentWeek !== undefined && (
@@ -238,7 +253,10 @@ export function CohortTrendChart({
             content={
               <ChartTooltipContent
                 className='w-56'
-                labelFormatter={(_, p) => `Week ${p?.[0]?.payload?.week} of term`}
+                labelFormatter={(_, p) => {
+                  const w = p?.[0]?.payload?.week;
+                  return xUnit === 'term' ? `${w}% into term` : `Week ${w} of term`;
+                }}
                 formatter={(value, name) => (
                   <div className='flex w-full items-center justify-between gap-3'>
                     <span className='flex items-center gap-1.5 text-muted-foreground'>
@@ -255,7 +273,7 @@ export function CohortTrendChart({
                       {config[name as string]?.label}
                     </span>
                     <span className='font-mono font-medium tabular-nums'>
-                      {Math.round(Number(value)).toLocaleString()}
+                      {fmt(Number(value))}
                     </span>
                   </div>
                 )}

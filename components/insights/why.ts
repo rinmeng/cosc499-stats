@@ -237,7 +237,7 @@ export const WHY = {
   },
   curves: {
     measures:
-      'Each line is one cohort’s commits over the same early weeks of term, as a running share. Steeper early means work started sooner.',
+      'Each line is one cohort’s commits over the same early share of its own term, as a running share. Summer terms are shorter, so this lines a summer week up with the matching point of a full year. Steeper early means work started sooner.',
     reasons: [
       {
         title: 'Quicker starts',

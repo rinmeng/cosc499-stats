@@ -140,10 +140,11 @@ export function TrendCharts({ view }: { view: InsightsView }) {
       <Findings items={view.findings.trends} />
       <CohortTrendChart
         series={view.curves}
-        currentWeek={view.curveWeek}
+        currentWeek={view.curveMid}
         markerLabel='Halfway'
+        xUnit='term'
         title='When the work lands'
-        description={`Running share of each cohort’s commits in weeks 0–${view.windowWeek}. Every line ends at 100%, so the numbers compare how much was done by week ${view.curveWeek}.`}
+        description={`How each cohort’s early-term commits built up: the first ${view.curveSpan}% of its term, or about ${view.windowWeek} weeks of a full year. Summer is scaled to match.`}
         valueLabel={view.curveLabel}
         action={<WhyDialog title='When the work lands' why={WHY.curves} />}
       />
