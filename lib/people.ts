@@ -27,6 +27,7 @@ export interface Person {
 export interface PersonIndexEntry {
   login: string;
   name: string;
+  avatarUrl: string;
   /** Cohort labels, e.g. ["Summer 2024", "2024–25"] */
   cohorts: string[];
   /** In the cohort that's still running (listed first in search) */
@@ -83,6 +84,7 @@ export function peopleIndex(): PersonIndexEntry[] {
       .map((p) => ({
         login: p.login,
         name: p.name,
+        avatarUrl: p.avatarUrl ?? `https://github.com/${p.login}.png?size=64`,
         cohorts: p.capstones.map((x) => x.cohort.label),
         current: p.capstones.some((x) => x.cohort.isCurrent),
       }))

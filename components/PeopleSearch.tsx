@@ -4,6 +4,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -20,6 +21,7 @@ import { cn } from '@/lib/utils';
 interface Entry {
   login: string;
   name: string;
+  avatarUrl: string;
   cohorts: string[];
   /** In the cohort that's still running; /people.json lists these first */
   current: boolean;
@@ -115,6 +117,12 @@ export function PeopleSearch({
                           router.push(`/u/${p.login}`);
                         }}
                       >
+                        <Avatar className='size-7'>
+                          <AvatarImage src={p.avatarUrl} alt='' loading='lazy' />
+                          <AvatarFallback className='text-[10px]'>
+                            {p.name.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
                         <div className='flex min-w-0 flex-col'>
                           <span className='truncate'>
                             {p.name}
