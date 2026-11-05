@@ -191,7 +191,7 @@ export default function Overview() {
             {c.session === 'summer' && !isSmallCohort(c) && (
               <Badge variant='secondary'>Summer</Badge>
             )}
-            {isSmallCohort(c) && <Badge variant='outline'>Help complete</Badge>}
+            {isSmallCohort(c) && <Badge variant='outline'>Incomplete</Badge>}
             <ArrowRight
               className='ml-auto size-4 text-muted-foreground transition-transform
                 group-hover:translate-x-0.5'
