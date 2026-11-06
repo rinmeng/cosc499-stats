@@ -101,7 +101,7 @@ export function StackedShareChart({
           {empty ?? 'No data yet.'}
         </p>
       ) : (
-        <ChartContainer config={config} className='aspect-auto min-h-72 w-full flex-1'>
+        <ChartContainer config={config} className='aspect-auto h-72 w-full'>
           <BarChart
             accessibilityLayer
             data={data}

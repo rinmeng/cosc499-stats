@@ -125,7 +125,7 @@ export function CohortTimelineChart({
         </p>
       ) : (
         <>
-          <ChartContainer config={config} className='aspect-auto min-h-64 w-full flex-1'>
+          <ChartContainer config={config} className='aspect-auto h-64 w-full'>
             <LineChart
               accessibilityLayer
               data={data}

@@ -162,11 +162,7 @@ export function EraCompareChart({
       ) : (
         <ChartContainer
           config={config}
-          className={
-            compact
-              ? 'aspect-auto min-h-56 w-full flex-1'
-              : 'aspect-auto min-h-64 w-full flex-1'
-          }
+          className={compact ? 'aspect-auto h-56 w-full' : 'aspect-auto h-64 w-full'}
         >
           <BarChart accessibilityLayer data={data} margin={{ top: 24 }}>
             <CartesianGrid vertical={false} />
