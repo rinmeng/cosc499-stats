@@ -83,11 +83,14 @@ export function EraCompareChart({
   why,
   series,
   empty,
+  compact = false,
 }: {
   title: string;
   why: Why;
   series: EraSeries[];
   empty?: string;
+  /** Half-width card: metric tabs in their own row, slimmer bars. */
+  compact?: boolean;
 }) {
   const [activeKey, setActiveKey] = useState(series[0]?.key);
   const active = series.find((s) => s.key === activeKey) ?? series[0];
@@ -148,14 +151,23 @@ export function EraCompareChart({
       metrics={series.map((s) => ({ key: s.key, label: s.label, value: s.headline }))}
       active={active.key}
       onActive={setActiveKey}
-      wideMetrics
+      stacked={compact}
+      wideMetrics={!compact}
+      className='h-full'
     >
       {data.length === 0 ? (
         <p className='px-2 py-10 text-center text-sm text-muted-foreground'>
           {empty ?? 'Not enough data yet.'}
         </p>
       ) : (
-        <ChartContainer config={config} className='aspect-auto h-64 w-full'>
+        <ChartContainer
+          config={config}
+          className={
+            compact
+              ? 'aspect-auto min-h-56 w-full flex-1'
+              : 'aspect-auto min-h-64 w-full flex-1'
+          }
+        >
           <BarChart accessibilityLayer data={data} margin={{ top: 24 }}>
             <CartesianGrid vertical={false} />
             <XAxis dataKey='label' tickLine={false} tickMargin={10} axisLine={false} />
@@ -195,7 +207,7 @@ export function EraCompareChart({
               dataKey='value'
               fill='var(--color-value)'
               radius={dual ? 4 : 8}
-              maxBarSize={dual ? 40 : 72}
+              maxBarSize={dual ? 40 : compact ? 56 : 72}
             >
               {!dual &&
                 data.map((row) => <Cell key={row.era} fill={ERA_COLOR[row.era]} />)}

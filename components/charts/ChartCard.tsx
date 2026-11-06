@@ -58,7 +58,9 @@ export function ChartCard<K extends string>({
   // Keep plain metrics on one row on phones; 4 across still fits a 360px screen.
   const cols = Math.min(Math.max(plain, 1), 4);
   // Stacked: 3 across on phones; on desktop every metric in one row, emphasis twice as wide.
-  const stackedCols = { '--cols-lg': plain + 2 } as React.CSSProperties;
+  // Each emphasized metric spans two columns; plain ones take one. No spare cells.
+  const emphasised = (metrics?.length ?? 0) - plain;
+  const stackedCols = { '--cols-lg': plain + emphasised * 2 } as React.CSSProperties;
 
   return (
     <Card className={cn('gap-0 py-0', className)}>
@@ -144,7 +146,10 @@ export function ChartCard<K extends string>({
           </div>
         )}
       </CardHeader>
-      <CardContent className='px-2 py-4 sm:p-6'>{children}</CardContent>
+      {/* flex-1 so cards sharing a grid row stretch to the same height; charts grow into it */}
+      <CardContent className='flex flex-1 flex-col px-2 py-4 sm:p-6'>
+        {children}
+      </CardContent>
     </Card>
   );
 }

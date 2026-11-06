@@ -41,26 +41,41 @@ export function Findings({ items }: { items: string[] }) {
 }
 
 export function ImpactCharts({ view }: { view: InsightsView }) {
+  // Two cards per row on desktop so the era bars stay close enough to compare.
   return (
-    <div className='space-y-4'>
+    <div className='grid gap-4 lg:grid-cols-2'>
       <EraCompareChart
+        compact
         title='Commit size'
         why={WHY.commitSize}
         series={view.commitSize}
       />
       <EraCompareChart
+        compact
         title='Pull requests'
         why={WHY.pullRequests}
         series={view.pullRequests}
       />
       <EraCompareChart
+        compact
         title='Output per person-week'
         why={WHY.output}
         series={view.output}
       />
+      <EraCompareChart compact title='Ramp-up' why={WHY.ramp} series={view.ramp} />
+      <EraCompareChart
+        compact
+        title='Review culture'
+        why={WHY.review}
+        series={view.review}
+      />
       <CohortTimelineChart title='Churn' why={WHY.churn} series={view.churn} />
-      <EraCompareChart title='Ramp-up' why={WHY.ramp} series={view.ramp} />
-      <EraCompareChart title='Review culture' why={WHY.review} series={view.review} />
+      <EraCompareChart
+        compact
+        title='Languages per team'
+        why={WHY.languagesPerTeam}
+        series={view.languagesPerTeam}
+      />
       <StackedShareChart
         title='Languages by era'
         description='Share of code by language: the top six, plus everything else.'
@@ -68,11 +83,6 @@ export function ImpactCharts({ view }: { view: InsightsView }) {
         rows={view.languages}
         nTeams={view.languageSample.nTeams}
         nCohorts={view.languageSample.nCohorts}
-      />
-      <EraCompareChart
-        title='Languages per team'
-        why={WHY.languagesPerTeam}
-        series={view.languagesPerTeam}
       />
     </div>
   );
