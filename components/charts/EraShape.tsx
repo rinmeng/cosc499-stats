@@ -9,13 +9,13 @@ export type MarkShape = 'circle' | 'square' | 'triangle';
 export type MarkState = 'normal' | 'inProgress' | 'small';
 
 /**
- * Era marker. Circles everywhere, matching the shadcn dot charts; bars are labeled
- * on their axis, so color is never the only cue.
+ * Era marker: each era has its own shape as well as its color, so dots and bars can be
+ * told apart without color (color-blind readers, print, grayscale).
  */
 export const ERA_MARK: Record<Era, MarkShape> = {
   'pre-ai': 'circle',
-  'early-ai': 'circle',
-  agentic: 'circle',
+  'early-ai': 'square',
+  agentic: 'triangle',
 };
 
 const ERA_ORDER: Era[] = ['pre-ai', 'early-ai', 'agentic'];

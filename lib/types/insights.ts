@@ -48,6 +48,9 @@ export interface InsightCurve {
 export interface ShareSlice {
   name: string;
   share: number;
+  /** Raw counts behind the share, when known (AI tools only). */
+  commits?: number;
+  teams?: number;
 }
 
 export interface Insights {

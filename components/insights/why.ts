@@ -189,7 +189,7 @@ export const WHY = {
   },
   trailers: {
     measures:
-      'The share of commits whose message names an AI tool as a co-author (a “Co-authored-by” line).',
+      'The share of teams with at least one commit whose message names an AI tool as a co-author (a “Co-authored-by” line).',
     reasons: [
       {
         title: 'Only some tools add the line',
@@ -219,12 +219,12 @@ export const WHY = {
   },
   bots: {
     measures:
-      'The share of a typical team’s merged pull requests opened or reviewed by an AI bot, such as Copilot’s reviewer or coding agent.',
+      'The share of teams with at least one merged pull request opened or reviewed by an AI bot, such as Copilot’s reviewer or coding agent.',
     reasons: [
       {
         title: 'Few teams turned bots on',
         detail:
-          'AI review bots and coding agents need setup or a paid plan, so the median team has none, even when a few teams use them a lot.',
+          'AI review bots and coding agents need setup or a paid plan, so only some teams have one.',
       },
       {
         title: 'AI mostly happens in the editor',
@@ -233,7 +233,7 @@ export const WHY = {
       },
     ],
     method:
-      'Uses the median team, so a handful of heavy users don’t move it. Bot accounts are still left out of every human total on the site.',
+      'A team counts once, however many bot pull requests it has. Bot accounts are still left out of every human total on the site.',
   },
   curves: {
     measures:

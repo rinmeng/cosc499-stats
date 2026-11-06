@@ -2,6 +2,7 @@
 
 import { LabelList, PolarAngleAxis, RadialBar, RadialBarChart } from 'recharts';
 
+import { SeriesIcon } from './SeriesIcon';
 import {
   Card,
   CardContent,
@@ -82,11 +83,12 @@ export function TeamRadial({ items }: { items: RadialItem[] }) {
       </CardContent>
       <CardFooter className='pt-4'>
         <ul className='w-full space-y-1.5 text-sm'>
-          {items.map((it) => (
+          {items.map((it, i) => (
             <li key={it.key} className='flex items-baseline gap-2'>
-              <span
-                className='size-2.5 shrink-0 translate-y-0.5 rounded-[2px]'
-                style={{ background: `var(--color-${it.key})` }}
+              <SeriesIcon
+                index={i}
+                color={`var(--color-${it.key})`}
+                className='size-3.5 translate-y-0.5'
               />
               <span className='font-medium'>{it.label}</span>
               <span className='truncate text-xs text-muted-foreground'>{it.hint}</span>

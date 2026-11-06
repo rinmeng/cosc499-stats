@@ -68,16 +68,17 @@ export interface BootstrapEstimate {
  */
 export function bootstrapCI(
   groups: number[][],
-  seed = BOOTSTRAP_SEED
+  seed = BOOTSTRAP_SEED,
+  center: (xs: number[]) => number | null = median
 ): BootstrapEstimate | null {
   const clean = groups
     .map((g) => g.filter((n) => Number.isFinite(n)))
     .filter((g) => g.length);
   if (!clean.length) return null;
 
-  const cohortMedians = clean.map((g) => median(g)!);
+  const cohortMedians = clean.map((g) => center(g)!);
   const value = median(cohortMedians)!;
-  const pooled = median(clean.flat())!;
+  const pooled = center(clean.flat())!;
   const nTeams = clean.reduce((a, g) => a + g.length, 0);
   const nCohorts = clean.length;
 
@@ -90,7 +91,7 @@ export function bootstrapCI(
       const resampled: number[] = [];
       for (let t = 0; t < group.length; t++)
         resampled.push(group[Math.floor(rand() * group.length)]);
-      medians.push(median(resampled)!);
+      medians.push(center(resampled)!);
     }
     samples.push(median(medians)!);
   }

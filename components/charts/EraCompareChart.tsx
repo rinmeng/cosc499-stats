@@ -17,6 +17,7 @@ import { ERA_COLOR, eraLabel, fmtInsight, type InsightKind } from '@/lib/format'
 import type { Era } from '@/lib/types/insights';
 
 import { ChartCard } from './ChartCard';
+import { coloredIcon } from './SeriesIcon';
 
 export interface EraBar {
   era: Era;
@@ -112,8 +113,16 @@ export function EraCompareChart({
 
   const config: ChartConfig = dual
     ? {
-        value: { label: 'Winter', color: 'var(--chart-4)' },
-        summer: { label: 'Summer', color: 'var(--summer-2)' },
+        value: {
+          label: 'Winter',
+          color: 'var(--chart-4)',
+          icon: coloredIcon(0, 'var(--chart-4)'),
+        },
+        summer: {
+          label: 'Summer',
+          color: 'var(--summer-2)',
+          icon: coloredIcon(1, 'var(--summer-2)'),
+        },
       }
     : { value: { label: active.label, color: 'var(--chart-3)' } };
 

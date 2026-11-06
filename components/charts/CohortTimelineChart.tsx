@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CartesianGrid, Dot, Line, LineChart, XAxis, YAxis } from 'recharts';
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
 
 import { FindingText } from '@/components/insights/FindingText';
 import { WhyDialog, type Why } from '@/components/insights/WhyDialog';
@@ -15,7 +15,7 @@ import { ERA_COLOR, fmtInsight, type InsightKind } from '@/lib/format';
 import type { Era } from '@/lib/types/insights';
 
 import { ChartCard } from './ChartCard';
-import { EraLegend, markState, type MarkState } from './EraShape';
+import { ERA_MARK, EraLegend, Mark, markState, type MarkState } from './EraShape';
 
 export interface TimelinePoint {
   termStart: string;
@@ -69,7 +69,11 @@ export function CohortTimelineChart({
 
   const data = [...active.points]
     .sort((a, b) => a.termStart.localeCompare(b.termStart))
-    .map((p) => ({ ...p, fill: ERA_COLOR[eraOf(p.termStart)] }));
+    .map((p) => ({
+      ...p,
+      fill: ERA_COLOR[eraOf(p.termStart)],
+      shape: ERA_MARK[eraOf(p.termStart)],
+    }));
 
   const states = (['inProgress', 'small'] as MarkState[]).filter((st) =>
     data.some((p) => markState(p) === st)
@@ -174,18 +178,19 @@ export function CohortTimelineChart({
                 stroke='var(--color-value)'
                 strokeWidth={2}
                 dot={({ payload, ...props }) => {
-                  const state = markState(payload);
+                  if (props.cx == null || props.cy == null)
+                    return <g key={payload.label} />;
                   return (
-                    <Dot
-                      key={payload.label}
-                      r={5}
-                      cx={props.cx}
-                      cy={props.cy}
-                      fill={state === 'inProgress' ? 'var(--card)' : payload.fill}
-                      fillOpacity={state === 'small' ? 0.35 : 1}
-                      stroke={payload.fill}
-                      strokeWidth={state === 'inProgress' ? 2 : 0}
-                    />
+                    <g key={payload.label}>
+                      <Mark
+                        cx={props.cx}
+                        cy={props.cy}
+                        r={5.5}
+                        shape={payload.shape}
+                        color={payload.fill}
+                        state={markState(payload)}
+                      />
+                    </g>
                   );
                 }}
                 isAnimationActive={false}

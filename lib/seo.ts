@@ -28,9 +28,9 @@ export const insightsSeo = (): PageSeo => ({
 });
 
 export const fingerprintsSeo = (): PageSeo => ({
-  title: 'AI fingerprints',
+  title: 'AI tools',
   description:
-    'AI co-author trailers and bot reviews in UBCO COSC 499 capstones, as cohort medians. Unscanned repositories stay unknown, not zero.',
+    'Which AI tools name themselves as co-authors in UBCO COSC 499 capstone commits. Unscanned repositories stay unknown, not zero.',
   path: '/insights/fingerprints',
 });
 
