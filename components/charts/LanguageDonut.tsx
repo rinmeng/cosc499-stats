@@ -72,7 +72,7 @@ export function LanguageDonut({
                       <span className='flex items-center gap-1.5 text-muted-foreground'>
                         <SeriesIcon
                           index={data.findIndex((x) => x.key === item.payload.key)}
-                          color={item.payload.fill}
+                          color={String(config[item.payload.key]?.color)}
                           className='size-3'
                         />
                         {item.payload.name}
@@ -130,7 +130,7 @@ export function LanguageDonut({
         <ul className='grid w-full grid-cols-2 gap-x-4 gap-y-1.5 text-sm'>
           {data.map((d, i) => (
             <li key={d.key} className='flex items-center gap-2'>
-              <SeriesIcon index={i} color={`var(--color-${d.key})`} />
+              <SeriesIcon index={i} color={String(config[d.key]?.color)} />
               <span className='truncate'>{d.name}</span>
               <span
                 className='ml-auto font-mono text-xs tabular-nums text-muted-foreground'

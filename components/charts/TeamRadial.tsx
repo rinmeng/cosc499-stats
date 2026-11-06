@@ -87,7 +87,7 @@ export function TeamRadial({ items }: { items: RadialItem[] }) {
             <li key={it.key} className='flex items-baseline gap-2'>
               <SeriesIcon
                 index={i}
-                color={`var(--color-${it.key})`}
+                color={`var(--cohort-${i + 1})`}
                 className='size-3.5 translate-y-0.5'
               />
               <span className='font-medium'>{it.label}</span>
