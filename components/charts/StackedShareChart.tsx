@@ -15,6 +15,7 @@ import {
 import type { ShareSlice } from '@/lib/types/insights';
 
 import { ChartCard } from './ChartCard';
+import { SeriesIcon, coloredIcon } from './SeriesIcon';
 
 const PALETTE = [
   'var(--chart-1)',
@@ -73,7 +74,11 @@ export function StackedShareChart({
   const config: ChartConfig = Object.fromEntries(
     names.map((name, i) => [
       keyOf(name),
-      { label: name, color: PALETTE[Math.min(i, PALETTE.length - 1)] },
+      {
+        label: name,
+        color: PALETTE[Math.min(i, PALETTE.length - 1)],
+        icon: coloredIcon(i, PALETTE[Math.min(i, PALETTE.length - 1)]),
+      },
     ])
   );
 
@@ -96,7 +101,7 @@ export function StackedShareChart({
           {empty ?? 'No data yet.'}
         </p>
       ) : (
-        <ChartContainer config={config} className='aspect-auto h-72 w-full'>
+        <ChartContainer config={config} className='aspect-auto min-h-72 w-full flex-1'>
           <BarChart
             accessibilityLayer
             data={data}
@@ -115,6 +120,8 @@ export function StackedShareChart({
               axisLine={false}
               width={40}
               domain={[0, 100]}
+              ticks={[0, 25, 50, 75, 100]}
+              allowDataOverflow
               tickFormatter={(v) => `${v}%`}
             />
             <ChartTooltip
@@ -123,7 +130,12 @@ export function StackedShareChart({
                   className='w-44'
                   formatter={(value, name) => (
                     <div className='flex w-full items-center justify-between gap-3'>
-                      <span className='text-muted-foreground'>
+                      <span className='flex items-center gap-1.5 text-muted-foreground'>
+                        <SeriesIcon
+                          index={names.findIndex((n) => keyOf(n) === name)}
+                          color={String(config[name as string]?.color)}
+                          className='size-3'
+                        />
                         {config[name as string]?.label ?? name}
                       </span>
                       <span className='font-mono tabular-nums'>

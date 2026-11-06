@@ -191,6 +191,10 @@ function personWeekCount(rows: PersonWeek[], W: number | null): number {
   return new Set(list.map((r) => `${r.week}|${r.key}`)).size;
 }
 
+function mean(xs: number[]): number | null {
+  return xs.length ? xs.reduce((a, n) => a + n, 0) / xs.length : null;
+}
+
 function rate(numerator: number, denominator: number): number | null {
   if (denominator <= 0) return null;
   return numerator / denominator;
@@ -202,6 +206,11 @@ interface MetricSpec {
   unit: string;
   /** Full-term metrics leave the in-progress cohort out of the era median. */
   fullTerm: boolean;
+  /**
+   * Rare 0/1 per-team signals ("any AI trace?"): average across teams, so the result
+   * is the share of teams. A median of mostly-zero values would read 0% everywhere.
+   */
+  teamShare?: boolean;
   /** Weekly rates: scale a summer term down to a full-year length before mixing. */
   scaleSummer?: boolean;
   session?: 'winter' | 'summer';
@@ -230,7 +239,7 @@ function buildMetric(
           return raw === null || !Number.isFinite(raw) ? null : raw * scale;
         })
         .filter((v): v is number => v !== null);
-      const value = median(values);
+      const value = spec.teamShare ? mean(values) : median(values);
       return {
         slug: c.slug,
         label: c.label,
@@ -251,7 +260,12 @@ function buildMetric(
         .filter((c) => c.era === era && !c.faded && !c.inProgress && c.samples.length)
         .sort((a, b) => a.slug.localeCompare(b.slug))
         .map((c) => c.samples);
-      return [era, roundEstimate(bootstrapCI(groups))];
+      return [
+        era,
+        roundEstimate(
+          spec.teamShare ? bootstrapCI(groups, undefined, mean) : bootstrapCI(groups)
+        ),
+      ];
     })
   ) as InsightMetric['eras'];
 
@@ -465,22 +479,23 @@ export function buildInsights(cohorts: CohortStats[], now: Date): Insights {
     {
       key: 'aiTrailers',
       label: 'AI co-authors',
-      unit: 'of commits',
+      unit: 'of teams',
       fullTerm: false,
+      teamShare: true,
       value: (_t, f, w) => {
         if (!f) return null;
         const scanned = windowed(f.commits, (r) => r.week, w).filter((r) => r.scanned);
         if (!scanned.length) return null;
-        return scanned.filter((r) => r.trailers.length > 0).length / scanned.length;
+        return scanned.some((r) => r.trailers.length > 0) ? 1 : 0;
       },
     },
     {
       key: 'aiBots',
       label: 'AI bots',
-      unit: 'of merged PRs',
+      unit: 'of teams',
       fullTerm: true,
-      value: (_t, f) =>
-        f?.merged.length ? f.merged.filter((m) => m.ai).length / f.merged.length : null,
+      teamShare: true,
+      value: (_t, f) => (f?.merged.length ? (f.merged.some((m) => m.ai) ? 1 : 0) : null),
     },
     {
       key: 'prsPer100',
@@ -619,6 +634,7 @@ export function buildInsights(cohorts: CohortStats[], now: Date): Insights {
   ) as Insights['languages'];
 
   const toolCounts = new Map<string, number>();
+  const toolTeams = new Map<string, Set<string>>();
   for (const c of cohorts) {
     if (eraOf(c.year) !== 'agentic' || c.teams.length < MIN_TEAMS) continue;
     for (const team of c.teams) {
@@ -628,11 +644,18 @@ export function buildInsights(cohorts: CohortStats[], now: Date): Insights {
         if (!commit.scanned) continue;
         for (const tool of commit.trailers) {
           toolCounts.set(tool, (toolCounts.get(tool) ?? 0) + 1);
+          const teams = toolTeams.get(tool) ?? new Set<string>();
+          teams.add(`${c.slug}|${team.team}`);
+          toolTeams.set(tool, teams);
         }
       }
     }
   }
-  const tools = shareSlices(toolCounts, TOOL_ORDER, TOOL_ORDER.length);
+  const tools = shareSlices(toolCounts, TOOL_ORDER, TOOL_ORDER.length).map((s) => ({
+    ...s,
+    commits: toolCounts.get(s.name),
+    teams: toolTeams.get(s.name)?.size,
+  }));
 
   return {
     window: { week: W, termPct: curveSpan },

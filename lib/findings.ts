@@ -117,9 +117,9 @@ const TEMPLATES: Record<string, Template> = {
         : `**${a > b ? 'up' : 'down'} from ${v(b, 'count')}** ${base}`
     }.`,
   aiTrailers: ({ a, b, base }) =>
-    `**${v(a, 'share')}** of commits name an AI tool as a co-author, ${sharePhrase(a, b, base)}.`,
+    `**${v(a, 'share')}** of teams have a commit naming an AI tool as a co-author, ${sharePhrase(a, b, base)}.`,
   aiBots: ({ a, b, base }) =>
-    `**${v(a, 'share')}** of a typical team’s merged pull requests involve an AI bot, ${sharePhrase(a, b, base)}.`,
+    `**${v(a, 'share')}** of teams have a merged pull request that involved an AI bot, ${sharePhrase(a, b, base)}.`,
   prsPer100: ({ a, b, base }) =>
     `Teams merge **${whole(a)} pull requests for every 100 commits**, ${ratioPhrase(a, b, 'count', MORE, base, { unit: 'per 100 commits', format: whole })}.`,
   prWeeks: ({ a, b, base }) =>

@@ -498,9 +498,10 @@ export function insightsView(s: Summary): InsightsView {
       return {
         era: era.key,
         label: era.label,
-        value: fmtInsight(estimate?.value, 'share'),
+        // Pooled across teams, so the share and the "X of N teams" count agree.
+        value: fmtInsight(estimate?.pooled, 'share'),
         hint: estimate
-          ? `n = ${estimate.nTeams} teams · ${estimate.nCohorts} cohorts`
+          ? `${Math.round(estimate.pooled * estimate.nTeams)} of ${estimate.nTeams} teams · ${estimate.nCohorts} cohorts`
           : 'Not enough cohorts',
       };
     }),

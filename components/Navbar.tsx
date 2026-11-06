@@ -50,7 +50,7 @@ const links: NavLink[] = [
 ];
 const insightLinks: NavLink[] = [
   { href: '/insights', label: 'AI impact', live: false },
-  { href: '/insights/fingerprints', label: 'AI fingerprints', live: false },
+  { href: '/insights/fingerprints', label: 'AI tools', live: false },
   { href: '/insights/trends', label: 'Trends', live: false },
 ];
 const yearLinks = winter.map((c) => {

@@ -8,7 +8,9 @@
  *   pnpm sync:current      only the current cohort
  *   pnpm sync:all          refresh everything
  *
- * Flags: --year <YYYY | summer-YYYY> | --org <name> | --current | --force | --no-aggregate
+ *   pnpm sync:repo <owner/name>   only that repo, always re-fetched
+ *
+ * Flags: --year <YYYY | summer-YYYY> | --org <name> | --repo <owner/name> | --current | --force | --no-aggregate
  */
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -40,7 +42,14 @@ const flag = (name: string) =>
   args.includes(name) ? args[args.indexOf(name) + 1] : undefined;
 const orgArg = flag('--org');
 const yearArg = flag('--year')?.toLowerCase();
+const repoArg = flag('--repo')?.toLowerCase();
 const skipAggregate = args.includes('--no-aggregate');
+
+if (args.includes('--repo') && !repoArg?.includes('/')) {
+  console.error('Usage: pnpm sync:repo <owner/name>');
+  console.error('  e.g. pnpm sync:repo COSC-499-W2023/year-long-project-team-13');
+  process.exit(1);
+}
 
 if (args.includes('--year') && !yearArg) {
   console.error('Usage: pnpm sync:year <YYYY | summer-YYYY>   e.g. pnpm sync:year 2024');
@@ -206,7 +215,13 @@ async function gql(
 ): Promise<Json> {
   for (let i = 1; ; i++) {
     try {
-      return await gh.graphql(query, vars);
+      const res = await gh.graphql(query, vars);
+      if (!res) {
+        throw new Error(
+          'Empty GraphQL response (repo likely too large or GitHub timed out)'
+        );
+      }
+      return res;
     } catch (err) {
       const msg = String((err as Error).message ?? err);
       const transient =
@@ -407,7 +422,10 @@ async function main() {
     (c) =>
       (!orgArg || c.org?.toLowerCase() === orgArg.toLowerCase()) &&
       (!yearArg || cohortSlug(c) === yearArg) &&
-      (!onlyCurrent || cohortSlug(c) === currentCohort)
+      (!onlyCurrent || cohortSlug(c) === currentCohort) &&
+      (!repoArg ||
+        c.org?.toLowerCase() === repoArg.split('/')[0] ||
+        (c.extraRepos ?? []).some((e) => e.repo.toLowerCase() === repoArg))
   );
   if (!targets.length) {
     console.error(
@@ -433,7 +451,7 @@ async function main() {
     mkdirSync(dir, { recursive: true });
     // A single-cohort run (--year / --org) always re-fetches that cohort.
     const refresh =
-      force || !!yearArg || !!orgArg || cohortSlug(cohort) === currentCohort;
+      force || !!yearArg || !!orgArg || !!repoArg || cohortSlug(cohort) === currentCohort;
 
     // Cohorts with no course org only have `extraRepos`.
     const org = cohort.org;
@@ -455,6 +473,13 @@ async function main() {
     for (const extra of cohort.extraRepos ?? []) {
       const [owner, name] = extra.repo.split('/');
       selected.push({ owner, name, team: extra.team, file: `${owner}__${name}.json` });
+    }
+
+    if (repoArg) {
+      const keep = selected.filter(
+        (s) => `${s.owner}/${s.name}`.toLowerCase() === repoArg
+      );
+      selected.splice(0, selected.length, ...keep);
     }
 
     console.log(

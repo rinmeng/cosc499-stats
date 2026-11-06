@@ -17,6 +17,8 @@ import {
   type ChartConfig,
 } from '@/components/ui/chart';
 
+import { SeriesIcon } from './SeriesIcon';
+
 const SLICES = 4;
 
 /** Donut of the top languages (plus "Other") with the leading language in the middle. */
@@ -68,9 +70,10 @@ export function LanguageDonut({
                   formatter={(value, _n, item) => (
                     <div className='flex w-full items-center justify-between gap-3'>
                       <span className='flex items-center gap-1.5 text-muted-foreground'>
-                        <span
-                          className='size-2.5 shrink-0 rounded-[2px]'
-                          style={{ background: item.payload.fill }}
+                        <SeriesIcon
+                          index={data.findIndex((x) => x.key === item.payload.key)}
+                          color={item.payload.fill}
+                          className='size-3'
                         />
                         {item.payload.name}
                       </span>
@@ -125,12 +128,9 @@ export function LanguageDonut({
       </CardContent>
       <CardFooter className='pt-4'>
         <ul className='grid w-full grid-cols-2 gap-x-4 gap-y-1.5 text-sm'>
-          {data.map((d) => (
+          {data.map((d, i) => (
             <li key={d.key} className='flex items-center gap-2'>
-              <span
-                className='size-2.5 shrink-0 rounded-[2px]'
-                style={{ background: `var(--color-${d.key})` }}
-              />
+              <SeriesIcon index={i} color={`var(--color-${d.key})`} />
               <span className='truncate'>{d.name}</span>
               <span
                 className='ml-auto font-mono text-xs tabular-nums text-muted-foreground'

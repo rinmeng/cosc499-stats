@@ -1,9 +1,8 @@
 import { CohortTimelineChart } from '@/components/charts/CohortTimelineChart';
-import { EraShape } from '@/components/charts/EraShape';
 import { CohortTrendChart } from '@/components/charts/CohortTrendChart';
 import { EraCompareChart } from '@/components/charts/EraCompareChart';
+import { HorizontalShareChart } from '@/components/charts/HorizontalShareChart';
 import { StackedShareChart } from '@/components/charts/StackedShareChart';
-import { Grid, StatTile } from '@/components/stats/Blocks';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { InsightsView } from '@/lib/views';
@@ -42,26 +41,41 @@ export function Findings({ items }: { items: string[] }) {
 }
 
 export function ImpactCharts({ view }: { view: InsightsView }) {
+  // Two cards per row on desktop so the era bars stay close enough to compare.
   return (
-    <div className='space-y-4'>
+    <div className='grid gap-4 lg:grid-cols-2'>
       <EraCompareChart
+        compact
         title='Commit size'
         why={WHY.commitSize}
         series={view.commitSize}
       />
       <EraCompareChart
+        compact
         title='Pull requests'
         why={WHY.pullRequests}
         series={view.pullRequests}
       />
       <EraCompareChart
+        compact
         title='Output per person-week'
         why={WHY.output}
         series={view.output}
       />
+      <EraCompareChart compact title='Ramp-up' why={WHY.ramp} series={view.ramp} />
+      <EraCompareChart
+        compact
+        title='Review culture'
+        why={WHY.review}
+        series={view.review}
+      />
       <CohortTimelineChart title='Churn' why={WHY.churn} series={view.churn} />
-      <EraCompareChart title='Ramp-up' why={WHY.ramp} series={view.ramp} />
-      <EraCompareChart title='Review culture' why={WHY.review} series={view.review} />
+      <EraCompareChart
+        compact
+        title='Languages per team'
+        why={WHY.languagesPerTeam}
+        series={view.languagesPerTeam}
+      />
       <StackedShareChart
         title='Languages by era'
         description='Share of code by language: the top six, plus everything else.'
@@ -70,11 +84,6 @@ export function ImpactCharts({ view }: { view: InsightsView }) {
         nTeams={view.languageSample.nTeams}
         nCohorts={view.languageSample.nCohorts}
       />
-      <EraCompareChart
-        title='Languages per team'
-        why={WHY.languagesPerTeam}
-        series={view.languagesPerTeam}
-      />
     </div>
   );
 }
@@ -82,7 +91,6 @@ export function ImpactCharts({ view }: { view: InsightsView }) {
 export function FingerprintCharts({ view }: { view: InsightsView }) {
   return (
     <div className='space-y-4'>
-      <Findings items={view.findings.fingerprints} />
       {!view.trailersScanned && (
         <Alert>
           <AlertTitle>AI co-author trailers are not scanned yet</AlertTitle>
@@ -92,44 +100,15 @@ export function FingerprintCharts({ view }: { view: InsightsView }) {
           </AlertDescription>
         </Alert>
       )}
-      <CohortTimelineChart
-        title='AI co-authors'
-        why={WHY.trailers}
-        series={view.trailers}
-        empty='Not scanned yet'
-      />
-      <StackedShareChart
-        title='Which tools get named'
-        description='Agentic era, by the tool named in the co-author line.'
+      <HorizontalShareChart
+        title='Which AI tools get named'
+        description='Agentic era (2024 onward), by the tool named in the co-author line. Hover a bar for the commit and team counts.'
         why={WHY.tools}
-        rows={view.tools}
+        slices={view.tools[0]?.slices ?? []}
         nTeams={view.toolSample.nTeams}
         nCohorts={view.toolSample.nCohorts}
         empty='Not scanned yet'
       />
-      <div className='space-y-3'>
-        <Grid className='sm:grid-cols-3'>
-          {view.botTiles.map((tile) => (
-            <StatTile
-              key={tile.label}
-              label={
-                <span className='inline-flex items-center gap-1.5'>
-                  <EraShape era={tile.era} size={11} />
-                  {tile.label}
-                </span>
-              }
-              value={tile.value}
-              unit='of merged PRs'
-              hint={tile.hint}
-            />
-          ))}
-        </Grid>
-        <CohortTimelineChart
-          title='AI bots in the workflow'
-          why={WHY.bots}
-          series={view.bots}
-        />
-      </div>
     </div>
   );
 }

@@ -14,6 +14,7 @@
     "sync": "tsx scripts/sync.ts",
     "sync:all": "tsx scripts/sync.ts --force",
     "sync:current": "tsx scripts/sync.ts --current",
+    "sync:repo": "tsx scripts/sync.ts --repo",
     "sync:year": "tsx scripts/sync.ts --year",
     "typecheck": "tsc --noEmit",
     "vercel-build": "tsx scripts/aggregate.ts && next build"
