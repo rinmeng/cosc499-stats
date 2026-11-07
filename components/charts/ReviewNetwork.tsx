@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
@@ -19,6 +19,10 @@ const RING = 140;
 const NODE = 30;
 const TOP_PAIRS = 5;
 
+/** Line width for an edge, and an arrowhead sized to stay wider than its line. */
+const width = (count: number, max: number) => 1.25 + (count / max) * 7;
+const arrowFor = (w: number) => 5 + w * 2.6;
+
 const first = (name: string) => name.split(/\s+/)[0];
 const plural = (n: number) => `${n.toLocaleString()} ${n === 1 ? 'PR' : 'PRs'}`;
 
@@ -36,6 +40,7 @@ export function ReviewNetwork({
   edges: ReviewEdge[];
 }) {
   const [active, setActive] = useState<string | null>(null);
+  const uid = useId();
   const people = [...members].sort((a, b) => a.name.localeCompare(b.name));
   const byId = new Map(people.map((m) => [m.id, m]));
   const links = edges.filter((e) => byId.has(e.from) && byId.has(e.to));
@@ -58,8 +63,12 @@ export function ReviewNetwork({
   const max = Math.max(...links.map((e) => e.count));
   const involves = (e: ReviewEdge) => !active || e.from === active || e.to === active;
 
-  /** A gentle arc from reviewer to author, trimmed so it stops at the avatar's edge. */
-  const path = (e: ReviewEdge) => {
+  /**
+   * A gentle arc from reviewer to author. The start stops at the reviewer's avatar; the
+   * end stops an arrow's length short of the author's, so the arrowhead sits in the gap
+   * and the line never covers it.
+   */
+  const path = (e: ReviewEdge, arrow: number) => {
     const a = pos.get(e.from)!;
     const b = pos.get(e.to)!;
     const dx = b.x - a.x;
@@ -71,14 +80,14 @@ export function ReviewNetwork({
       x: (a.x + b.x) / 2 - (dy / len) * bend,
       y: (a.y + b.y) / 2 + (dx / len) * bend,
     };
-    const trim = (p: { x: number; y: number }) => {
+    const trim = (p: { x: number; y: number }, gap: number) => {
       const tx = c.x - p.x;
       const ty = c.y - p.y;
       const tl = Math.hypot(tx, ty);
-      return { x: p.x + (tx / tl) * NODE, y: p.y + (ty / tl) * NODE };
+      return { x: p.x + (tx / tl) * gap, y: p.y + (ty / tl) * gap };
     };
-    const s = trim(a);
-    const t = trim(b);
+    const s = trim(a, NODE);
+    const t = trim(b, NODE + arrow);
     return `M ${s.x} ${s.y} Q ${c.x} ${c.y} ${t.x} ${t.y}`;
   };
 
@@ -102,33 +111,42 @@ export function ReviewNetwork({
           role='img'
           aria-label={`Review network for ${people.length} members with ${links.length} reviewer-to-author links. Strongest: ${name(strongest.from)} reviewed ${plural(strongest.count)} from ${name(strongest.to)}.`}
         >
-          <defs>
-            <marker
-              id='review-arrow'
-              viewBox='0 0 10 10'
-              refX='8'
-              refY='5'
-              markerWidth='9'
-              markerHeight='9'
-              markerUnits='userSpaceOnUse'
-              orient='auto-start-reverse'
-            >
-              <path d='M 0 0 L 10 5 L 0 10 z' fill='var(--series)' />
-            </marker>
-          </defs>
-          {[...links].reverse().map((e) => (
-            <path
-              key={`${e.from}-${e.to}`}
-              d={path(e)}
-              fill='none'
-              stroke='var(--series)'
-              strokeWidth={1.25 + (e.count / max) * 7}
-              strokeLinecap='round'
-              markerEnd='url(#review-arrow)'
-              className='transition-opacity duration-200'
-              opacity={active ? (involves(e) ? 0.95 : 0.08) : 0.55}
-            />
-          ))}
+          {[...links].reverse().map((e) => {
+            const w = width(e.count, max);
+            const arrow = arrowFor(w);
+            // One marker per edge, sized in user units, with its base at the line's end.
+            const id = `${uid}-${e.from}-${e.to}`.replace(/[^a-zA-Z0-9_-]/g, '');
+            return (
+              <g
+                key={`${e.from}-${e.to}`}
+                className='transition-opacity duration-200'
+                opacity={active ? (involves(e) ? 0.95 : 0.08) : 0.6}
+              >
+                <defs>
+                  <marker
+                    id={id}
+                    viewBox='0 0 10 10'
+                    refX='0'
+                    refY='5'
+                    markerWidth={arrow}
+                    markerHeight={arrow}
+                    markerUnits='userSpaceOnUse'
+                    orient='auto'
+                  >
+                    <path d='M 0 0 L 10 5 L 0 10 z' fill='var(--series)' />
+                  </marker>
+                </defs>
+                <path
+                  d={path(e, arrow)}
+                  fill='none'
+                  stroke='var(--series)'
+                  strokeWidth={w}
+                  strokeLinecap='butt'
+                  markerEnd={`url(#${id})`}
+                />
+              </g>
+            );
+          })}
         </svg>
         {people.map((m) => {
           const p = pos.get(m.id)!;
