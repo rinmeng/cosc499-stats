@@ -157,6 +157,8 @@ export interface HighlightProps {
   items: HighlightItem[];
   /** Shown under the list, e.g. a "How points are calculated" button */
   footer?: React.ReactNode;
+  /** Shown instead of the list when no team qualifies; without it the card is hidden */
+  empty?: string;
 }
 
 /** A small "top 3" list for a positive team superlative. */
@@ -166,6 +168,7 @@ export function Highlight({
   icon: Icon,
   items,
   footer,
+  empty,
 }: HighlightProps) {
   return (
     <Card size='sm'>
@@ -177,6 +180,9 @@ export function Highlight({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
+        {items.length === 0 && empty && (
+          <p className='text-sm text-muted-foreground'>{empty}</p>
+        )}
         <ol className='space-y-2'>
           {items.map((it, i) => (
             <li key={`${it.label}-${i}`} className='flex items-baseline gap-2 text-sm'>

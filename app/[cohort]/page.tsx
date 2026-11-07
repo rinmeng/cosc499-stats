@@ -325,6 +325,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             icon: Sunrise,
             title: 'Early birds this week',
             description: 'Commits between 5 am and 9 am since Sunday',
+            empty: 'No teams were early birds this week.',
           },
           topTeams(c, (t) => t.thisWeekEarlyCommits ?? 0, 3),
           (t) => ({ value: fmt(t.thisWeekEarlyCommits ?? 0), unit: 'commits' })

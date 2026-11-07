@@ -6,7 +6,7 @@ export interface HighlightSection {
   description?: string;
   /** Hidden behind "Show more highlights" */
   more?: boolean;
-  /** null entries (e.g. live-only cards) and cards with no teams are skipped */
+  /** null entries (e.g. live-only cards) and cards with no teams (and no `empty` text) are skipped */
   cards: (HighlightProps | null)[];
 }
 
@@ -37,7 +37,9 @@ export function HighlightSections({ sections }: { sections: HighlightSection[] }
   const clean = sections
     .map((s) => ({
       ...s,
-      cards: s.cards.filter((h): h is HighlightProps => !!h && h.items.length > 0),
+      cards: s.cards.filter(
+        (h): h is HighlightProps => !!h && (h.items.length > 0 || !!h.empty)
+      ),
     }))
     .filter((s) => s.cards.length > 0);
   const shown = clean.filter((s) => !s.more);
