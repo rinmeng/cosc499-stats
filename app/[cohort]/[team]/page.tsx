@@ -39,6 +39,8 @@ import {
   teamTrend,
   trendSeries,
 } from '@/lib/views';
+import { fadeUp, stagger } from '@/utils/animations';
+import { cn } from '@/lib/utils';
 
 export function generateStaticParams() {
   return (
@@ -89,30 +91,34 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
     })),
   }));
 
+  // The back link goes first (0), so the header takes steps 1–3.
+  const next = stagger(4);
   return (
     <div className='space-y-8'>
       <Link
         href={`/${c.slug}`}
-        className='inline-flex items-center gap-1 text-sm text-muted-foreground
-          hover:text-foreground'
+        className={cn(
+          `inline-flex items-center gap-1 text-sm text-muted-foreground
+          hover:text-foreground`,
+          fadeUp(0)
+        )}
       >
         <ArrowLeft className='size-4' /> {c.label} cohort
       </Link>
 
       <PageHeader
-        eyebrow={c.org}
-        title={
-          <span className='flex flex-wrap items-center gap-x-4 gap-y-2'>
-            {t.name}
-            <ShareButton
-              item={{
-                path: teamSeo(c, t).path,
-                title: teamSeo(c, t).title,
-                description: teamSeo(c, t).description,
-              }}
-            />
-          </span>
+        action={
+          <ShareButton
+            item={{
+              path: teamSeo(c, t).path,
+              title: teamSeo(c, t).title,
+              description: teamSeo(c, t).description,
+            }}
+          />
         }
+        start={1}
+        eyebrow={c.org}
+        title={t.name}
       >
         <div className='space-y-2'>
           {t.description && !/created by GitHub Classroom/i.test(t.description) && (
@@ -140,24 +146,28 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
 
       <Grid className='grid-cols-2 md:grid-cols-3 lg:grid-cols-6'>
         <StatTile
+          className={next()}
           icon={Users}
           label='Contributors'
           value={fmt(t.contributors)}
           unit='people'
         />
         <StatTile
+          className={next()}
           icon={GitPullRequest}
           label='Commits'
           value={fmt(t.commits)}
           unit='commits'
         />
         <StatTile
+          className={next()}
           icon={GitMerge}
           label='Merged PRs'
           value={fmt(t.prsMerged)}
           unit='PRs'
         />
         <StatTile
+          className={next()}
           icon={MessageSquareCode}
           label='Reviews'
           value={fmt(t.reviews)}
@@ -165,12 +175,14 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
           hint={`${pct(t.reviewCoverage)} of merged PRs got one`}
         />
         <StatTile
+          className={next()}
           icon={Clock}
           label='Median time to merge'
           value={fmtHours(t.medianMergeHours)}
           hint='from PR opened to merged'
         />
         <StatTile
+          className={next()}
           icon={Trophy}
           label='Biggest week'
           value={t.peakWeek ? fmt(t.peakWeek.commits) : '—'}
@@ -181,7 +193,7 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
 
       <Grid className='lg:grid-cols-5'>
         <Section
-          className='lg:col-span-3'
+          className={cn('lg:col-span-3', next())}
           title={`Top ${summary.topN} contributors`}
           description='Switch the measure to see who leads on each.'
           action={<ScoreInfo weights={summary.scoreWeights} />}
@@ -195,7 +207,7 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
 
       {radars.length > 0 && (
         <section className='space-y-3'>
-          <div>
+          <div className={next()}>
             <h2 className='font-heading text-lg font-semibold'>Contribution profiles</h2>
             <p className='text-sm text-muted-foreground'>
               Each axis is scaled to the team’s best on that measure, so the shape shows
@@ -225,7 +237,7 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
       />
 
       <Grid className='lg:grid-cols-5'>
-        <Section className='lg:col-span-3' title='When the team commits'>
+        <Section className={cn('lg:col-span-3', next())} title='When the team commits'>
           <Punchcard data={t.punch} timezone={summary.timezone} />
         </Section>
         <div className='lg:col-span-2'>

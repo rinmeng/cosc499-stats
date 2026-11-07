@@ -16,7 +16,7 @@
   }
 
   .fade-in-from-bottom {
-    @apply animate-in slide-in-from-bottom-10 fade-in fill-mode-both duration-500;
+    @apply animate-in slide-in-from-bottom-11 fade-in fill-mode-both duration-500;
   }
 
   .fade-in-from-right {

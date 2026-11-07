@@ -45,6 +45,8 @@ import {
   trendSeries,
 } from '@/lib/views';
 import { LiveDot } from '@/components/LiveDot';
+import { fadeUp, stagger } from '@/utils/animations';
+import { cn } from '@/lib/utils';
 
 /** Headline totals cover this many cohort years, newest first (summer included). */
 const TOTALS_YEARS = 5;
@@ -174,8 +176,9 @@ export default function Overview() {
   const recentCohorts = byNewest.slice(0, RECENT_COHORT_CARDS);
   const olderCohorts = byNewest.slice(RECENT_COHORT_CARDS);
   const cohortGrid = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-4';
-  const cohortCard = (c: (typeof s.cohorts)[number]) => (
-    <Link key={c.slug} href={`/${c.slug}`} className='group'>
+  const next = stagger();
+  const cohortCard = (c: (typeof s.cohorts)[number], anim: string) => (
+    <Link key={c.slug} href={`/${c.slug}`} className={cn('group', anim)}>
       <Card
         size='sm'
         className='h-full py-3 transition-colors group-hover:bg-muted/50 md:py-4'
@@ -234,7 +237,7 @@ export default function Overview() {
       </PageHeader>
 
       <div className='space-y-3'>
-        <h2 className='text-sm font-medium'>
+        <h2 className={cn('text-sm font-medium', next())}>
           Last {TOTALS_YEARS} years · {yearLabel(totalsFrom)} to{' '}
           {yearLabel(s.currentYear)}
           <span className='font-normal text-muted-foreground'>
@@ -244,6 +247,7 @@ export default function Overview() {
         <Grid className='grid-cols-3 gap-2 md:grid-cols-3 md:gap-4 lg:grid-cols-5'>
           <StatTile
             compact
+            className={next()}
             icon={Calendar}
             label='Cohorts'
             value={totalsCohorts.length}
@@ -251,6 +255,7 @@ export default function Overview() {
           />
           <StatTile
             compact
+            className={next()}
             icon={Users}
             label='Contributors'
             value={fmt(totalOf('contributors'))}
@@ -259,6 +264,7 @@ export default function Overview() {
           />
           <StatTile
             compact
+            className={next()}
             icon={GitPullRequest}
             label='Commits'
             value={fmtCompact(totalOf('commits'))}
@@ -266,6 +272,7 @@ export default function Overview() {
           />
           <StatTile
             compact
+            className={next()}
             icon={GitMerge}
             label='Merged PRs'
             value={fmtCompact(totalOf('prsMerged'))}
@@ -273,6 +280,7 @@ export default function Overview() {
           />
           <StatTile
             compact
+            className={next()}
             icon={MessageSquareCode}
             label='Code reviews'
             value={fmtCompact(totalOf('reviews'))}
@@ -282,13 +290,19 @@ export default function Overview() {
       </div>
 
       <div className='space-y-4'>
-        <div className={cohortGrid}>{recentCohorts.map(cohortCard)}</div>
+        <div className={cohortGrid}>
+          {recentCohorts.map((c) => cohortCard(c, next()))}
+        </div>
         {olderCohorts.length > 0 && (
           <ShowMore
             more={`Show ${olderCohorts.length} more ${olderCohorts.length === 1 ? 'cohort' : 'cohorts'}`}
             less='Show fewer cohorts'
+            className={next()}
           >
-            <div className={cohortGrid}>{olderCohorts.map(cohortCard)}</div>
+            <div className={cohortGrid}>
+              {/* Mounts when opened, so these stagger from the click. */}
+              {olderCohorts.map((c, i) => cohortCard(c, fadeUp(i)))}
+            </div>
           </ShowMore>
         )}
       </div>
@@ -341,7 +355,7 @@ export default function Overview() {
       </Grid>
 
       <div className='space-y-3'>
-        <div>
+        <div className={next()}>
           <h2 className='font-heading text-xl font-semibold'>
             Oddities, last {TOTALS_YEARS} years
           </h2>
@@ -354,17 +368,18 @@ export default function Overview() {
           {oddities
             .filter((h) => h.items.length > 0)
             .map((h) => (
-              <Highlight key={h.title} {...h} />
+              <Highlight key={h.title} {...h} className={next()} />
             ))}
         </Grid>
       </div>
 
       <div className='space-y-3'>
-        <h2 className='font-heading text-xl font-semibold'>
+        <h2 className={cn('font-heading text-xl font-semibold', next())}>
           Highlights, last {TOTALS_YEARS} years
         </h2>
         <Grid className='md:grid-cols-2 xl:grid-cols-4'>
           <Highlight
+            className={next()}
             icon={Trophy}
             title='Most commits by one person'
             description='Top committer of each cohort'
@@ -377,6 +392,7 @@ export default function Overview() {
             }))}
           />
           <Highlight
+            className={next()}
             icon={MessageSquareCode}
             title='Most reviews by one person'
             description='Top reviewer of each cohort'
@@ -389,6 +405,7 @@ export default function Overview() {
             }))}
           />
           <Highlight
+            className={next()}
             icon={Users}
             title='Highest team output'
             description={`Overall score, ${yearLabel(totalsFrom)} to ${yearLabel(s.currentYear)}`}
@@ -402,6 +419,7 @@ export default function Overview() {
             footer={<ScoreInfo weights={s.scoreWeights} />}
           />
           <Highlight
+            className={next()}
             icon={GitMerge}
             title='Most merged PRs'
             description={`Teams with the most shipped PRs`}
@@ -417,7 +435,7 @@ export default function Overview() {
         </Grid>
       </div>
 
-      <Card>
+      <Card className={next()}>
         <CardHeader>
           <CardTitle>How AI changed capstone</CardTitle>
         </CardHeader>
@@ -436,7 +454,7 @@ export default function Overview() {
         </CardContent>
       </Card>
 
-      <p className='text-xs text-muted-foreground'>
+      <p className={cn('text-xs text-muted-foreground', next())}>
         Counts cover the default branch (merge commits excluded), pull requests and issues
         from mid-August to the end of May each year. Bots and course staff are left out.
         Line counts skip commits over {fmt(s.lineOutlierThreshold)} lines, which are

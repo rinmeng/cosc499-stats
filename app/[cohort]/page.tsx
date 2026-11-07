@@ -70,6 +70,9 @@ import {
   teamTopViews,
   topTeams,
 } from '@/lib/views';
+import { cn } from '@/lib/utils';
+import { Reveal } from '@/components/Reveal';
+import { fadeUp, stagger } from '@/utils/animations';
 
 export function generateStaticParams() {
   return getSummary()?.cohorts.map((c) => ({ cohort: c.slug })) ?? [];
@@ -140,30 +143,30 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     return (
       <div className='space-y-8'>
         <PageHeader
-          eyebrow='COSC 499 capstone'
-          title={
-            <span className='flex flex-wrap items-center gap-x-4 gap-y-2'>
-              {c.label} cohort
-              <ShareButton
-                item={{
-                  path: cohortSeo(c).path,
-                  title: cohortSeo(c).title,
-                  description: cohortSeo(c).description,
-                }}
-              />
-            </span>
+          action={
+            <ShareButton
+              item={{
+                path: cohortSeo(c).path,
+                title: cohortSeo(c).title,
+                description: cohortSeo(c).description,
+              }}
+            />
           }
+          eyebrow='COSC 499 capstone'
+          title={`${c.label} cohort`}
         >
           <OrgLink org={c.hasOrg ? c.org : undefined} />
           No team repositories from this session are visible on GitHub yet.
         </PageHeader>
-        <HelpComplete
-          label={c.label}
-          cohort={c.slug}
-          teams={0}
-          note={c.note}
-          contributors={c.contributors}
-        />
+        <Reveal className={fadeUp(3)}>
+          <HelpComplete
+            label={c.label}
+            cohort={c.slug}
+            teams={0}
+            note={c.note}
+            contributors={c.contributors}
+          />
+        </Reveal>
       </div>
     );
 
@@ -627,30 +630,29 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       ],
     },
   ];
+  const next = stagger();
   const sections = live
     ? [...weeklySections, ...termSections.map((sec) => ({ ...sec, more: true }))]
     : termSections;
   return (
     <div className='space-y-8'>
       <PageHeader
+        action={
+          <ShareButton
+            item={{
+              path: cohortSeo(c).path,
+              title: cohortSeo(c).title,
+              description: cohortSeo(c).description,
+            }}
+          />
+        }
         eyebrow={
           <span className='flex items-center gap-2'>
             COSC 499 capstone
             {live && <Badge>In progress · week {week}</Badge>}
           </span>
         }
-        title={
-          <span className='flex flex-wrap items-center gap-x-4 gap-y-2'>
-            {c.label} cohort
-            <ShareButton
-              item={{
-                path: cohortSeo(c).path,
-                title: cohortSeo(c).title,
-                description: cohortSeo(c).description,
-              }}
-            />
-          </span>
-        }
+        title={`${c.label} cohort`}
       >
         <OrgLink org={c.hasOrg ? c.org : undefined} />
         {live ? (
@@ -668,23 +670,27 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       </PageHeader>
 
       {isSmallCohort(c) && (
-        <HelpComplete
-          label={c.label}
-          cohort={c.slug}
-          teams={c.totals.teams}
-          note={c.note}
-          contributors={c.contributors}
-        />
+        <Reveal className={next()}>
+          <HelpComplete
+            label={c.label}
+            cohort={c.slug}
+            teams={c.totals.teams}
+            note={c.note}
+            contributors={c.contributors}
+          />
+        </Reveal>
       )}
 
       <Grid className='grid-cols-2 md:grid-cols-3 lg:grid-cols-6'>
         <StatTile
+          className={next()}
           icon={Users}
           label='Contributors'
           value={fmt(c.totals.contributors)}
           unit='people'
         />
         <StatTile
+          className={next()}
           icon={GitPullRequest}
           label='Commits'
           value={fmtCompact(c.totals.commits)}
@@ -692,6 +698,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           hint={`avg ${fmt(c.avgPerTeam.commits)} commits per team`}
         />
         <StatTile
+          className={next()}
           icon={GitMerge}
           label='Merged PRs'
           value={fmt(c.totals.prsMerged)}
@@ -699,6 +706,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           hint={`avg ${fmt(c.avgPerTeam.prsMerged)} PRs per team`}
         />
         <StatTile
+          className={next()}
           icon={MessageSquareCode}
           label='Reviews'
           value={fmt(c.totals.reviews)}
@@ -706,6 +714,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           hint={`${pct(c.reviewCoverage)} of merged PRs got one`}
         />
         <StatTile
+          className={next()}
           icon={Clock}
           label='Median time to merge'
           value={fmtHours(c.medianMergeHours)}
@@ -713,6 +722,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         />
         {live ? (
           <StatTile
+            className={next()}
             icon={Sparkles}
             label='Commits this week'
             value={fmt(c.thisWeek.commits)}
@@ -725,6 +735,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           />
         ) : (
           <StatTile
+            className={next()}
             icon={Sparkles}
             label='Lines changed'
             value={fmtCompact(c.totals.lines)}
@@ -752,6 +763,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       />
 
       <Section
+        className={next()}
         title='Top contributors'
         description={`Top 10 across the cohort, or the top ${summary.topN} on each team. Switch the measure to rank by just one thing.`}
         action={<ScoreInfo weights={summary.scoreWeights} />}
@@ -779,17 +791,22 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       <HighlightSections sections={sections} />
 
       <Section
+        className={next()}
         title='Teams'
         description='Every team at a glance. Click a column to see who leads on it. Collaboration is 0–100, higher means work is shared more evenly.'
       >
         <TeamTable rows={teamRows(c)} live={live} />
       </Section>
 
-      {!isSmallCohort(c) && <MissingTeam cohort={c.slug} label={c.label} live={live} />}
+      {!isSmallCohort(c) && (
+        <Reveal className={next()}>
+          <MissingTeam cohort={c.slug} label={c.label} live={live} />
+        </Reveal>
+      )}
 
       <Grid className='lg:grid-cols-5'>
         <Section
-          className='lg:col-span-3'
+          className={cn('lg:col-span-3', next())}
           title='When the cohort commits'
           description='Hover a cell for the count.'
         >

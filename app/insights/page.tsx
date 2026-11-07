@@ -3,6 +3,7 @@ import { InsightsPage } from '@/components/insights/InsightsPage';
 import { Findings, ImpactCharts } from '@/components/insights/sections';
 import { Grid, StatTile } from '@/components/stats/Blocks';
 import { getSummary } from '@/lib/data';
+import { fadeUp } from '@/utils/animations';
 import { insightsSeo, pageMetadata } from '@/lib/seo';
 import { insightsView } from '@/lib/views';
 
@@ -30,11 +31,12 @@ export default function InsightsImpactPage() {
       ]}
     >
       <div className='space-y-8'>
-        <Findings items={view.findings.impact} />
+        <Findings items={view.findings.impact} className={fadeUp(4)} />
         <Grid className='sm:grid-cols-3'>
-          {view.ratios.map((ratio) => (
+          {view.ratios.map((ratio, i) => (
             <StatTile
               key={ratio.label}
+              className={fadeUp(5 + i)}
               label={ratio.label}
               value={ratio.value}
               unit={ratio.unit}

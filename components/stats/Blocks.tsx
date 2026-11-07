@@ -9,29 +9,52 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { fadeUp } from '@/utils/animations';
 
 export function PageHeader({
   eyebrow,
   title,
   children,
+  action,
+  start = 0,
 }: {
   eyebrow?: React.ReactNode;
   title: React.ReactNode;
   children?: React.ReactNode;
+  /**
+   * Rendered outside the animated title, for fixed-position things like the Share
+   * button: an animated transform would pin them to the title instead of the screen.
+   */
+  action?: React.ReactNode;
+  /** Animation step of the eyebrow; the title and intro follow it. */
+  start?: number;
 }) {
   return (
     <header className='space-y-2'>
+      {action}
       {eyebrow && (
         <div
-          className='text-xs font-medium tracking-wider text-muted-foreground uppercase'
+          className={cn(
+            'text-xs font-medium tracking-wider text-muted-foreground uppercase',
+            fadeUp(start)
+          )}
         >
           {eyebrow}
         </div>
       )}
-      <h1 className='font-heading text-3xl font-bold tracking-tight md:text-4xl'>
+      <h1
+        className={cn(
+          'font-heading text-3xl font-bold tracking-tight md:text-4xl',
+          fadeUp(start + 1)
+        )}
+      >
         {title}
       </h1>
-      {children && <div className='max-w-3xl text-muted-foreground'>{children}</div>}
+      {children && (
+        <div className={cn('max-w-3xl text-muted-foreground', fadeUp(start + 2))}>
+          {children}
+        </div>
+      )}
     </header>
   );
 }
@@ -68,6 +91,7 @@ export function StatTile({
   hint,
   icon: Icon,
   compact = false,
+  className,
 }: {
   label: React.ReactNode;
   value: React.ReactNode;
@@ -75,9 +99,10 @@ export function StatTile({
   hint?: React.ReactNode;
   icon?: LucideIcon;
   compact?: boolean;
+  className?: string;
 }) {
   return (
-    <Card size='sm' className={cn(compact && 'py-2.5 md:py-4')}>
+    <Card size='sm' className={cn(compact && 'py-2.5 md:py-4', className)}>
       <CardContent className={cn('space-y-1', compact && 'px-3 md:px-4 md:space-y-1')}>
         <div
           className={cn(
@@ -159,6 +184,7 @@ export interface HighlightProps {
   footer?: React.ReactNode;
   /** Shown instead of the list when no team qualifies; without it the card is hidden */
   empty?: string;
+  className?: string;
 }
 
 /** A small "top 3" list for a positive team superlative. */
@@ -169,9 +195,10 @@ export function Highlight({
   items,
   footer,
   empty,
+  className,
 }: HighlightProps) {
   return (
-    <Card size='sm'>
+    <Card size='sm' className={className}>
       <CardHeader>
         <CardTitle className='flex items-center gap-2'>
           <Icon className='size-4 text-chart-1' />

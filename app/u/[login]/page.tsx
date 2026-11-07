@@ -17,6 +17,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { fmt, fmtCompact, pct } from '@/lib/format';
 import { getPeople, getPerson, type Capstone } from '@/lib/people';
 import { pageMetadata, personSeo } from '@/lib/seo';
+import { fadeUp } from '@/utils/animations';
+import { cn } from '@/lib/utils';
 
 /**
  * A person's own output in each capstone they were part of. It never ranks them
@@ -43,7 +45,8 @@ export async function generateMetadata({ params }: PageProps<'/u/[login]'>) {
 
 const share = (n: number, d: number) => (d ? n / d : 0);
 
-function CapstoneSection({ c }: { c: Capstone }) {
+/** `step` is this section's animation step; its stat tiles follow it. */
+function CapstoneSection({ c, step }: { c: Capstone; step: number }) {
   const m = c.stats;
   const habits = [
     m.nightCommits > 0 &&
@@ -58,6 +61,7 @@ function CapstoneSection({ c }: { c: Capstone }) {
 
   return (
     <Section
+      className={fadeUp(step)}
       title={`${c.team.name} · ${c.cohort.label}`}
       description={
         <>
@@ -83,12 +87,14 @@ function CapstoneSection({ c }: { c: Capstone }) {
       <div className='space-y-4'>
         <Grid className='grid-cols-2 gap-2 md:grid-cols-3 md:gap-4 lg:grid-cols-6'>
           <StatTile
+            className={fadeUp(step + 1)}
             icon={GitPullRequest}
             label='Commits'
             value={fmt(m.commits)}
             unit='commits'
           />
           <StatTile
+            className={fadeUp(step + 2)}
             icon={GitMerge}
             label='Merged PRs'
             value={fmt(m.prsMerged)}
@@ -96,12 +102,14 @@ function CapstoneSection({ c }: { c: Capstone }) {
             hint={m.prsOpened ? `${fmt(m.prsOpened)} opened` : undefined}
           />
           <StatTile
+            className={fadeUp(step + 3)}
             icon={MessageSquareCode}
             label='Code reviews'
             value={fmt(m.reviews)}
             unit='reviews'
           />
           <StatTile
+            className={fadeUp(step + 4)}
             icon={CircleDot}
             label='Issues'
             value={fmt(m.issuesOpened)}
@@ -109,6 +117,7 @@ function CapstoneSection({ c }: { c: Capstone }) {
             hint={m.issuesClosed ? `${fmt(m.issuesClosed)} closed` : undefined}
           />
           <StatTile
+            className={fadeUp(step + 5)}
             icon={FileCode2}
             label='Lines changed'
             value={fmtCompact(m.lines)}
@@ -116,6 +125,7 @@ function CapstoneSection({ c }: { c: Capstone }) {
             hint={`+${fmtCompact(m.additions)} / −${fmtCompact(m.deletions)}`}
           />
           <StatTile
+            className={fadeUp(step + 6)}
             icon={CalendarDays}
             label='Active weeks'
             value={fmt(m.activeWeeks)}
@@ -124,7 +134,7 @@ function CapstoneSection({ c }: { c: Capstone }) {
           />
         </Grid>
         {habits.length > 0 && (
-          <ul className='flex flex-wrap gap-2 text-sm'>
+          <ul className={cn('flex flex-wrap gap-2 text-sm', fadeUp(step + 7))}>
             {habits.map((h) => (
               <li key={h} className='rounded-full border px-3 py-1'>
                 {h}
@@ -146,6 +156,15 @@ export default async function PersonPage({ params }: PageProps<'/u/[login]'>) {
   return (
     <div className='space-y-8'>
       <PageHeader
+        action={
+          <ShareButton
+            item={{
+              path: personSeo(p).path,
+              title: personSeo(p).title,
+              description: personSeo(p).description,
+            }}
+          />
+        }
         eyebrow='COSC 499 capstone'
         title={
           <span className='flex flex-wrap items-center gap-x-4 gap-y-2'>
@@ -154,13 +173,6 @@ export default async function PersonPage({ params }: PageProps<'/u/[login]'>) {
               <AvatarFallback>{p.name.slice(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
             {p.name}
-            <ShareButton
-              item={{
-                path: personSeo(p).path,
-                title: personSeo(p).title,
-                description: personSeo(p).description,
-              }}
-            />
           </span>
         }
       >
@@ -177,11 +189,11 @@ export default async function PersonPage({ params }: PageProps<'/u/[login]'>) {
         {p.capstones.map((c) => c.cohort.label).join(', ')}
       </PageHeader>
 
-      {p.capstones.map((c) => (
-        <CapstoneSection key={`${c.cohort.slug}-${c.team.team}`} c={c} />
+      {p.capstones.map((c, i) => (
+        <CapstoneSection key={`${c.cohort.slug}-${c.team.team}`} c={c} step={3 + i * 2} />
       ))}
 
-      <p className='text-xs text-muted-foreground'>
+      <p className={cn('text-xs text-muted-foreground', fadeUp(4 + n * 2))}>
         Counts cover the team&apos;s default branch (merge commits excluded), pull
         requests, reviews and issues during the term. Commits made under an email that
         isn&apos;t linked to this GitHub account aren&apos;t included. Want this page

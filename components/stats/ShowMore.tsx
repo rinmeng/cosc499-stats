@@ -16,19 +16,22 @@ export function ShowMore({
   more,
   less,
   children,
+  className,
 }: {
   /** Button text while collapsed, e.g. "Show 9 more years" */
   more: string;
   /** Button text while open, e.g. "Show fewer years" */
   less: string;
   children: React.ReactNode;
+  /** On the button row, e.g. a `fadeUp(...)` class */
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
 
   return (
     <Collapsible open={open} onOpenChange={setOpen} className='space-y-4'>
       <CollapsibleContent>{children}</CollapsibleContent>
-      <div className='flex justify-center'>
+      <div className={cn('flex justify-center', className)}>
         <CollapsibleTrigger render={<Button variant='outline' />}>
           {open ? less : more}
           <ChevronDown className={cn('transition-transform', open && 'rotate-180')} />

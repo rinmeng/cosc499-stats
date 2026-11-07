@@ -13,6 +13,8 @@ import {
 import { getSummary } from '@/lib/data';
 import type { ShareItem } from '@/lib/types';
 import { insightsView } from '@/lib/views';
+import { cn } from '@/lib/utils';
+import { fadeUp } from '@/utils/animations';
 
 /**
  * Shared frame for the insights pages: this page's own header, a one-line note on
@@ -49,19 +51,17 @@ export function InsightsPage({
   return (
     <div className='space-y-8'>
       <PageHeader
-        eyebrow='Insights'
-        title={
-          <span className='flex flex-wrap items-center gap-x-4 gap-y-2'>
-            {title}
-            <ShareButton
-              item={{
-                path: share.path,
-                title: share.title,
-                description: share.description,
-              }}
-            />
-          </span>
+        action={
+          <ShareButton
+            item={{
+              path: share.path,
+              title: share.title,
+              description: share.description,
+            }}
+          />
         }
+        eyebrow='Insights'
+        title={title}
       >
         {intro}
         {notes && notes.length > 0 && (
@@ -79,7 +79,7 @@ export function InsightsPage({
       </PageHeader>
 
       {view.faded.length > 0 && (
-        <p className='text-sm text-muted-foreground'>
+        <p className={cn('text-sm text-muted-foreground', fadeUp(3))}>
           <SmallCohortsDialog cohorts={view.faded} />{' '}
           {view.faded.length === 1 ? 'is' : 'are'} too small to move the medians, so{' '}
           {view.faded.length === 1 ? 'it is' : 'they are'} drawn faded and left out of
@@ -100,7 +100,7 @@ export function InsightsPage({
 
       {children}
 
-      <Accordion>
+      <Accordion className={fadeUp(12)}>
         <AccordionItem value='normalize'>
           <AccordionTrigger>How we normalize</AccordionTrigger>
           <AccordionContent>

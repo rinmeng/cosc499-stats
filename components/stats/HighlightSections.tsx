@@ -1,5 +1,6 @@
 import { Highlight, type HighlightProps } from '@/components/stats/Blocks';
 import { MoreHighlights } from '@/components/stats/MoreHighlights';
+import { fadeUp } from '@/utils/animations';
 
 export interface HighlightSection {
   title: string;
@@ -17,15 +18,15 @@ function SectionBlock({
 }) {
   return (
     <section className='space-y-3'>
-      <div>
+      <div className={fadeUp(0)}>
         <h2 className='font-heading text-lg font-semibold'>{s.title}</h2>
         {s.description && (
           <p className='text-sm text-muted-foreground'>{s.description}</p>
         )}
       </div>
       <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
-        {s.cards.map((h) => (
-          <Highlight key={h.title} {...h} />
+        {s.cards.map((h, i) => (
+          <Highlight key={h.title} {...h} className={fadeUp(i + 1)} />
         ))}
       </div>
     </section>
@@ -50,7 +51,10 @@ export function HighlightSections({ sections }: { sections: HighlightSection[] }
       {shown.map((s) => (
         <SectionBlock key={s.title} s={s} />
       ))}
-      <MoreHighlights count={hidden.reduce((a, s) => a + s.cards.length, 0)}>
+      <MoreHighlights
+        count={hidden.reduce((a, s) => a + s.cards.length, 0)}
+        className={fadeUp(4)}
+      >
         {hidden.map((s) => (
           <SectionBlock key={s.title} s={s} />
         ))}

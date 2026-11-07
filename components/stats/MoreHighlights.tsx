@@ -15,16 +15,19 @@ import { cn } from '@/lib/utils';
 export function MoreHighlights({
   count,
   children,
+  className,
 }: {
   count: number;
   children: React.ReactNode;
+  /** On the button row, e.g. a `fadeUp(...)` class */
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
   if (count === 0) return null;
 
   return (
     <Collapsible open={open} onOpenChange={setOpen} className='space-y-4'>
-      <div className='flex justify-center'>
+      <div className={cn('flex justify-center', className)}>
         <CollapsibleTrigger render={<Button variant='outline' />}>
           {open ? 'Show fewer highlights' : `Show ${count} more highlights`}
           <ChevronDown className={cn('transition-transform', open && 'rotate-180')} />

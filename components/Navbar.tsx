@@ -27,6 +27,7 @@ import {
 import { Banner } from '@/components/banner-provider';
 import { cn } from '@/lib/utils';
 import { cohortSlug, cohorts, currentCohort } from '@/sync.config';
+import { fadeLeft } from '@/utils/animations';
 
 import { LiveDot } from './LiveDot';
 import { ModeToggle } from './ModeToggle';
@@ -74,16 +75,24 @@ function NavDropdown({
   links,
   active,
   live,
+  className,
 }: {
   label: string;
   links: NavLink[];
   active: boolean;
   live?: boolean;
+  className?: string;
 }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        render={<Button variant={active ? 'secondary' : 'ghost'} size='sm' />}
+        render={
+          <Button
+            variant={active ? 'secondary' : 'ghost'}
+            size='sm'
+            className={className}
+          />
+        }
       >
         {label}
         {live && <LiveDot className='ml-1' />}
@@ -101,9 +110,13 @@ function NavDropdown({
   );
 }
 
-function Brand({ onClick }: { onClick?: () => void }) {
+function Brand({ onClick, className }: { onClick?: () => void; className?: string }) {
   return (
-    <Link href='/' onClick={onClick} className='flex items-center gap-2 font-semibold'>
+    <Link
+      href='/'
+      onClick={onClick}
+      className={cn('flex items-center gap-2 font-semibold', className)}
+    >
       <BarChart3 className='size-5 text-chart-1' />
       <span>
         UBCO COSC 499{' '}
@@ -139,25 +152,27 @@ export function Navbar() {
   return (
     <nav className='fixed z-50 w-full border-b bg-background'>
       <div className='page-container flex items-center justify-between py-3'>
-        <Brand />
+        <Brand className={fadeLeft(0)} />
         <div className='flex items-center gap-2 lg:gap-1'>
           <div className='hidden items-center gap-1 lg:flex'>
+            {/* Brand is step 0; the tabs follow left to right. */}
             {items(
               undefined,
-              undefined,
+              fadeLeft(1),
               links.filter((l) => l.href === '/')
             )}
             <NavDropdown
               label='Insights'
               links={insightLinks}
               active={pathname === '/insights' || pathname.startsWith('/insights/')}
+              className={fadeLeft(2)}
             />
             {items(
               undefined,
-              undefined,
+              fadeLeft(3),
               links.filter((l) => l.href === '/about')
             )}
-            {groups.map((g) => {
+            {groups.map((g, i) => {
               const selected = g.links.find((l) => isActive(l.href));
               const shown =
                 g.key === 'older'
@@ -170,16 +185,28 @@ export function Navbar() {
                   links={g.links}
                   active={!!selected}
                   live={!!shown?.live}
+                  className={fadeLeft(4 + i)}
                 />
               );
             })}
           </div>
           {/* One instance for every screen size: each copy would add its own ⌘K listener. */}
-          <PeopleSearch className='size-9 px-0 lg:h-7 lg:w-auto lg:px-3' />
-          <ModeToggle className='size-9 lg:size-8' />
+          <PeopleSearch
+            className={cn(
+              'size-9 px-0 lg:h-7 lg:w-auto lg:px-3',
+              fadeLeft(4 + groups.length)
+            )}
+          />
+          <ModeToggle className={cn('size-9 lg:size-8', fadeLeft(5 + groups.length))} />
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger
-              render={<Button variant='outline' size='icon-lg' className='lg:hidden' />}
+              render={
+                <Button
+                  variant='outline'
+                  size='icon-lg'
+                  className={cn('lg:hidden', fadeLeft(6 + groups.length))}
+                />
+              }
             >
               <Menu className='size-5' />
               <span className='sr-only'>Toggle menu</span>

@@ -10,12 +10,14 @@ import type { InsightsView } from '@/lib/views';
 import { FindingText } from './FindingText';
 import { WHY } from './why';
 import { WhyDialog } from './WhyDialog';
+import { Reveal } from '@/components/Reveal';
+import { fadeUp } from '@/utils/animations';
 
 /** "Here's what we found": the tab's headline numbers as plain sentences. */
-export function Findings({ items }: { items: string[] }) {
+export function Findings({ items, className }: { items: string[]; className?: string }) {
   if (items.length === 0) return null;
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader>
         <CardTitle>Here’s what we found</CardTitle>
       </CardHeader>
@@ -92,13 +94,15 @@ export function FingerprintCharts({ view }: { view: InsightsView }) {
   return (
     <div className='space-y-4'>
       {!view.trailersScanned && (
-        <Alert>
-          <AlertTitle>AI co-author trailers are not scanned yet</AlertTitle>
-          <AlertDescription>
-            Sync reads commit messages for Co-authored-by lines and stores only the tool
-            name. Until that re-fetch, this chart stays unknown. It does not show zero.
-          </AlertDescription>
-        </Alert>
+        <Reveal className={fadeUp(4)}>
+          <Alert>
+            <AlertTitle>AI co-author trailers are not scanned yet</AlertTitle>
+            <AlertDescription>
+              Sync reads commit messages for Co-authored-by lines and stores only the tool
+              name. Until that re-fetch, this chart stays unknown. It does not show zero.
+            </AlertDescription>
+          </Alert>
+        </Reveal>
       )}
       <HorizontalShareChart
         title='Which AI tools get named'
@@ -116,7 +120,7 @@ export function FingerprintCharts({ view }: { view: InsightsView }) {
 export function TrendCharts({ view }: { view: InsightsView }) {
   return (
     <div className='space-y-4'>
-      <Findings items={view.findings.trends} />
+      <Findings items={view.findings.trends} className={fadeUp(4)} />
       <CohortTrendChart
         series={view.curves}
         currentWeek={view.curveMid}

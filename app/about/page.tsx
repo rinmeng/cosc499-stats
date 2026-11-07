@@ -15,6 +15,8 @@ import { PageHeader } from '@/components/stats/Blocks';
 import { getSummary } from '@/lib/data';
 import { aboutSeo, pageMetadata } from '@/lib/seo';
 import { currentCohort, repoUrl } from '@/sync.config';
+import { cn } from '@/lib/utils';
+import { stagger } from '@/utils/animations';
 
 export const metadata = pageMetadata(aboutSeo());
 
@@ -29,13 +31,15 @@ function Reason({
   icon: Icon,
   title,
   children,
+  className,
 }: {
   icon: LucideIcon;
   title: string;
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <section className='space-y-3'>
+    <section className={cn('space-y-3', className)}>
       <h2 className='flex items-center gap-2 font-heading text-xl font-semibold'>
         <Icon className='size-5 text-chart-1' />
         {title}
@@ -49,6 +53,7 @@ export default function AboutPage() {
   const s = getSummary();
   const cohortCount = s?.cohorts.filter((c) => c.teams.length).length;
   const current = s?.cohorts.find((c) => c.isCurrent);
+  const next = stagger();
 
   return (
     <div className='mx-auto max-w-3xl space-y-10'>
@@ -59,7 +64,11 @@ export default function AboutPage() {
         work is remembered, and where the people coming next can learn from it.
       </PageHeader>
 
-      <Reason icon={Target} title='A benchmark for the current and next cohort'>
+      <Reason
+        className={next()}
+        icon={Target}
+        title='A benchmark for the current and next cohort'
+      >
         <p>
           When you&apos;re in week 6 of capstone, it&apos;s hard to tell whether your team
           is on pace. Is 200 commits a lot? Should you be merging more PRs by now? Do
@@ -83,7 +92,7 @@ export default function AboutPage() {
         </p>
       </Reason>
 
-      <Reason icon={Award} title='Recognition for the work'>
+      <Reason className={next()} icon={Award} title='Recognition for the work'>
         <p>
           A final demo shows the product, not the person who reviewed forty pull requests,
           closed the issue backlog, or kept the team shipping every week. Those people
@@ -96,7 +105,11 @@ export default function AboutPage() {
         </p>
       </Reason>
 
-      <Reason icon={Ghost} title='Not just the big numbers: the quirky ones too'>
+      <Reason
+        className={next()}
+        icon={Ghost}
+        title='Not just the big numbers: the quirky ones too'
+      >
         <p>
           This isn&apos;t only a leaderboard. Alongside the most commits and most reviews,
           there are the night owls, the early birds, the 3&nbsp;am regulars, the holiday
@@ -111,7 +124,7 @@ export default function AboutPage() {
         </p>
       </Reason>
 
-      <Reason icon={Archive} title='Keeping a record'>
+      <Reason className={next()} icon={Archive} title='Keeping a record'>
         <p>
           Capstone repos get made private, deleted, or moved when people graduate, and
           each year&apos;s work quietly disappears. This site keeps a snapshot of the
@@ -121,7 +134,7 @@ export default function AboutPage() {
         </p>
       </Reason>
 
-      <Reason icon={Scale} title='What the numbers don’t show'>
+      <Reason className={next()} icon={Scale} title='What the numbers don’t show'>
         <p>
           GitHub activity is only part of a capstone. Design, client meetings, planning,
           testing by hand, writing docs and pair programming rarely show up as commits,
@@ -137,7 +150,7 @@ export default function AboutPage() {
         </p>
       </Reason>
 
-      <Reason icon={HeartHandshake} title='Help complete it'>
+      <Reason className={next()} icon={HeartHandshake} title='Help complete it'>
         <p>
           Some cohorts look small because their repos are private or were moved off the
           course organization. If you were on one of those teams, you can probably see
@@ -158,7 +171,7 @@ export default function AboutPage() {
         </p>
       </Reason>
 
-      <p className='border-t pt-6 text-sm text-muted-foreground'>
+      <p className={cn('border-t pt-6 text-sm text-muted-foreground', next())}>
         Built by rin, a COSC 499 student, from public and course GitHub activity. Not
         affiliated with UBC.
       </p>
