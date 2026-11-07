@@ -663,6 +663,31 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
   const sections = live
     ? [...weeklySections, ...termSections.map((sec) => ({ ...sec, more: true }))]
     : termSections;
+  // The live term leads with who's doing the work (contributors, team output, this
+  // week); the term-long trend charts follow the team list. Past terms keep them up top.
+  const trendCharts = (
+    <>
+      <div id='tracking' className='scroll-mt-20'>
+        <CohortTrendChart
+          title={live ? 'How this cohort is tracking' : 'How this cohort tracked'}
+          description={`Average cumulative points per team by week of term.`}
+          series={trendSeries(summary, c.slug)}
+          action={<ScoreInfo weights={summary.scoreWeights} />}
+          highlight={c.slug}
+          currentWeek={live ? week : undefined}
+        />
+      </div>
+
+      <ActivityChart
+        info={activityInfo}
+        data={c.weekly}
+        termStart={c.termStart}
+        session={c.session}
+        description='Every commit, pull request, review and issue across the cohort, by week. Narrow the time range above.'
+      />
+    </>
+  );
+
   return (
     <div className='space-y-8'>
       <PageHeader
@@ -853,24 +878,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         )}
       </Grid>
 
-      <div id='tracking' className='scroll-mt-20'>
-        <CohortTrendChart
-          title={live ? 'How this cohort is tracking' : 'How this cohort tracked'}
-          description={`Average cumulative points per team by week of term.`}
-          series={trendSeries(summary, c.slug)}
-          action={<ScoreInfo weights={summary.scoreWeights} />}
-          highlight={c.slug}
-          currentWeek={live ? week : undefined}
-        />
-      </div>
-
-      <ActivityChart
-        info={activityInfo}
-        data={c.weekly}
-        termStart={c.termStart}
-        session={c.session}
-        description='Every commit, pull request, review and issue across the cohort, by week. Narrow the time range above.'
-      />
+      {!live && trendCharts}
 
       <Section
         className={next()}
@@ -917,6 +925,8 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           <MissingTeam cohort={c.slug} label={c.label} live={live} />
         </Reveal>
       )}
+
+      {live && trendCharts}
 
       <Grid className='lg:grid-cols-5'>
         <Section
