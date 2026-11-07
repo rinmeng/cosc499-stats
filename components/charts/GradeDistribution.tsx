@@ -77,8 +77,7 @@ export function GradeDistribution({
         <CardTitle className='text-base'>{title}</CardTitle>
         <CardDescription>
           How the {fmt(g.students)} students in COSC 499 finished
-          {g.sections > 1 ? `, across ${g.sections} sections` : ''}.{taught} Course-wide
-          only: grades are not linked to teams or people.
+          {g.sections > 1 ? `, across ${g.sections} sections` : ''}.{taught}
         </CardDescription>
         {action && <CardAction>{action}</CardAction>}
       </CardHeader>
