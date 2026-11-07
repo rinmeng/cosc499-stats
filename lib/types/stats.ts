@@ -202,6 +202,12 @@ export interface TeamStats {
   punch: number[][];
   /** Members sorted by composite score. The UI only ever shows the top N. */
   members: PersonStats[];
+  /**
+   * Who reviewed whose pull requests: one entry per reviewer → author pair, counting
+   * each PR once per reviewer. `from` / `to` are member ids. Bots, staff and
+   * self-reviews are left out, as everywhere else.
+   */
+  reviewNetwork: ReviewEdge[];
   thisWeekCommits: number;
   /** Actions since Sunday (see PersonStats.activity) */
   thisWeekActivity: number;
@@ -292,6 +298,12 @@ export interface TeamworkBonus {
 }
 
 /** Cohort or team totals for one term week (in-progress "this week" tiles). */
+export interface ReviewEdge {
+  from: string;
+  to: string;
+  count: number;
+}
+
 export interface WeekTotals {
   commits: number;
   prsMerged: number;

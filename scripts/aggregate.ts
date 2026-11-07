@@ -382,6 +382,8 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       return weekly.get(w)!;
     };
     const punch = emptyPunch();
+    /** reviewer → author → PRs reviewed (keys are lowercased logins, like people) */
+    const reviewPairs = new Map<string, Map<string, number>>();
     const langs = new Map<string, number>();
     const mergeHours: number[] = [];
     let merged = 0;
@@ -555,6 +557,13 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
           reviewers.add(r.login);
           const p = person(r.login.toLowerCase(), r.login, null);
           p.reviews++;
+          if (pr.login && !skip(pr.login)) {
+            const from = r.login.toLowerCase();
+            const to = pr.login.toLowerCase();
+            const row = reviewPairs.get(from) ?? new Map<string, number>();
+            row.set(to, (row.get(to) ?? 0) + 1);
+            reviewPairs.set(from, row);
+          }
           if (r.submittedAt) {
             act(r.submittedAt, p);
             p.weeks.add(weekOf(r.submittedAt));
@@ -646,6 +655,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
 
     const sum = (k: keyof PersonStats) =>
       members.reduce((a, p) => a + (p[k] as number), 0);
+    const memberIds = new Set(members.map((m) => m.id));
 
     const weeklyArr = [...weekly.values()].sort((a, b) => a.week - b.week);
     const commitsIn = (from: number, to: number) =>
@@ -749,6 +759,10 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       weekly: weeklyArr,
       punch,
       members,
+      reviewNetwork: [...reviewPairs]
+        .flatMap(([from, row]) => [...row].map(([to, count]) => ({ from, to, count })))
+        .filter((e) => memberIds.has(e.from) && memberIds.has(e.to))
+        .sort((a, b) => b.count - a.count),
       thisWeekCommits: weekly.get(nowWeek)?.commits ?? 0,
       thisWeekActivity,
       thisWeekLines,

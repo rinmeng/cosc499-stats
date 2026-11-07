@@ -70,7 +70,7 @@ export function cohortSeo(c: CohortStats): PageSeo {
 export function teamSeo(c: CohortStats, t: TeamStats): PageSeo {
   return {
     title: `${t.name} · ${c.label}`,
-    description: `UBCO COSC 499 ${c.label} capstone ${t.name}: top contributors, weekly activity and team habits, with ${fmt(t.commits)} commits, ${fmt(t.prsMerged)} merged PRs and ${fmt(t.reviews)} reviews.`,
+    description: `UBCO COSC 499 ${c.label} capstone ${t.name}: top contributors, weekly activity, team habits and who reviews whom, with ${fmt(t.commits)} commits, ${fmt(t.prsMerged)} merged PRs and ${fmt(t.reviews)} reviews.`,
     path: `/${c.slug}/${t.team}`,
   };
 }

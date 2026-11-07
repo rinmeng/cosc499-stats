@@ -19,6 +19,7 @@ import { ActivityChart } from '@/components/charts/ActivityChart';
 import { CohortTrendChart } from '@/components/charts/CohortTrendChart';
 import { LanguageDonut } from '@/components/charts/LanguageDonut';
 import { Punchcard } from '@/components/charts/Punchcard';
+import { ReviewNetwork } from '@/components/charts/ReviewNetwork';
 import { TeamRadial } from '@/components/charts/TeamRadial';
 import {
   EmptyState,
@@ -300,6 +301,23 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
           </div>
           <MemberRadars members={radars} />
         </section>
+      )}
+
+      {t.members.length > 1 && (
+        <Section
+          className={next()}
+          title='Who reviews whom'
+          description='Each arrow is a teammate reviewing someone’s pull requests, counted once per PR.'
+        >
+          <ReviewNetwork
+            members={t.members.map((m) => ({
+              id: m.id,
+              name: displayName(m),
+              avatarUrl: m.avatarUrl,
+            }))}
+            edges={t.reviewNetwork ?? []}
+          />
+        </Section>
       )}
 
       <CohortTrendChart
