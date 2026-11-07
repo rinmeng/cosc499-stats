@@ -532,6 +532,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       members,
       thisWeekCommits: weekly.get(nowWeek)?.commits ?? 0,
       thisWeekLines,
+      thisWeekPrsMerged: weekly.get(nowWeek)?.prs ?? 0,
       prsClosedUnmerged: closedUnmerged,
       shipRate: merged + closedUnmerged ? round(merged / (merged + closedUnmerged)) : 0,
       discussionPerPr: merged ? round(discussion / merged, 1) : 0,

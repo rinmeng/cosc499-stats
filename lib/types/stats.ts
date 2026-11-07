@@ -190,6 +190,8 @@ export interface TeamStats {
   thisWeekCommits: number;
   /** lines added + deleted on the default branch this week */
   thisWeekLines: number;
+  /** PRs merged since Sunday */
+  thisWeekPrsMerged: number;
 }
 
 export interface CohortStats {

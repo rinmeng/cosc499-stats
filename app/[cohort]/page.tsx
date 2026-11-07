@@ -209,7 +209,73 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
   const rarePicks = (t: TeamStats) =>
     c.teams.length > 1 ? used(t).filter((l) => teamsUsing.get(l.name) === 1) : [];
 
-  const allSections: HighlightSection[] = [
+  // Momentum cards, ordered per state in the section below.
+  const mostActiveThisWeek = card(
+    {
+      icon: Sparkles,
+      title: 'Most active this week',
+      description: 'Commits since Sunday',
+    },
+    topTeams(c, (t) => t.thisWeekCommits, 3),
+    (t) => ({ value: fmt(t.thisWeekCommits), unit: 'commits' })
+  );
+  const mostLinesThisWeek = card(
+    {
+      icon: FileDiff,
+      title: 'Most lines this week',
+      description: 'Lines added and deleted on the main branch since Sunday',
+    },
+    topTeams(c, (t) => t.thisWeekLines ?? 0, 3),
+    (t) => ({ value: fmtCompact(t.thisWeekLines ?? 0), unit: 'lines' })
+  );
+  const mostPrsThisWeek = card(
+    {
+      icon: GitMerge,
+      title: 'Most PRs merged this week',
+      description: 'Pull requests merged since Sunday',
+    },
+    topTeams(c, (t) => t.thisWeekPrsMerged ?? 0, 3),
+    (t) => ({ value: fmt(t.thisWeekPrsMerged ?? 0), unit: 'PRs' })
+  );
+  const biggestWeek = card(
+    { icon: Trophy, title: 'Biggest week', description: 'Most commits in a single week' },
+    topTeams(c, (t) => t.peakWeek?.commits ?? 0, 3),
+    (t) => ({
+      value: fmt(t.peakWeek?.commits ?? 0),
+      unit: 'commits',
+      sub: `week ${t.peakWeek?.week}`,
+    })
+  );
+  const strongestFinish = card(
+    {
+      icon: Flag,
+      title: 'Strongest finish',
+      description: 'Commits in the last 4 weeks of term',
+    },
+    topTeams(c, (t) => t.finishCommits ?? 0, 3),
+    (t) => ({ value: fmt(t.finishCommits ?? 0), unit: 'commits' })
+  );
+  const fastestStart = card(
+    {
+      icon: Rocket,
+      title: 'Fastest start',
+      description: 'Commits in the first 4 weeks of term',
+    },
+    topTeams(c, (t) => t.startCommits, 3),
+    (t) => ({ value: fmt(t.startCommits), unit: 'commits' })
+  );
+
+  const sections: HighlightSection[] = [
+    {
+      // Live: what's happening this week. Finished: the term from start to finish.
+      title: live ? 'Weekly momentum' : 'Across the term',
+      description: live
+        ? 'The busiest teams this week, by commits, lines and pull requests merged.'
+        : 'Who started fast, had the biggest week and finished strong.',
+      cards: live
+        ? [mostActiveThisWeek, mostLinesThisWeek, mostPrsThisWeek]
+        : [fastestStart, biggestWeek, strongestFinish],
+    },
     {
       title: 'Strangest stats',
       description: 'The odd, the heroic and the slightly concerning.',
@@ -317,67 +383,6 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           topTeams(c, (t) => t.weekendShare, 3, enough),
           (t) => ({ value: pct(t.weekendShare), unit: 'of commits' })
         ),
-      ],
-    },
-    {
-      title: 'Weekly momentum',
-      description: live
-        ? 'The busiest teams this week, and the biggest weeks of term so far.'
-        : 'The biggest weeks of term, and who started fast or finished strong.',
-      cards: [
-        live
-          ? card(
-              {
-                icon: Sparkles,
-                title: 'Most active this week',
-                description: 'Commits since Sunday',
-              },
-              topTeams(c, (t) => t.thisWeekCommits, 3),
-              (t) => ({ value: fmt(t.thisWeekCommits), unit: 'commits' })
-            )
-          : null,
-        card(
-          {
-            icon: Trophy,
-            title: 'Biggest week',
-            description: 'Most commits in a single week',
-          },
-          topTeams(c, (t) => t.peakWeek?.commits ?? 0, 3),
-          (t) => ({
-            value: fmt(t.peakWeek?.commits ?? 0),
-            unit: 'commits',
-            sub: `week ${t.peakWeek?.week}`,
-          })
-        ),
-        card(
-          {
-            icon: Flag,
-            title: 'Strongest finish',
-            description: 'Commits in the last 4 weeks of term',
-          },
-          topTeams(c, (t) => t.finishCommits ?? 0, 3),
-          (t) => ({ value: fmt(t.finishCommits ?? 0), unit: 'commits' })
-        ),
-        // Live: this week's merged lines. Once the term ends: the start, to pair with the finish.
-        live
-          ? card(
-              {
-                icon: FileDiff,
-                title: 'Most lines this week',
-                description: 'Lines added and deleted on the main branch since Sunday',
-              },
-              topTeams(c, (t) => t.thisWeekLines ?? 0, 3),
-              (t) => ({ value: fmtCompact(t.thisWeekLines ?? 0), unit: 'lines' })
-            )
-          : card(
-              {
-                icon: Rocket,
-                title: 'Fastest start',
-                description: 'Commits in the first 4 weeks of term',
-              },
-              topTeams(c, (t) => t.startCommits, 3),
-              (t) => ({ value: fmt(t.startCommits), unit: 'commits' })
-            ),
       ],
     },
     {
@@ -547,14 +552,6 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       ],
     },
   ];
-  // Most interesting first; on a live cohort, "this week" momentum leads.
-  const sections = live
-    ? [
-        ...allSections.filter((x) => x.title === 'Weekly momentum'),
-        ...allSections.filter((x) => x.title !== 'Weekly momentum'),
-      ]
-    : allSections;
-
   return (
     <div className='space-y-8'>
       <PageHeader
