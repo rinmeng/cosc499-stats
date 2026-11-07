@@ -265,16 +265,90 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     (t) => ({ value: fmt(t.startCommits), unit: 'commits' })
   );
 
-  const sections: HighlightSection[] = [
+  // Live term: three "this week" sections up front, every term-long section tucked
+  // behind "Show more". Finished terms show the term sections as before.
+  const weeklySections: HighlightSection[] = [
     {
-      // Live: what's happening this week. Finished: the term from start to finish.
-      title: live ? 'Weekly momentum' : 'Across the term',
+      title: 'Weekly momentum',
+      description:
+        'The busiest teams this week, by commits, lines and pull requests merged.',
+      cards: [mostActiveThisWeek, mostLinesThisWeek, mostPrsThisWeek],
+    },
+    {
+      title: 'Weekly teamwork',
+      description: 'Teams pitching in together since Sunday.',
+      cards: [
+        card(
+          {
+            icon: Users,
+            title: 'All hands on deck',
+            description: 'Most people committing since Sunday',
+          },
+          topTeams(c, (t) => (t.thisWeekContributors ?? 0) + t.thisWeekCommits / 1e6, 3),
+          (t) => ({ value: fmt(t.thisWeekContributors ?? 0), unit: 'people' })
+        ),
+        card(
+          {
+            icon: MessageSquareCode,
+            title: 'Most reviews this week',
+            description: 'Teammate reviews submitted since Sunday',
+          },
+          topTeams(c, (t) => t.thisWeekReviews ?? 0, 3),
+          (t) => ({ value: fmt(t.thisWeekReviews ?? 0), unit: 'reviews' })
+        ),
+        card(
+          {
+            icon: CircleCheckBig,
+            title: 'Most issues closed this week',
+            description: 'Issues closed since Sunday',
+          },
+          topTeams(c, (t) => t.thisWeekIssuesClosed ?? 0, 3),
+          (t) => ({ value: fmt(t.thisWeekIssuesClosed ?? 0), unit: 'issues' })
+        ),
+      ],
+    },
+    {
+      title: 'Weekly rhythm',
+      description: 'When teams worked this week.',
+      cards: [
+        card(
+          {
+            icon: Moon,
+            title: 'Night owls this week',
+            description: 'Commits between 10 pm and 4 am since Sunday',
+          },
+          topTeams(c, (t) => t.thisWeekNightCommits ?? 0, 3),
+          (t) => ({ value: fmt(t.thisWeekNightCommits ?? 0), unit: 'commits' })
+        ),
+        card(
+          {
+            icon: Sunrise,
+            title: 'Early birds this week',
+            description: 'Commits between 5 am and 9 am since Sunday',
+          },
+          topTeams(c, (t) => t.thisWeekEarlyCommits ?? 0, 3),
+          (t) => ({ value: fmt(t.thisWeekEarlyCommits ?? 0), unit: 'commits' })
+        ),
+        card(
+          {
+            icon: CalendarDays,
+            title: 'Weekend warriors this week',
+            description: 'Commits on Saturday or Sunday this week',
+          },
+          topTeams(c, (t) => t.thisWeekWeekendCommits ?? 0, 3),
+          (t) => ({ value: fmt(t.thisWeekWeekendCommits ?? 0), unit: 'commits' })
+        ),
+      ],
+    },
+  ];
+
+  const termSections: HighlightSection[] = [
+    {
+      title: 'Across the term',
       description: live
-        ? 'The busiest teams this week, by commits, lines and pull requests merged.'
+        ? 'Who started fast and had the biggest week so far.'
         : 'Who started fast, had the biggest week and finished strong.',
-      cards: live
-        ? [mostActiveThisWeek, mostLinesThisWeek, mostPrsThisWeek]
-        : [fastestStart, biggestWeek, strongestFinish],
+      cards: [fastestStart, biggestWeek, strongestFinish],
     },
     {
       title: 'Strangest stats',
@@ -552,6 +626,9 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       ],
     },
   ];
+  const sections = live
+    ? [...weeklySections, ...termSections.map((sec) => ({ ...sec, more: true }))]
+    : termSections;
   return (
     <div className='space-y-8'>
       <PageHeader
@@ -673,6 +750,17 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         description='Across the whole cohort. Pick a measure above, or narrow the time range.'
       />
 
+      <Section
+        title='Top contributors'
+        description={`Top 10 across the cohort, or the top ${summary.topN} on each team. Switch the measure to rank by just one thing.`}
+        action={<ScoreInfo weights={summary.scoreWeights} />}
+      >
+        <TopContributors
+          teams={teamTopViews(c, summary.topN)}
+          cohort={cohortTopView(c, 10)}
+        />
+      </Section>
+
       <MetricBarChart
         title='Team output'
         description={
@@ -686,17 +774,6 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         {...teamBars(c)}
         sortDesc
       />
-
-      <Section
-        title='Top contributors'
-        description={`Top 10 across the cohort, or the top ${summary.topN} on each team. Switch the measure to rank by just one thing.`}
-        action={<ScoreInfo weights={summary.scoreWeights} />}
-      >
-        <TopContributors
-          teams={teamTopViews(c, summary.topN)}
-          cohort={cohortTopView(c, 10)}
-        />
-      </Section>
 
       <HighlightSections sections={sections} />
 

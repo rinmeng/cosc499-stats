@@ -192,6 +192,16 @@ export interface TeamStats {
   thisWeekLines: number;
   /** PRs merged since Sunday */
   thisWeekPrsMerged: number;
+  /** Teammate reviews submitted since Sunday */
+  thisWeekReviews: number;
+  /** People who committed since Sunday */
+  thisWeekContributors: number;
+  /** Issues closed since Sunday */
+  thisWeekIssuesClosed: number;
+  /** This week's commits 10 pm–4 am, 5–9 am, and on Saturday or Sunday (local time) */
+  thisWeekNightCommits: number;
+  thisWeekEarlyCommits: number;
+  thisWeekWeekendCommits: number;
 }
 
 export interface CohortStats {

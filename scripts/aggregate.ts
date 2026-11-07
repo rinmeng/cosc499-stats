@@ -283,6 +283,11 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     let witchingCommits = 0;
     /** lines changed on the default branch this week (outlier commits skipped) */
     let thisWeekLines = 0;
+    const thisWeekAuthors = new Set<string>();
+    let thisWeekIssuesClosed = 0;
+    let thisWeekNight = 0;
+    let thisWeekEarly = 0;
+    let thisWeekWeekend = 0;
     /** commits per local calendar day, for the team's biggest day */
     const perDay = new Map<string, number>();
     type PrPick = { number: number; repo: string; value: number } | null;
@@ -309,7 +314,8 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
         if (seen.has(c.oid) || !inWindow(c.date) || skip(c.login)) continue;
         if (BOT_NAME.test(`${c.name ?? ''} ${c.email ?? ''}`)) continue;
         seen.add(c.oid);
-        const p = person(authorKey(c.login, c.email, c.name), c.login, c.name);
+        const key = authorKey(c.login, c.email, c.name);
+        const p = person(key, c.login, c.name);
         p.commits++;
         if (c.additions + c.deletions <= lineOutlierThreshold) {
           p.additions += c.additions;
@@ -322,6 +328,12 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
         wp(w).commits++;
         const { dow, hour } = localSlot(c.date);
         punch[dow][hour]++;
+        if (w === nowWeek) {
+          thisWeekAuthors.add(key);
+          if (hour >= 22 || hour < 4) thisWeekNight++;
+          if (hour >= 5 && hour < 9) thisWeekEarly++;
+          if (dow === 0 || dow === 6) thisWeekWeekend++;
+        }
         const day = localDate(c.date);
         perDay.set(day, (perDay.get(day) ?? 0) + 1);
         if (holidays.has(day)) holidayCommits++;
@@ -390,6 +402,8 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
         if (is.state === 'OPEN') openIssues++;
         issuesTotal++;
         if (is.state === 'CLOSED') issuesClosedCount++;
+        if (is.state === 'CLOSED' && is.closedAt && weekOf(is.closedAt) === nowWeek)
+          thisWeekIssuesClosed++;
         if (is.login && !skip(is.login))
           person(is.login.toLowerCase(), is.login, null).issuesOpened++;
         if (is.state === 'CLOSED')
@@ -533,6 +547,12 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       thisWeekCommits: weekly.get(nowWeek)?.commits ?? 0,
       thisWeekLines,
       thisWeekPrsMerged: weekly.get(nowWeek)?.prs ?? 0,
+      thisWeekReviews: weekly.get(nowWeek)?.reviews ?? 0,
+      thisWeekContributors: thisWeekAuthors.size,
+      thisWeekIssuesClosed,
+      thisWeekNightCommits: thisWeekNight,
+      thisWeekEarlyCommits: thisWeekEarly,
+      thisWeekWeekendCommits: thisWeekWeekend,
       prsClosedUnmerged: closedUnmerged,
       shipRate: merged + closedUnmerged ? round(merged / (merged + closedUnmerged)) : 0,
       discussionPerPr: merged ? round(discussion / merged, 1) : 0,
