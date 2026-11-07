@@ -462,7 +462,7 @@ export interface InsightsView {
   /** `hint` marks the numbers to bold with **…** (render with FindingText) */
   ratios: { label: string; value: string; unit: string; hint: string }[];
   /** "Here's what we found" sentences per tab */
-  findings: { impact: string[]; fingerprints: string[]; trends: string[] };
+  findings: { impact: string[]; trends: string[] };
   trailersScanned: boolean;
   termScale: { fullYearWeeks: number; summerWeeks: number };
   commitSize: EraSeries[];
@@ -533,7 +533,6 @@ export function insightsView(s: Summary): InsightsView {
     }),
     findings: {
       impact: sentences(FINDING_KEYS.impact),
-      fingerprints: sentences(FINDING_KEYS.fingerprints),
       trends: [...sentences(FINDING_KEYS.trends), sessionFinding(insights)].filter(
         (f): f is string => !!f
       ),

@@ -1,6 +1,6 @@
 import { FindingText } from '@/components/insights/FindingText';
 import { InsightsPage } from '@/components/insights/InsightsPage';
-import { Findings, ImpactCharts } from '@/components/insights/sections';
+import { AiToolsChart, Findings, ImpactCharts } from '@/components/insights/sections';
 import { Grid, StatTile } from '@/components/stats/Blocks';
 import { getSummary } from '@/lib/data';
 import { fadeUp } from '@/utils/animations';
@@ -28,6 +28,7 @@ export default function InsightsImpactPage() {
         'Three eras: before AI (2017–2021), the Copilot and ChatGPT years (2022–23), and the agentic era (2024 on).',
         'Every number is a rate per team, compared by cohort median. Never a raw total, never a person.',
         'A gap between eras isn’t proof that AI caused it. The course and its teams changed too.',
+        'AI tools are counted only when they sign a commit with a Co-authored-by line. Claude Code does by default; most editor assistants do not, and a repository not re-fetched since trailers were scanned counts as unknown, not zero.',
       ]}
     >
       <div className='space-y-8'>
@@ -45,6 +46,7 @@ export default function InsightsImpactPage() {
           ))}
         </Grid>
         <ImpactCharts view={view} />
+        <AiToolsChart view={view} />
       </div>
     </InsightsPage>
   );

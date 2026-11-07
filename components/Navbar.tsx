@@ -54,7 +54,6 @@ const insightLinks: NavLink[] = [
   { href: '/insights/grades', label: 'Grades', live: false },
   { href: '/insights', label: 'AI impact', live: false },
   { href: '/insights/trends', label: 'Trends', live: false },
-  { href: '/insights/fingerprints', label: 'AI tools', live: false },
 ];
 const yearLinks = winter.map((c) => {
   const link = toLink(c);

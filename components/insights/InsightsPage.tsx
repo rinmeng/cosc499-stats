@@ -18,7 +18,7 @@ import { fadeUp } from '@/utils/animations';
 /**
  * Shared frame for the insights pages: this page's own header, a one-line note on
  * faded cohorts, the page content, and the methodology accordion. Each page passes its own
- * title and intro so the three tabs don't share a heading.
+ * title and intro so the tabs don't share a heading.
  */
 export function InsightsPage({
   title,

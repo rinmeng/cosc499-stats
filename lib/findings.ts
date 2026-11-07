@@ -183,7 +183,8 @@ export const FINDING_KEYS = {
     'reviewCoverage',
     'prHours',
     'languagesPerTeam',
+    'aiTrailers',
+    'aiBots',
   ],
-  fingerprints: ['aiTrailers', 'aiBots'],
   trends: ['prsPer100', 'weekend', 'nightOwl'],
 } as const;

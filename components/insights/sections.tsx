@@ -90,11 +90,12 @@ export function ImpactCharts({ view }: { view: InsightsView }) {
   );
 }
 
-export function FingerprintCharts({ view }: { view: InsightsView }) {
+/** Which AI tools sign their commits (agentic era), shown at the end of AI impact. */
+export function AiToolsChart({ view }: { view: InsightsView }) {
   return (
-    <div className='space-y-4'>
+    <div id='ai-tools' className='scroll-mt-24 space-y-4'>
       {!view.trailersScanned && (
-        <Reveal className={fadeUp(4)}>
+        <Reveal className={fadeUp(0)}>
           <Alert>
             <AlertTitle>AI co-author trailers are not scanned yet</AlertTitle>
             <AlertDescription>
@@ -106,7 +107,7 @@ export function FingerprintCharts({ view }: { view: InsightsView }) {
       )}
       <HorizontalShareChart
         title='Which AI tools get named'
-        description='Agentic era (2024 onward), by the tool named in the co-author line. Hover a bar for the commit and team counts.'
+        description='Agentic era (2024 onward), by the tool named in a Co-authored-by line. Only tools that sign their commits show up, so this undercounts. Hover a bar for the commit and team counts.'
         why={WHY.tools}
         slices={view.tools[0]?.slices ?? []}
         nTeams={view.toolSample.nTeams}
