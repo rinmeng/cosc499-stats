@@ -121,6 +121,7 @@ export function CohortTrendChart({
   markerLabel = 'Today',
   xUnit = 'week',
   faintLabel = 'Others',
+  legendHint = 'Click a cohort to bring it forward',
   action,
 }: {
   series: TrendSeries[];
@@ -139,6 +140,8 @@ export function CohortTrendChart({
   xUnit?: 'week' | 'term';
   /** Legend key for the faint series */
   faintLabel?: string;
+  /** Shown under the legend, which is clickable */
+  legendHint?: string;
   action?: React.ReactNode;
 }) {
   const faint = all.filter((s) => s.faint);
@@ -407,6 +410,9 @@ export function CohortTrendChart({
           </span>
         )}
       </div>
+      {series.length > 1 && (
+        <p className='mt-1 text-center text-xs text-muted-foreground'>{legendHint}</p>
+      )}
     </ChartCard>
   );
 }

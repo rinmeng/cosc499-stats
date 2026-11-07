@@ -41,7 +41,6 @@ import {
   PageHeader,
   Section,
   StatTile,
-  WeekTrend,
 } from '@/components/stats/Blocks';
 import {
   HelpComplete,
@@ -723,13 +722,11 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
               label='Commits this week'
               value={fmt(c.thisWeek.commits)}
               unit='commits'
-              hint={
-                <WeekTrend
-                  now={c.thisWeek.commits}
-                  last={c.lastWeek.commits}
-                  unit='commits'
-                />
-              }
+              trend={{
+                now: c.thisWeek.commits,
+                last: c.lastWeek.commits,
+                unit: 'commits',
+              }}
             />
             <StatTile
               className={next()}
@@ -737,13 +734,11 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
               label='Merged PRs this week'
               value={fmt(c.thisWeek.prsMerged)}
               unit='PRs'
-              hint={
-                <WeekTrend
-                  now={c.thisWeek.prsMerged}
-                  last={c.lastWeek.prsMerged}
-                  unit='PRs'
-                />
-              }
+              trend={{
+                now: c.thisWeek.prsMerged,
+                last: c.lastWeek.prsMerged,
+                unit: 'PRs',
+              }}
             />
             <StatTile
               className={next()}
@@ -751,32 +746,29 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
               label='Reviews this week'
               value={fmt(c.thisWeek.reviews)}
               unit='reviews'
-              hint={
-                <WeekTrend
-                  now={c.thisWeek.reviews}
-                  last={c.lastWeek.reviews}
-                  unit='reviews'
-                />
-              }
+              trend={{
+                now: c.thisWeek.reviews,
+                last: c.lastWeek.reviews,
+                unit: 'reviews',
+              }}
             />
             <StatTile
               className={next()}
               icon={Clock}
               label='Time to merge this week'
               value={fmtHours(c.thisWeek.medianMergeHours)}
-              hint={
+              trend={
                 c.lastWeek.medianMergeHours !== null &&
-                c.thisWeek.medianMergeHours !== null ? (
-                  <WeekTrend
-                    now={c.thisWeek.medianMergeHours}
-                    last={c.lastWeek.medianMergeHours}
-                    format={fmtHours}
-                    unit='median'
-                  />
-                ) : (
-                  'median, from PR opened to merged'
-                )
+                c.thisWeek.medianMergeHours !== null
+                  ? {
+                      now: c.thisWeek.medianMergeHours,
+                      last: c.lastWeek.medianMergeHours,
+                      format: fmtHours,
+                      unit: 'median',
+                    }
+                  : undefined
               }
+              hint='median, from PR opened to merged'
             />
             <StatTile
               className={next()}
@@ -784,14 +776,12 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
               label='Lines changed this week'
               value={fmtCompact(c.thisWeek.lines)}
               unit='lines'
-              hint={
-                <WeekTrend
-                  now={c.thisWeek.lines}
-                  last={c.lastWeek.lines}
-                  unit='lines'
-                  format={fmtCompact}
-                />
-              }
+              trend={{
+                now: c.thisWeek.lines,
+                last: c.lastWeek.lines,
+                unit: 'lines',
+                format: fmtCompact,
+              }}
             />
           </>
         ) : (
@@ -842,7 +832,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       <div id='tracking' className='scroll-mt-20'>
         <CohortTrendChart
           title={live ? 'How this cohort is tracking' : 'How this cohort tracked'}
-          description={`Average cumulative points per team by week of term, next to ${live ? `past ${c.session === 'summer' ? 'summer' : 'year-long'} cohorts at the same point in their term` : `every other ${c.session === 'summer' ? 'summer' : 'year-long'} cohorts`}. Click a cohort to bring it forward.`}
+          description={`Average cumulative points per team by week of term.`}
           series={trendSeries(summary, c.slug)}
           action={<ScoreInfo weights={summary.scoreWeights} />}
           highlight={c.slug}

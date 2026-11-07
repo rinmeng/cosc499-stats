@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { fadeUp } from '@/utils/animations';
 
@@ -96,36 +97,51 @@ function Unit({
   );
 }
 
-/**
- * Hint for a "this week" tile: "Trending up by 12% from last week (513 commits)", with
- * last week's total in brackets. Muted on purpose, so a quieter week doesn't read as a
- * warning.
- */
-export function WeekTrend({
-  now,
-  last,
-  unit,
-  format = (n) => n.toLocaleString(),
-}: {
+/** A "this week" number next to last week's, for a StatTile's `trend`. */
+export interface WeekTrend {
   now: number;
   last: number;
   /** What last week's total counts ("commits"), shown after it */
   unit?: string;
   format?: (n: number) => string;
-}) {
+}
+
+/**
+ * Hint for a "this week" tile: a badge with the change ("↘ 44%"), then last week's
+ * total ("from last week (513 commits)"). Up is green, down is destructive.
+ */
+function WeekTrendHint({
+  now,
+  last,
+  unit,
+  format = (n) => n.toLocaleString(),
+}: WeekTrend) {
   const diff = now - last;
   const Icon = diff > 0 ? TrendingUp : diff < 0 ? TrendingDown : Minus;
-  const total = `(${format(last)}${unit ? ` ${unit}` : ''})`;
-  const change = Math.max(1, Math.round((Math.abs(diff) / last) * 100));
-  const text =
-    diff === 0
-      ? 'Same as last week'
-      : `Trending ${diff > 0 ? 'up' : 'down'}${last > 0 ? ` by ${change}%` : ''} from last week`;
+  // No percentage when last week was 0; the arrow alone says it went up.
+  const change =
+    diff !== 0 && last > 0
+      ? `${Math.max(1, Math.round((Math.abs(diff) / last) * 100))}%`
+      : null;
   return (
-    <span className='inline-flex items-start gap-1'>
-      <Icon className='mt-px size-3.5 shrink-0' />
+    <span className='flex flex-wrap items-center gap-x-1.5 gap-y-0.5'>
+      <Badge
+        variant='outline'
+        className={cn(
+          'font-sans',
+          diff > 0
+            ? 'border-success/30 bg-success/10 text-success'
+            : diff < 0
+              ? 'border-destructive/30 bg-destructive/10 text-destructive'
+              : 'text-muted-foreground'
+        )}
+      >
+        <Icon />
+        {change}
+      </Badge>
       <span>
-        {text} {total}
+        {diff === 0 ? 'same as' : 'from'} last week ({format(last)}
+        {unit && ` ${unit}`})
       </span>
     </span>
   );
@@ -140,6 +156,7 @@ export function StatTile({
   value,
   unit,
   hint,
+  trend,
   icon: Icon,
   compact = false,
   className,
@@ -148,10 +165,13 @@ export function StatTile({
   value: React.ReactNode;
   unit?: string;
   hint?: React.ReactNode;
+  /** Change from last week, shown as the hint (replacing `hint`) */
+  trend?: WeekTrend;
   icon?: LucideIcon;
   compact?: boolean;
   className?: string;
 }) {
+  const note = trend ? <WeekTrendHint {...trend} /> : hint;
   return (
     <Card size='sm' className={cn(compact && 'py-2.5 md:py-4', className)}>
       <CardContent className={cn('space-y-1', compact && 'px-3 md:px-4 md:space-y-1')}>
@@ -174,11 +194,11 @@ export function StatTile({
           <span>{typeof value === 'number' ? value.toLocaleString() : value}</span>
           <Unit className='ml-0 leading-tight'>{unit}</Unit>
         </div>
-        {hint && (
+        {note && (
           <div
             className={cn('text-xs text-muted-foreground', compact && 'hidden md:block')}
           >
-            {hint}
+            {note}
           </div>
         )}
       </CardContent>

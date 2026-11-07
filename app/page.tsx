@@ -255,9 +255,7 @@ export default function Overview() {
         title={current ? `How ${current.label} is tracking` : 'Cohorts through the year'}
         description={
           <>
-            The last 4 year-long and 3 summer cohorts. Average cumulative points per team
-            by week of term (week 0 = first week of September, or of May for summer
-            sessions; summer is dashed). Click a cohort to bring it forward.
+            The last 4 year-long and 3 summer cohorts.
             {current && (
               <ArrowLink href={`/${current.slug}#tracking`} className='mt-2 flex'>
                 View this year’s benchmark

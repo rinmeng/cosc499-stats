@@ -26,7 +26,6 @@ import {
   PageHeader,
   Section,
   StatTile,
-  WeekTrend,
 } from '@/components/stats/Blocks';
 import { ActivityInfo } from '@/components/stats/ActivityInfo';
 import { CollaborationInfo } from '@/components/stats/CollaborationInfo';
@@ -151,9 +150,7 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
               label='Points this week'
               value={fmt(t.thisWeek.points)}
               unit='pts'
-              hint={
-                <WeekTrend now={t.thisWeek.points} last={t.lastWeek.points} unit='pts' />
-              }
+              trend={{ now: t.thisWeek.points, last: t.lastWeek.points, unit: 'pts' }}
             />
             <StatTile
               className={next()}
@@ -161,13 +158,11 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
               label='Commits this week'
               value={fmt(t.thisWeek.commits)}
               unit='commits'
-              hint={
-                <WeekTrend
-                  now={t.thisWeek.commits}
-                  last={t.lastWeek.commits}
-                  unit='commits'
-                />
-              }
+              trend={{
+                now: t.thisWeek.commits,
+                last: t.lastWeek.commits,
+                unit: 'commits',
+              }}
             />
             <StatTile
               className={next()}
@@ -175,13 +170,11 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
               label='Merged PRs this week'
               value={fmt(t.thisWeek.prsMerged)}
               unit='PRs'
-              hint={
-                <WeekTrend
-                  now={t.thisWeek.prsMerged}
-                  last={t.lastWeek.prsMerged}
-                  unit='PRs'
-                />
-              }
+              trend={{
+                now: t.thisWeek.prsMerged,
+                last: t.lastWeek.prsMerged,
+                unit: 'PRs',
+              }}
             />
             <StatTile
               className={next()}
@@ -189,32 +182,29 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
               label='Reviews this week'
               value={fmt(t.thisWeek.reviews)}
               unit='reviews'
-              hint={
-                <WeekTrend
-                  now={t.thisWeek.reviews}
-                  last={t.lastWeek.reviews}
-                  unit='reviews'
-                />
-              }
+              trend={{
+                now: t.thisWeek.reviews,
+                last: t.lastWeek.reviews,
+                unit: 'reviews',
+              }}
             />
             <StatTile
               className={next()}
               icon={Clock}
               label='Time to merge this week'
               value={fmtHours(t.thisWeek.medianMergeHours)}
-              hint={
+              trend={
                 t.lastWeek.medianMergeHours !== null &&
-                t.thisWeek.medianMergeHours !== null ? (
-                  <WeekTrend
-                    now={t.thisWeek.medianMergeHours}
-                    last={t.lastWeek.medianMergeHours}
-                    format={fmtHours}
-                    unit='median'
-                  />
-                ) : (
-                  'median, from PR opened to merged'
-                )
+                t.thisWeek.medianMergeHours !== null
+                  ? {
+                      now: t.thisWeek.medianMergeHours,
+                      last: t.lastWeek.medianMergeHours,
+                      format: fmtHours,
+                      unit: 'median',
+                    }
+                  : undefined
               }
+              hint='median, from PR opened to merged'
             />
             <StatTile
               className={next()}
@@ -222,14 +212,12 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
               label='Lines changed this week'
               value={fmtCompact(t.thisWeek.lines)}
               unit='lines'
-              hint={
-                <WeekTrend
-                  now={t.thisWeek.lines}
-                  last={t.lastWeek.lines}
-                  unit='lines'
-                  format={fmtCompact}
-                />
-              }
+              trend={{
+                now: t.thisWeek.lines,
+                last: t.lastWeek.lines,
+                unit: 'lines',
+                format: fmtCompact,
+              }}
             />
           </>
         ) : (
@@ -316,7 +304,8 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
 
       <CohortTrendChart
         title={c.isCurrent ? 'How this team is tracking' : 'How this team tracked'}
-        description={`Points from week 0, next to every other team in ${c.label} (faded) and the cohort's average team. Doesn't include the teamwork bonus. Click a line to bring it forward.`}
+        description={`Points from week 0, next to every other team in ${c.label} (faded) and the cohort's average team. Doesn't include the teamwork bonus.`}
+        legendHint='Click a name to bring its line forward'
         series={teamPointsSeries(summary, c, t)}
         action={<ScoreInfo weights={summary.scoreWeights} />}
         faintLabel={`Other teams in ${c.label}`}
