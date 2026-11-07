@@ -33,6 +33,9 @@ import type { CohortStats, MetricKey, Summary, TeamStats } from '@/lib/types/sta
 
 export const teamHref = (slug: string, t: TeamStats) => `/${slug}/${t.team}`;
 
+/** A team's Overall points: its members' points plus the teamwork bonus. */
+export const overallScore = (t: TeamStats) => t.score + t.teamworkBonus;
+
 export function teamTopViews(c: CohortStats, n: number): TeamTopView[] {
   return [...c.teams]
     .sort((a, b) => a.team - b.team)
@@ -112,7 +115,7 @@ export function teamBars(c: CohortStats): { rows: BarRow[]; metrics: BarMetric[]
     name: t.name,
     href: teamHref(c.slug, t),
     values: {
-      score: t.score,
+      score: overallScore(t),
       commits: t.commits,
       prsMerged: t.prsMerged,
       reviews: t.reviews,
@@ -197,9 +200,9 @@ export function teamHabits(c: CohortStats, t: TeamStats): RadialItem[] {
     },
     {
       key: 'collab',
-      label: 'Sharing',
+      label: 'Collaboration',
       value: t.collaboration * 100,
-      hint: 'how evenly commits are shared',
+      hint: 'how evenly points are shared',
     },
   ];
   return habits;
@@ -225,6 +228,17 @@ const TREND_SUMMER_YEARS = 3;
  * With `include` (a cohort's own page), every cohort of that session is shown instead
  * of just the recent ones: summer next to summer, year-long next to year-long.
  */
+/**
+ * A cohort's average cumulative points per team, weeks 0–34. cumulativeScore starts
+ * before term, so the pre-term points are subtracted and every line starts at 0.
+ */
+function termPoints(c: CohortStats): { week: number; value: number }[] {
+  const base = c.cumulativeScore.find((p) => p.week === -1)?.value ?? 0;
+  return c.cumulativeScore
+    .filter((p) => p.week >= 0 && p.week <= 34)
+    .map((p) => ({ week: p.week, value: Math.round((p.value - base) * 10) / 10 }));
+}
+
 export function trendSeries(s: Summary, include?: string): TrendSeries[] {
   const session = s.cohorts.find((c) => c.slug === include)?.session;
   return s.cohorts
@@ -244,21 +258,21 @@ export function trendSeries(s: Summary, include?: string): TrendSeries[] {
       label: c.label,
       color: cohortColor(c.year, s.currentYear, c.session),
       isCurrent: c.isCurrent,
-      points: c.cumulative.filter((p) => p.week <= 34),
+      points: termPoints(c),
     }));
 }
 
 /**
  * Points (score) by term week for a team page: this team, every other team in its
- * cohort (faint, for context) and the cohort's average team. Ends at the latest week
- * synced for a live cohort.
+ * cohort (faint, for context) and the cohort's average team. Starts at week 0 (points
+ * before term are left out) and ends at the latest week synced for a live cohort.
  */
 export function teamPointsSeries(
   s: Summary,
   c: CohortStats,
   t: TeamStats
 ): TrendSeries[] {
-  const weeks = c.cumulativeScore.filter((p) => p.week <= 34);
+  const weeks = termPoints(c);
   const line = (team: TeamStats): TrendSeries => {
     const byWeek = new Map(team.weekly.map((w) => [w.week, w.score]));
     let running = 0;

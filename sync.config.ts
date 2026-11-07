@@ -252,6 +252,16 @@ export const scoreWeights = {
   issuesClosed: 1,
 };
 
+/**
+ * Team-only bonus for sharing the work evenly: up to `rate` of the team's points.
+ * Collaboration is rescaled per team size so 0 = one person did everything and
+ * 1 = perfectly even. Teams smaller than `minContributors` don't get it.
+ */
+export const teamworkBonus = {
+  rate: 0.1,
+  minContributors: 3,
+};
+
 /** How many people to highlight per team. */
 export const topN = 5;
 

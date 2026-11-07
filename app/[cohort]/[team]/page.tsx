@@ -7,8 +7,9 @@ import {
   GitPullRequest,
   Lock,
   MessageSquareCode,
+  Sparkles,
+  Star,
   Trophy,
-  Users,
 } from 'lucide-react';
 
 import { ExternalLink } from '@/components/ExternalLink';
@@ -25,15 +26,23 @@ import {
   PageHeader,
   Section,
   StatTile,
+  WeekTrend,
 } from '@/components/stats/Blocks';
 import { ActivityInfo } from '@/components/stats/ActivityInfo';
+import { CollaborationInfo } from '@/components/stats/CollaborationInfo';
 import { ScoreInfo } from '@/components/stats/ScoreInfo';
 import { TopContributors } from '@/components/stats/TopContributors';
 import { getCohort, getSummary, getTeam } from '@/lib/data';
 import { pageMetadata, teamSeo } from '@/lib/seo';
-import { displayName, fmt, fmtDate, fmtHours, pct } from '@/lib/format';
+import { displayName, fmt, fmtCompact, fmtDate, fmtHours, pct } from '@/lib/format';
 import type { PersonStats } from '@/lib/types/stats';
-import { currentWeek, teamHabits, teamTopViews, teamPointsSeries } from '@/lib/views';
+import {
+  currentWeek,
+  overallScore,
+  teamHabits,
+  teamTopViews,
+  teamPointsSeries,
+} from '@/lib/views';
 import { fadeUp, stagger } from '@/utils/animations';
 import { cn } from '@/lib/utils';
 
@@ -88,6 +97,8 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
 
   // The back link goes first (0), so the header takes steps 1–3.
   const next = stagger(4);
+  const live = c.isCurrent;
+  const overall = overallScore(t);
   return (
     <div className='space-y-8'>
       <Link
@@ -121,6 +132,8 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
               {r.name}
             </ExternalLink>
           )),
+          `${fmt(t.contributors)} contributors`,
+          live && `${fmt(overall)} pts so far`,
           `Last activity ${fmtDate(t.lastActivity)}`,
         ]}
       >
@@ -130,50 +143,148 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
       </PageHeader>
 
       <Grid className='grid-cols-2 md:grid-cols-3 lg:grid-cols-6'>
-        <StatTile
-          className={next()}
-          icon={Users}
-          label='Contributors'
-          value={fmt(t.contributors)}
-          unit='people'
-        />
-        <StatTile
-          className={next()}
-          icon={GitPullRequest}
-          label='Commits'
-          value={fmt(t.commits)}
-          unit='commits'
-        />
-        <StatTile
-          className={next()}
-          icon={GitMerge}
-          label='Merged PRs'
-          value={fmt(t.prsMerged)}
-          unit='PRs'
-        />
-        <StatTile
-          className={next()}
-          icon={MessageSquareCode}
-          label='Reviews'
-          value={fmt(t.reviews)}
-          unit='reviews'
-          hint={`${pct(t.reviewCoverage)} of merged PRs got one`}
-        />
-        <StatTile
-          className={next()}
-          icon={Clock}
-          label='Median time to merge'
-          value={fmtHours(t.medianMergeHours)}
-          hint='from PR opened to merged'
-        />
-        <StatTile
-          className={next()}
-          icon={Trophy}
-          label='Biggest week'
-          value={t.peakWeek ? fmt(t.peakWeek.commits) : '—'}
-          unit={t.peakWeek ? 'commits' : undefined}
-          hint={t.peakWeek ? `in week ${t.peakWeek.week} of term` : undefined}
-        />
+        {live ? (
+          <>
+            <StatTile
+              className={next()}
+              icon={Star}
+              label='Points this week'
+              value={fmt(t.thisWeek.points)}
+              unit='pts'
+              hint={
+                <WeekTrend now={t.thisWeek.points} last={t.lastWeek.points} unit='pts' />
+              }
+            />
+            <StatTile
+              className={next()}
+              icon={GitPullRequest}
+              label='Commits this week'
+              value={fmt(t.thisWeek.commits)}
+              unit='commits'
+              hint={
+                <WeekTrend
+                  now={t.thisWeek.commits}
+                  last={t.lastWeek.commits}
+                  unit='commits'
+                />
+              }
+            />
+            <StatTile
+              className={next()}
+              icon={GitMerge}
+              label='Merged PRs this week'
+              value={fmt(t.thisWeek.prsMerged)}
+              unit='PRs'
+              hint={
+                <WeekTrend
+                  now={t.thisWeek.prsMerged}
+                  last={t.lastWeek.prsMerged}
+                  unit='PRs'
+                />
+              }
+            />
+            <StatTile
+              className={next()}
+              icon={MessageSquareCode}
+              label='Reviews this week'
+              value={fmt(t.thisWeek.reviews)}
+              unit='reviews'
+              hint={
+                <WeekTrend
+                  now={t.thisWeek.reviews}
+                  last={t.lastWeek.reviews}
+                  unit='reviews'
+                />
+              }
+            />
+            <StatTile
+              className={next()}
+              icon={Clock}
+              label='Time to merge this week'
+              value={fmtHours(t.thisWeek.medianMergeHours)}
+              hint={
+                t.lastWeek.medianMergeHours !== null &&
+                t.thisWeek.medianMergeHours !== null ? (
+                  <WeekTrend
+                    now={t.thisWeek.medianMergeHours}
+                    last={t.lastWeek.medianMergeHours}
+                    format={fmtHours}
+                    unit='median'
+                  />
+                ) : (
+                  'median, from PR opened to merged'
+                )
+              }
+            />
+            <StatTile
+              className={next()}
+              icon={Sparkles}
+              label='Lines changed this week'
+              value={fmtCompact(t.thisWeek.lines)}
+              unit='lines'
+              hint={
+                <WeekTrend
+                  now={t.thisWeek.lines}
+                  last={t.lastWeek.lines}
+                  unit='lines'
+                  format={fmtCompact}
+                />
+              }
+            />
+          </>
+        ) : (
+          <>
+            <StatTile
+              className={next()}
+              icon={Star}
+              label='Overall'
+              value={fmt(overall)}
+              unit='pts'
+              hint={
+                t.teamworkBonus > 0
+                  ? `${fmt(t.score)} + ${fmt(t.teamworkBonus)} teamwork bonus`
+                  : undefined
+              }
+            />
+            <StatTile
+              className={next()}
+              icon={GitPullRequest}
+              label='Commits'
+              value={fmt(t.commits)}
+              unit='commits'
+            />
+            <StatTile
+              className={next()}
+              icon={GitMerge}
+              label='Merged PRs'
+              value={fmt(t.prsMerged)}
+              unit='PRs'
+            />
+            <StatTile
+              className={next()}
+              icon={MessageSquareCode}
+              label='Reviews'
+              value={fmt(t.reviews)}
+              unit='reviews'
+              hint={`${pct(t.reviewCoverage)} of merged PRs got one`}
+            />
+            <StatTile
+              className={next()}
+              icon={Clock}
+              label='Median time to merge'
+              value={fmtHours(t.medianMergeHours)}
+              hint='from PR opened to merged'
+            />
+            <StatTile
+              className={next()}
+              icon={Trophy}
+              label='Biggest week'
+              value={t.peakWeek ? fmt(t.peakWeek.commits) : '—'}
+              unit={t.peakWeek ? 'commits' : undefined}
+              hint={t.peakWeek ? `in week ${t.peakWeek.week} of term` : undefined}
+            />
+          </>
+        )}
       </Grid>
 
       <Grid className='lg:grid-cols-5'>
@@ -186,7 +297,7 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
           <TopContributorsSingle view={view} />
         </Section>
         <div className='lg:col-span-2'>
-          <TeamRadial items={teamHabits(c, t)} />
+          <TeamRadial items={teamHabits(c, t)} action={<CollaborationInfo />} />
         </div>
       </Grid>
 
@@ -205,8 +316,9 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
 
       <CohortTrendChart
         title={c.isCurrent ? 'How this team is tracking' : 'How this team tracked'}
-        description={`Points by week of term, next to every other team in ${c.label} (faded) and the cohort's average team. Points weigh commits, merged PRs, reviews and issues, like Overall. Click a line to bring it forward.`}
+        description={`Points from week 0, next to every other team in ${c.label} (faded) and the cohort's average team. Doesn't include the teamwork bonus. Click a line to bring it forward.`}
         series={teamPointsSeries(summary, c, t)}
+        action={<ScoreInfo weights={summary.scoreWeights} />}
         faintLabel={`Other teams in ${c.label}`}
         highlight={`team-${t.key}`}
         compareTo={c.slug}

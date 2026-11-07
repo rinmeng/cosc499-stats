@@ -149,8 +149,11 @@ export interface TeamStats {
   issuesClosed: number;
   openPrs: number;
   openIssues: number;
+  /** sum of members' scores (no bonus) */
   score: number;
-  /** 0–1, how evenly commits are shared (1 − Gini) */
+  /** points added to Overall for sharing the work evenly (see sync.config teamworkBonus) */
+  teamworkBonus: number;
+  /** 0–1, how evenly members' points are shared (1 − Gini) */
   collaboration: number;
   /** 0–1, merged PRs reviewed by someone other than the author */
   reviewCoverage: number;
@@ -206,9 +209,9 @@ export interface TeamStats {
   thisWeekPrsMerged: number;
   /** Teammate reviews submitted since Sunday */
   thisWeekReviews: number;
-  /** People who committed since Sunday */
+  /** People who earned points since Sunday */
   thisWeekContributors: number;
-  /** How evenly this week's commits were split across members, 0–1 (1 − Gini) */
+  /** How evenly this week's points were split across members, 0–1 (1 − Gini) */
   thisWeekEvenness: number;
   /** Issues closed since Sunday */
   thisWeekIssuesClosed: number;
@@ -216,6 +219,9 @@ export interface TeamStats {
   thisWeekNightActivity: number;
   thisWeekEarlyActivity: number;
   thisWeekWeekendActivity: number;
+  /** This team's totals for the current and previous term week */
+  thisWeek: WeekTotals;
+  lastWeek: WeekTotals;
 }
 
 export interface CohortStats {
@@ -270,17 +276,25 @@ export interface Summary {
   currentCohort: string;
   topN: number;
   scoreWeights: Record<string, number>;
+  teamworkBonus: TeamworkBonus;
   lineOutlierThreshold: number;
   timezone: string;
   cohorts: CohortStats[];
   insights: Insights;
 }
 
-/** Cohort totals for one term week (in-progress "this week" tiles). */
+export interface TeamworkBonus {
+  /** most a team can gain, as a share of its points */
+  rate: number;
+  minContributors: number;
+}
+
+/** Cohort or team totals for one term week (in-progress "this week" tiles). */
 export interface WeekTotals {
   commits: number;
   prsMerged: number;
   reviews: number;
+  points: number;
   /** added + deleted, excl. very large commits */
   lines: number;
   /** median hours from opened to merged, for PRs merged that week */

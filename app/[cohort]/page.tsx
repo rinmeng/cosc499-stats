@@ -41,6 +41,7 @@ import {
   PageHeader,
   Section,
   StatTile,
+  WeekTrend,
 } from '@/components/stats/Blocks';
 import {
   HelpComplete,
@@ -52,6 +53,7 @@ import {
   type HighlightSection,
 } from '@/components/stats/HighlightSections';
 import { ShareButton } from '@/components/ShareDialog';
+import { CollaborationInfo } from '@/components/stats/CollaborationInfo';
 import { TeamTable } from '@/components/stats/TeamTable';
 import { ActivityInfo } from '@/components/stats/ActivityInfo';
 import { ScoreInfo } from '@/components/stats/ScoreInfo';
@@ -292,13 +294,13 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     {
       title: 'Weekly teamwork',
       description: 'Teams pitching in together since last Sunday.',
+      action: <CollaborationInfo />,
       cards: [
         card(
           {
             icon: Handshake,
             title: 'Most collaborative this week',
-            description:
-              'Commits since last Sunday shared most evenly across the team (100 = everyone equal)',
+            description: 'Points since last Sunday shared most evenly across the team',
           },
           topTeams(
             c,
@@ -490,14 +492,14 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     {
       title: 'Teamwork',
       description: 'Sharing the work and reviewing each other’s code.',
+      action: <CollaborationInfo />,
       more: true,
       cards: [
         card(
           {
             icon: Handshake,
             title: 'Most collaborative',
-            description:
-              'Commits shared most evenly across the team (100 = everyone equal)',
+            description: 'Points shared most evenly across the team',
           },
           topTeams(
             c,
@@ -721,7 +723,13 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
               label='Commits this week'
               value={fmt(c.thisWeek.commits)}
               unit='commits'
-              hint={`${fmt(c.lastWeek.commits)} last week`}
+              hint={
+                <WeekTrend
+                  now={c.thisWeek.commits}
+                  last={c.lastWeek.commits}
+                  unit='commits'
+                />
+              }
             />
             <StatTile
               className={next()}
@@ -729,7 +737,13 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
               label='Merged PRs this week'
               value={fmt(c.thisWeek.prsMerged)}
               unit='PRs'
-              hint={`${fmt(c.lastWeek.prsMerged)} last week`}
+              hint={
+                <WeekTrend
+                  now={c.thisWeek.prsMerged}
+                  last={c.lastWeek.prsMerged}
+                  unit='PRs'
+                />
+              }
             />
             <StatTile
               className={next()}
@@ -737,7 +751,13 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
               label='Reviews this week'
               value={fmt(c.thisWeek.reviews)}
               unit='reviews'
-              hint={`${fmt(c.lastWeek.reviews)} last week`}
+              hint={
+                <WeekTrend
+                  now={c.thisWeek.reviews}
+                  last={c.lastWeek.reviews}
+                  unit='reviews'
+                />
+              }
             />
             <StatTile
               className={next()}
@@ -745,9 +765,17 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
               label='Time to merge this week'
               value={fmtHours(c.thisWeek.medianMergeHours)}
               hint={
-                c.lastWeek.medianMergeHours !== null
-                  ? `median · ${fmtHours(c.lastWeek.medianMergeHours)} last week`
-                  : 'median, from PR opened to merged'
+                c.lastWeek.medianMergeHours !== null &&
+                c.thisWeek.medianMergeHours !== null ? (
+                  <WeekTrend
+                    now={c.thisWeek.medianMergeHours}
+                    last={c.lastWeek.medianMergeHours}
+                    format={fmtHours}
+                    unit='median'
+                  />
+                ) : (
+                  'median, from PR opened to merged'
+                )
               }
             />
             <StatTile
@@ -756,7 +784,14 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
               label='Lines changed this week'
               value={fmtCompact(c.thisWeek.lines)}
               unit='lines'
-              hint={`${fmtCompact(c.lastWeek.lines)} last week`}
+              hint={
+                <WeekTrend
+                  now={c.thisWeek.lines}
+                  last={c.lastWeek.lines}
+                  unit='lines'
+                  format={fmtCompact}
+                />
+              }
             />
           </>
         ) : (
@@ -807,8 +842,9 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       <div id='tracking' className='scroll-mt-20'>
         <CohortTrendChart
           title={live ? 'How this cohort is tracking' : 'How this cohort tracked'}
-          description={`Average cumulative commits per team by week of term, next to ${live ? `past ${c.session === 'summer' ? 'summer' : 'year-long'} cohorts at the same point in their term` : `every other ${c.session === 'summer' ? 'summer' : 'year-long'} cohorts`}. Click a cohort to bring it forward.`}
+          description={`Average cumulative points per team by week of term, next to ${live ? `past ${c.session === 'summer' ? 'summer' : 'year-long'} cohorts at the same point in their term` : `every other ${c.session === 'summer' ? 'summer' : 'year-long'} cohorts`}. Click a cohort to bring it forward.`}
           series={trendSeries(summary, c.slug)}
+          action={<ScoreInfo weights={summary.scoreWeights} />}
           highlight={c.slug}
           currentWeek={live ? week : undefined}
         />
@@ -838,9 +874,9 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         description={
           <>
             The top half of teams, or every team highest first. Overall weighs commits,
-            merged PRs, reviews and issues.
+            merged PRs, reviews and issues, plus a teamwork bonus.
             <div className='mt-1 -ml-2'>
-              <ScoreInfo weights={summary.scoreWeights} />
+              <ScoreInfo weights={summary.scoreWeights} bonus={summary.teamworkBonus} />
             </div>
           </>
         }
@@ -855,7 +891,8 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       <Section
         className={next()}
         title='Teams'
-        description='Every team at a glance. Click a column to see who leads on it. Collaboration is 0–100, higher means work is shared more evenly.'
+        description='Every team at a glance. Click a column to see who leads on it.'
+        action={<CollaborationInfo />}
       >
         <TeamTable rows={teamRows(c)} live={live} />
       </Section>

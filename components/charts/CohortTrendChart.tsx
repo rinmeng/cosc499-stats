@@ -104,7 +104,7 @@ function ShapeIcon({
 const keyOf = (s: TrendSeries) => `c_${s.slug.replace(/[^a-z0-9]/gi, '_')}`;
 
 /**
- * Average cumulative commits per team, aligned by week of term, one line per cohort.
+ * Average cumulative points per team, aligned by week of term, one line per cohort.
  * Year-long cohorts are solid lines on the lime ramp; summer sessions (a shorter,
  * May–August term) are dashed on a neutral ramp. Header buttons show each cohort's
  * value at the comparison week; clicking one brings that cohort's line forward.
@@ -117,7 +117,7 @@ export function CohortTrendChart({
   description,
   highlight,
   compareTo,
-  valueLabel = 'avg commits per team',
+  valueLabel = 'avg points per team',
   markerLabel = 'Today',
   xUnit = 'week',
   faintLabel = 'Others',

@@ -40,6 +40,7 @@ import {
   cohortBars,
   cohortBest,
   currentWeek,
+  overallScore,
   trendSeries,
 } from '@/lib/views';
 import { LiveDot } from '@/components/LiveDot';
@@ -84,7 +85,9 @@ export default function Overview() {
     .filter((x) => x.best)
     .sort((a, b) => b.best!.value - a.best!.value)
     .slice(0, 3);
-  const biggestTeams = [...allTeams].sort((a, b) => b.score - a.score).slice(0, 3);
+  const biggestTeams = [...allTeams]
+    .sort((a, b) => overallScore(b) - overallScore(a))
+    .slice(0, 3);
   const mostPrs = [...allTeams].sort((a, b) => b.prsMerged - a.prsMerged).slice(0, 3);
 
   const languages = new Map<string, number>();
@@ -252,7 +255,7 @@ export default function Overview() {
         title={current ? `How ${current.label} is tracking` : 'Cohorts through the year'}
         description={
           <>
-            The last 4 year-long and 3 summer cohorts. Average cumulative commits per team
+            The last 4 year-long and 3 summer cohorts. Average cumulative points per team
             by week of term (week 0 = first week of September, or of May for summer
             sessions; summer is dashed). Click a cohort to bring it forward.
             {current && (
@@ -264,6 +267,7 @@ export default function Overview() {
         }
         series={trendSeries(s)}
         currentWeek={current ? currentWeek(current) : undefined}
+        action={<ScoreInfo weights={s.scoreWeights} />}
       />
 
       <Grid className='lg:grid-cols-5'>
@@ -344,10 +348,10 @@ export default function Overview() {
               label: t.name,
               href: `/${t.cohort.slug}/${t.team}`,
               sub: t.cohort.label,
-              value: fmtCompact(t.score),
+              value: fmtCompact(overallScore(t)),
               unit: 'pts',
             }))}
-            footer={<ScoreInfo weights={s.scoreWeights} />}
+            footer={<ScoreInfo weights={s.scoreWeights} bonus={s.teamworkBonus} />}
           />
           <Highlight
             className={next()}

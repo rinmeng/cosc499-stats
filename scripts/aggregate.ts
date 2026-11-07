@@ -52,6 +52,7 @@ import {
   lineOutlierThreshold,
   scoreWeights,
   staffTeamShare,
+  teamworkBonus,
   termLeadWeeks,
   timezone,
   topN,
@@ -98,6 +99,18 @@ function gini(values: number[]): number {
 }
 
 const round = (n: number, d = 3) => Math.round(n * 10 ** d) / 10 ** d;
+
+/**
+ * Teamwork bonus: up to `teamworkBonus.rate` of the team's points, for sharing the
+ * work evenly. Collaboration (1 − Gini) can't go below 1/n, so it's rescaled to 0–1
+ * per team size first; otherwise small teams would get a head start.
+ */
+function bonusFor(score: number, collaboration: number, n: number): number {
+  if (n < teamworkBonus.minContributors) return 0;
+  const adjusted = Math.max(0, (collaboration - 1 / n) / (1 - 1 / n));
+  // Rounded down so no team ever gets more than the rate.
+  return Math.floor(score * teamworkBonus.rate * adjusted);
+}
 
 /** Weekday (0 = Sun) and hour of a timestamp in the configured timezone. */
 function localSlot(iso: string): { dow: number; hour: number } {
@@ -378,8 +391,15 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     let witchingActivity = 0;
     /** lines changed on the default branch this week (outlier commits skipped) */
     let thisWeekLines = 0;
-    /** commits since Sunday per author key (merged with the people map below) */
+    /** points since Sunday per author key (merged with the people map below) */
     const thisWeekByAuthor = new Map<string, number>();
+    const weekPts = (key: string, iso: string, pts: number) => {
+      if (weekOf(iso) === nowWeek)
+        thisWeekByAuthor.set(key, (thisWeekByAuthor.get(key) ?? 0) + pts);
+    };
+    // This team's lines and merge times by term week, for the team's "this week" tiles.
+    const teamLinesByWeek = new Map<number, number>();
+    const teamMergeHoursByWeek = new Map<number, number[]>();
     let thisWeekIssuesClosed = 0;
     let thisWeekActivity = 0;
     let thisWeekNight = 0;
@@ -456,14 +476,17 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
         const w = weekOf(c.date);
         if (c.additions + c.deletions <= lineOutlierThreshold) {
           linesByWeek.set(w, (linesByWeek.get(w) ?? 0) + c.additions + c.deletions);
+          teamLinesByWeek.set(
+            w,
+            (teamLinesByWeek.get(w) ?? 0) + c.additions + c.deletions
+          );
           if (w === nowWeek) thisWeekLines += c.additions + c.deletions;
         }
         p.weeks.add(w);
         wp(w).commits++;
         wp(w).score += scoreWeights.commits;
         act(c.date, p);
-        if (w === nowWeek)
-          thisWeekByAuthor.set(key, (thisWeekByAuthor.get(key) ?? 0) + 1);
+        weekPts(key, c.date, scoreWeights.commits);
         const day = localDate(c.date);
         perDay.set(day, (perDay.get(day) ?? 0) + 1);
         // Biggest hand-written commit: skip huge ones that are vendored/generated code.
@@ -494,6 +517,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
           if (pr.mergedAt && inWindow(pr.mergedAt)) {
             p.prsMerged++;
             wp(weekOf(pr.mergedAt)).score += scoreWeights.prsMerged;
+            weekPts(pr.login.toLowerCase(), pr.mergedAt, scoreWeights.prsMerged);
           }
           if (pr.state === 'CLOSED' && !pr.mergedAt) p.prsClosed++;
         }
@@ -506,6 +530,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
           mergeHours.push(hours);
           const mw = weekOf(pr.mergedAt);
           mergeHoursByWeek.set(mw, [...(mergeHoursByWeek.get(mw) ?? []), hours]);
+          teamMergeHoursByWeek.set(mw, [...(teamMergeHoursByWeek.get(mw) ?? []), hours]);
           if ((!pr.login || !isBot(pr.login)) && pr.changedFiles <= MEGA_PR_CAP) {
             const pick = (value: number) => ({
               number: pr.number,
@@ -533,6 +558,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
             p.weeks.add(weekOf(r.submittedAt));
             wp(weekOf(r.submittedAt)).reviews++;
             wp(weekOf(r.submittedAt)).score += scoreWeights.reviews;
+            weekPts(r.login.toLowerCase(), r.submittedAt, scoreWeights.reviews);
             touch(r.submittedAt);
           }
         }
@@ -553,12 +579,16 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
         if (is.login && !skip(is.login)) {
           person(is.login.toLowerCase(), is.login, null).issuesOpened++;
           wp(weekOf(is.createdAt)).score += scoreWeights.issuesOpened;
+          weekPts(is.login.toLowerCase(), is.createdAt, scoreWeights.issuesOpened);
         }
         if (is.state === 'CLOSED')
           for (const a of is.assignees)
             if (a && !skip(a)) {
               person(a.toLowerCase(), a, null).issuesClosed++;
-              if (is.closedAt) wp(weekOf(is.closedAt)).score += scoreWeights.issuesClosed;
+              if (is.closedAt) {
+                wp(weekOf(is.closedAt)).score += scoreWeights.issuesClosed;
+                weekPts(a.toLowerCase(), is.closedAt, scoreWeights.issuesClosed);
+              }
             }
       }
     }
@@ -635,6 +665,20 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       null
     );
     const totalCommits = sum('commits');
+    const teamScore = sum('score');
+    // Points, not commits, so teammates who mostly review or close issues count as sharing.
+    const collaboration = 1 - gini(members.map((m) => m.score));
+    const teamWeek = (w: number) => {
+      const m = median(teamMergeHoursByWeek.get(w) ?? []);
+      return {
+        commits: weekly.get(w)?.commits ?? 0,
+        prsMerged: weekly.get(w)?.prs ?? 0,
+        reviews: weekly.get(w)?.reviews ?? 0,
+        points: weekly.get(w)?.score ?? 0,
+        lines: teamLinesByWeek.get(w) ?? 0,
+        medianMergeHours: m === null ? null : round(m, 1),
+      };
+    };
     punch.forEach((row, dow) => row.forEach((n, h) => (cohortPunch[dow][h] += n)));
 
     for (const w of weeklyArr) {
@@ -679,8 +723,9 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       issuesClosed: sum('issuesClosed'),
       openPrs,
       openIssues,
-      score: sum('score'),
-      collaboration: round(1 - gini(members.map((m) => m.commits))),
+      score: teamScore,
+      teamworkBonus: bonusFor(teamScore, collaboration, members.length),
+      collaboration: round(collaboration),
       reviewCoverage: merged ? round(reviewed / merged) : 0,
       medianMergeHours: (() => {
         const m = median(mergeHours);
@@ -706,7 +751,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       thisWeekPrsMerged: weekly.get(nowWeek)?.prs ?? 0,
       thisWeekReviews: weekly.get(nowWeek)?.reviews ?? 0,
       thisWeekContributors: [...thisWeekByAuthor.values()].filter((n) => n > 0).length,
-      // Evenness across every member (0 for anyone who didn't commit this week).
+      // Evenness of this week's points across every member (0 for anyone idle this week).
       thisWeekEvenness: round(
         1 - gini([...people.keys()].map((k) => thisWeekByAuthor.get(k) ?? 0))
       ),
@@ -714,6 +759,8 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       thisWeekNightActivity: thisWeekNight,
       thisWeekEarlyActivity: thisWeekEarly,
       thisWeekWeekendActivity: thisWeekWeekend,
+      thisWeek: teamWeek(nowWeek),
+      lastWeek: teamWeek(nowWeek - 1),
       prsClosedUnmerged: closedUnmerged,
       shipRate: merged + closedUnmerged ? round(merged / (merged + closedUnmerged)) : 0,
       discussionPerPr: merged ? round(discussion / merged, 1) : 0,
@@ -737,7 +784,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     });
   }
 
-  teams.sort((a, b) => b.score - a.score);
+  teams.sort((a, b) => b.score + b.teamworkBonus - (a.score + a.teamworkBonus));
 
   const weeklyAll = [...cohortWeekly.values()].sort((a, b) => a.week - b.week);
   const t = (k: 'commits' | 'prsMerged' | 'reviews' | 'issuesOpened' | 'contributors') =>
@@ -765,6 +812,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       commits: cohortWeekly.get(w)?.commits ?? 0,
       prsMerged: cohortWeekly.get(w)?.prs ?? 0,
       reviews: cohortWeekly.get(w)?.reviews ?? 0,
+      points: cohortWeekly.get(w)?.score ?? 0,
       lines: linesByWeek.get(w) ?? 0,
       medianMergeHours: m === null ? null : round(m, 1),
     };
@@ -831,6 +879,7 @@ export function aggregate() {
     currentCohort,
     topN,
     scoreWeights,
+    teamworkBonus,
     lineOutlierThreshold,
     timezone,
     cohorts: built,

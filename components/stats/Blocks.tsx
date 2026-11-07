@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import type { LucideIcon } from 'lucide-react';
+import { Minus, TrendingDown, TrendingUp, type LucideIcon } from 'lucide-react';
 
 import {
   Card,
@@ -92,6 +92,41 @@ function Unit({
       )}
     >
       {children}
+    </span>
+  );
+}
+
+/**
+ * Hint for a "this week" tile: "Trending up by 12% from last week (513 commits)", with
+ * last week's total in brackets. Muted on purpose, so a quieter week doesn't read as a
+ * warning.
+ */
+export function WeekTrend({
+  now,
+  last,
+  unit,
+  format = (n) => n.toLocaleString(),
+}: {
+  now: number;
+  last: number;
+  /** What last week's total counts ("commits"), shown after it */
+  unit?: string;
+  format?: (n: number) => string;
+}) {
+  const diff = now - last;
+  const Icon = diff > 0 ? TrendingUp : diff < 0 ? TrendingDown : Minus;
+  const total = `(${format(last)}${unit ? ` ${unit}` : ''})`;
+  const change = Math.max(1, Math.round((Math.abs(diff) / last) * 100));
+  const text =
+    diff === 0
+      ? 'Same as last week'
+      : `Trending ${diff > 0 ? 'up' : 'down'}${last > 0 ? ` by ${change}%` : ''} from last week`;
+  return (
+    <span className='inline-flex items-start gap-1'>
+      <Icon className='mt-px size-3.5 shrink-0' />
+      <span>
+        {text} {total}
+      </span>
     </span>
   );
 }

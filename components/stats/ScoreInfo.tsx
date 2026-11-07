@@ -12,6 +12,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import type { TeamworkBonus } from '@/lib/types';
 
 const ROWS: { key: string; label: string; detail: string }[] = [
   {
@@ -42,8 +43,17 @@ const ROWS: { key: string; label: string; detail: string }[] = [
   },
 ];
 
-/** "?" button that opens a dialog explaining how the Overall score is calculated. */
-export function ScoreInfo({ weights }: { weights: Record<string, number> }) {
+/**
+ * "?" button that opens a dialog explaining how the Overall score is calculated.
+ * Pass `bonus` where team totals are shown, to explain the teamwork bonus too.
+ */
+export function ScoreInfo({
+  weights,
+  bonus,
+}: {
+  weights: Record<string, number>;
+  bonus?: TeamworkBonus;
+}) {
   const example = {
     commits: 40,
     prsMerged: 10,
@@ -114,6 +124,20 @@ export function ScoreInfo({ weights }: { weights: Record<string, number> }) {
                 = <span className='font-semibold text-foreground'>{total} pts</span>
               </div>
             </div>
+
+            {bonus && (
+              <div className='space-y-1 text-sm'>
+                <div className='font-medium'>Teamwork bonus</div>
+                <p className='text-muted-foreground'>
+                  Teams of {bonus.minContributors} or more get up to{' '}
+                  {Math.round(bonus.rate * 100)}% extra for sharing the work evenly. A
+                  perfectly even team gets the full {Math.round(bonus.rate * 100)}%, and
+                  the bonus shrinks as fewer people carry more of the points. It’s scaled
+                  for team size, so small teams don’t get a head start. Individual scores
+                  never include it.
+                </p>
+              </div>
+            )}
 
             <p className='text-xs text-muted-foreground'>
               Lines of code aren’t part of the score, since they say more about generated

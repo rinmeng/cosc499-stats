@@ -26,8 +26,15 @@ export interface RadialItem {
   hint: string;
 }
 
-/** Radial bars (with labels) for a team's 0–100 habits: reviews, discussion, steadiness, sharing. */
-export function TeamRadial({ items }: { items: RadialItem[] }) {
+/** Radial bars (with labels) for a team's 0–100 habits: reviews, discussion, steadiness, collaboration. */
+export function TeamRadial({
+  items,
+  action,
+}: {
+  items: RadialItem[];
+  /** Shown under the description, e.g. a help dialog trigger */
+  action?: React.ReactNode;
+}) {
   const config: ChartConfig = {
     value: { label: 'Score' },
     ...Object.fromEntries(
@@ -41,6 +48,7 @@ export function TeamRadial({ items }: { items: RadialItem[] }) {
       <CardHeader className='items-center pb-0'>
         <CardTitle>Team habits</CardTitle>
         <CardDescription>Each ring is out of 100</CardDescription>
+        {action && <div className='justify-self-center'>{action}</div>}
       </CardHeader>
       <CardContent className='flex-1 pb-0'>
         <ChartContainer config={config} className='mx-auto aspect-square max-h-60'>
