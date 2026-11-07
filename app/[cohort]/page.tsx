@@ -26,7 +26,6 @@ import {
   Trophy,
   Sunrise,
   Sparkles,
-  Users,
 } from 'lucide-react';
 
 import { ActivityChart } from '@/components/charts/ActivityChart';
@@ -664,6 +663,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           live
             ? [
                 c.hasOrg && <OrgLink org={c.org} />,
+                `${fmt(c.totals.contributors)} contributors`,
                 `Started ${fmtDate(c.termStart)}`,
                 `Synced ${fmtDate(summary.generatedAt)}`,
               ]
@@ -671,6 +671,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
                 c.hasOrg && <OrgLink org={c.org} />,
                 c.session === 'summer' && 'Summer session, May to August',
                 `${c.totals.teams} teams`,
+                `${fmt(c.totals.contributors)} contributors`,
                 `Started ${fmtDate(c.termStart)}`,
               ]
         }
@@ -690,67 +691,95 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         </Reveal>
       )}
 
-      <Grid className='grid-cols-2 md:grid-cols-3 lg:grid-cols-6'>
-        <StatTile
-          className={next()}
-          icon={Users}
-          label='Contributors'
-          value={fmt(c.totals.contributors)}
-          unit='people'
-        />
-        <StatTile
-          className={next()}
-          icon={GitPullRequest}
-          label='Commits'
-          value={fmtCompact(c.totals.commits)}
-          unit='commits'
-          hint={`avg ${fmt(c.avgPerTeam.commits)} commits per team`}
-        />
-        <StatTile
-          className={next()}
-          icon={GitMerge}
-          label='Merged PRs'
-          value={fmt(c.totals.prsMerged)}
-          unit='PRs'
-          hint={`avg ${fmt(c.avgPerTeam.prsMerged)} PRs per team`}
-        />
-        <StatTile
-          className={next()}
-          icon={MessageSquareCode}
-          label='Reviews'
-          value={fmt(c.totals.reviews)}
-          unit='reviews'
-          hint={`${pct(c.reviewCoverage)} of merged PRs got one`}
-        />
-        <StatTile
-          className={next()}
-          icon={Clock}
-          label='Median time to merge'
-          value={fmtHours(c.medianMergeHours)}
-          hint='from PR opened to merged'
-        />
+      <Grid className='grid-cols-2 md:grid-cols-3 lg:grid-cols-5'>
         {live ? (
-          <StatTile
-            className={next()}
-            icon={Sparkles}
-            label='Commits this week'
-            value={fmt(c.thisWeek.commits)}
-            unit='commits'
-            hint={
-              c.lastWeek.commits
-                ? `${fmt(c.lastWeek.commits)} commits last week`
-                : undefined
-            }
-          />
+          <>
+            <StatTile
+              className={next()}
+              icon={GitPullRequest}
+              label='Commits this week'
+              value={fmt(c.thisWeek.commits)}
+              unit='commits'
+              hint={`${fmt(c.lastWeek.commits)} last week`}
+            />
+            <StatTile
+              className={next()}
+              icon={GitMerge}
+              label='Merged PRs this week'
+              value={fmt(c.thisWeek.prsMerged)}
+              unit='PRs'
+              hint={`${fmt(c.lastWeek.prsMerged)} last week`}
+            />
+            <StatTile
+              className={next()}
+              icon={MessageSquareCode}
+              label='Reviews this week'
+              value={fmt(c.thisWeek.reviews)}
+              unit='reviews'
+              hint={`${fmt(c.lastWeek.reviews)} last week`}
+            />
+            <StatTile
+              className={next()}
+              icon={Clock}
+              label='Time to merge this week'
+              value={fmtHours(c.thisWeek.medianMergeHours)}
+              hint={
+                c.lastWeek.medianMergeHours !== null
+                  ? `median · ${fmtHours(c.lastWeek.medianMergeHours)} last week`
+                  : 'median, from PR opened to merged'
+              }
+            />
+            <StatTile
+              className={next()}
+              icon={Sparkles}
+              label='Lines changed this week'
+              value={fmtCompact(c.thisWeek.lines)}
+              unit='lines'
+              hint={`${fmtCompact(c.lastWeek.lines)} last week`}
+            />
+          </>
         ) : (
-          <StatTile
-            className={next()}
-            icon={Sparkles}
-            label='Lines changed'
-            value={fmtCompact(c.totals.lines)}
-            unit='lines'
-            hint='added + deleted, excl. very large commits'
-          />
+          <>
+            <StatTile
+              className={next()}
+              icon={GitPullRequest}
+              label='Commits'
+              value={fmtCompact(c.totals.commits)}
+              unit='commits'
+              hint={`avg ${fmt(c.avgPerTeam.commits)} commits per team`}
+            />
+            <StatTile
+              className={next()}
+              icon={GitMerge}
+              label='Merged PRs'
+              value={fmt(c.totals.prsMerged)}
+              unit='PRs'
+              hint={`avg ${fmt(c.avgPerTeam.prsMerged)} PRs per team`}
+            />
+            <StatTile
+              className={next()}
+              icon={MessageSquareCode}
+              label='Reviews'
+              value={fmt(c.totals.reviews)}
+              unit='reviews'
+              hint={`${pct(c.reviewCoverage)} of merged PRs got one`}
+            />
+            <StatTile
+              className={next()}
+              icon={Clock}
+              label='Median time to merge'
+              value={fmtHours(c.medianMergeHours)}
+              hint='from PR opened to merged'
+            />
+            <StatTile
+              className={next()}
+              icon={Sparkles}
+              label='Lines changed'
+              value={fmtCompact(c.totals.lines)}
+              unit='lines'
+              hint='added + deleted, excl. very large commits'
+            />
+          </>
         )}
       </Grid>
 

@@ -1,3 +1,6 @@
+import { addDays } from 'date-fns';
+
+import { isoDate, parseDate, weeksSince } from '@/lib/dates';
 import 'server-only';
 
 import type { EraSeries } from '@/components/charts/EraCompareChart';
@@ -264,8 +267,8 @@ export function teamPointsSeries(
   ];
 }
 
-export function currentWeek(c: CohortStats, now = Date.now()) {
-  return Math.floor((now - Date.parse(c.termStart)) / (7 * 86_400_000));
+export function currentWeek(c: CohortStats, now: Date | string = new Date()) {
+  return weeksSince(now, c.termStart);
 }
 
 /** Last day of classes: April 30 (year-long) or August 15 (summer), as YYYY-MM-DD. */
@@ -275,12 +278,12 @@ export function termEnd(c: CohortStats) {
 
 /** First day of classes (the Monday after `termStart`), as YYYY-MM-DD. */
 export function termFirstDay(c: CohortStats) {
-  return new Date(Date.parse(c.termStart) + 86_400_000).toISOString().slice(0, 10);
+  return isoDate(addDays(parseDate(c.termStart), 1));
 }
 
 /** Number of the term's last week, on the same scale as `currentWeek`. */
 export function termWeeks(c: CohortStats) {
-  return currentWeek(c, Date.parse(termEnd(c)));
+  return currentWeek(c, termEnd(c));
 }
 
 /** Every contributor across all cohorts, with where they were (for all-time records). */

@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { getYear } from 'date-fns';
 import { ExternalLink, BarChart3 } from 'lucide-react';
 
 import { getSummary } from '@/lib/data';
@@ -10,7 +11,7 @@ const START_YEAR = 2026;
 
 /** Site footer, in the same style as web8th: centered, muted, credit logo at the bottom. */
 export function Footer() {
-  const currentYear = new Date().getFullYear();
+  const currentYear = getYear(new Date());
   const yearLabel =
     currentYear > START_YEAR ? `${START_YEAR} - ${currentYear}` : `${START_YEAR}`;
   const syncedAt = getSummary()?.generatedAt;

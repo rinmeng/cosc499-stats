@@ -1,8 +1,6 @@
 import Link from 'next/link';
 import {
   ArrowRight,
-  Calendar,
-  GitPullRequest,
   GitPullRequestClosed,
   Ghost,
   Moon,
@@ -25,7 +23,6 @@ import {
   Highlight,
   type HighlightProps,
   PageHeader,
-  StatTile,
 } from '@/components/stats/Blocks';
 import { isSmallCohort } from '@/components/stats/HelpComplete';
 import { ScoreInfo } from '@/components/stats/ScoreInfo';
@@ -70,8 +67,6 @@ export default function Overview() {
   // Headline totals: the last few cohort years, each with its summer session.
   const totalsFrom = s.currentYear - (TOTALS_YEARS - 1);
   const totalsCohorts = cohorts.filter((c) => c.year >= totalsFrom);
-  const totalOf = (k: 'teams' | 'contributors' | 'commits' | 'prsMerged' | 'reviews') =>
-    totalsCohorts.reduce((a, c) => a + c.totals[k], 0);
   const yearLabel = (y: number) => `${y}–${String(y + 1).slice(2)}`;
 
   const allTeams = totalsCohorts.flatMap((c) =>
@@ -233,58 +228,6 @@ export default function Overview() {
         Contribution highlights from the last {TOTALS_YEARS} years of UBCO COSC 499
         capstone cohorts on GitHub. Older cohorts are in the Full year and Summer menus.
       </PageHeader>
-
-      <div className='space-y-3'>
-        <h2 className={cn('text-sm font-medium', next())}>
-          Totals
-          <span className='font-normal text-muted-foreground'>
-            , {yearLabel(totalsFrom)} to {yearLabel(s.currentYear)} with summer sessions
-          </span>
-        </h2>
-        <Grid className='grid-cols-3 gap-2 md:grid-cols-3 md:gap-4 lg:grid-cols-5'>
-          <StatTile
-            compact
-            className={next()}
-            icon={Calendar}
-            label='Cohorts'
-            value={totalsCohorts.length}
-            unit='sessions'
-          />
-          <StatTile
-            compact
-            className={next()}
-            icon={Users}
-            label='Contributors'
-            value={fmt(totalOf('contributors'))}
-            unit='people'
-            hint={`across ${fmt(totalOf('teams'))} teams`}
-          />
-          <StatTile
-            compact
-            className={next()}
-            icon={GitPullRequest}
-            label='Commits'
-            value={fmtCompact(totalOf('commits'))}
-            unit='commits'
-          />
-          <StatTile
-            compact
-            className={next()}
-            icon={GitMerge}
-            label='Merged PRs'
-            value={fmtCompact(totalOf('prsMerged'))}
-            unit='PRs'
-          />
-          <StatTile
-            compact
-            className={next()}
-            icon={MessageSquareCode}
-            label='Code reviews'
-            value={fmtCompact(totalOf('reviews'))}
-            unit='reviews'
-          />
-        </Grid>
-      </div>
 
       <div className='space-y-4'>
         <div className={cohortGrid}>

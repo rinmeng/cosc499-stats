@@ -1,5 +1,8 @@
 'use client';
 
+import { addWeeks, format } from 'date-fns';
+
+import { isoDate, parseDate, UTC } from '@/lib/dates';
 import { useMemo, useState } from 'react';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 
@@ -36,12 +39,7 @@ const RANGES: { value: Range; label: string }[] = [
   { value: 'recent', label: 'Last 8 weeks' },
 ];
 
-const shortDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    timeZone: 'UTC',
-  });
+const shortDate = (iso: string) => format(parseDate(iso), 'MMM d', { in: UTC });
 
 /**
  * Weekly activity as an interactive area chart: pick the measure in the header,
@@ -73,7 +71,7 @@ export function ActivityChart({
 
   const rows = useMemo(() => {
     if (!data.length) return [];
-    const start = Date.parse(termStart);
+    const start = parseDate(termStart);
     const byWeek = new Map(data.map((d) => [d.week, d]));
     const min = data[0].week;
     const max = data[data.length - 1].week;
@@ -82,7 +80,7 @@ export function ActivityChart({
       const d = byWeek.get(week);
       return {
         week,
-        start: new Date(start + week * 7 * 86_400_000).toISOString().slice(0, 10),
+        start: isoDate(addWeeks(start, week)),
         commits: d?.commits ?? 0,
         prs: d?.prs ?? 0,
         reviews: d?.reviews ?? 0,

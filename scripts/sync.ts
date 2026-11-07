@@ -17,6 +17,7 @@ import path from 'node:path';
 
 import type { Octokit } from 'octokit';
 
+import { isoTimestamp } from '../lib/dates';
 import { createClient } from '../lib/github';
 import { aggregate } from './aggregate';
 import { progress } from './progress';
@@ -374,7 +375,7 @@ async function fetchRepo(org: string, name: string, team: number): Promise<RawRe
     org,
     name,
     team,
-    fetchedAt: new Date().toISOString(),
+    fetchedAt: isoTimestamp(new Date()),
     meta: {
       url: r.url,
       isPrivate: r.isPrivate,

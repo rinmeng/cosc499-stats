@@ -1,11 +1,12 @@
 import type { MetadataRoute } from 'next';
 
 import { getSummary } from '@/lib/data';
+import { parseDate } from '@/lib/dates';
 import { SITE_URL } from '@/lib/site';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const s = getSummary();
-  const lastModified = s ? new Date(s.generatedAt) : new Date();
+  const lastModified = s ? parseDate(s.generatedAt) : new Date();
 
   const pages: MetadataRoute.Sitemap = [
     { url: SITE_URL, lastModified, changeFrequency: 'daily', priority: 1 },

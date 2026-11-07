@@ -12,6 +12,7 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
+import { isoDate } from '../lib/dates';
 import { cohorts } from '../sync.config';
 
 const API = 'https://ubcgrades.com/api';
@@ -23,7 +24,7 @@ const source = (version: string) => ({
   origin: 'UBC PAIR Grade Distribution Report',
   dataset: 'https://github.com/DonneyF/ubc-pair-grade-data',
   api: `${API}/${version}`,
-  fetchedAt: new Date().toISOString().slice(0, 10),
+  fetchedAt: isoDate(new Date()),
 });
 
 async function getJson<T>(url: string): Promise<T> {

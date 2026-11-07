@@ -6,6 +6,31 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import { TZDate } from '@date-fns/tz';
+import {
+  addDays,
+  addWeeks,
+  eachDayOfInterval,
+  getDay,
+  getHours,
+  isMonday,
+  nextDay,
+  nextMonday,
+  previousMonday,
+  subDays,
+  subWeeks,
+  type Day,
+} from 'date-fns';
+
+import {
+  hoursBetween,
+  isoDate,
+  isoTimestamp,
+  LOCAL,
+  parseDate,
+  weeksSince,
+} from '../lib/dates';
+
 import type {
   CohortStats,
   PersonStats,
@@ -39,17 +64,13 @@ const BIGGEST_COMMIT_CAP = 20000;
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const RAW_DIR = path.join(DATA_DIR, 'raw');
-const DAY = 86_400_000;
-const WEEK = 7 * DAY;
 
 /* --------------------------------- Helpers -------------------------------- */
 
 /** Sunday on/before the first Monday of September (winter) or May (summer), in UTC. */
 function termStartFor(year: number, summer = false): Date {
-  const d = new Date(Date.UTC(year, summer ? 4 : 8, 1));
-  while (d.getUTCDay() !== 1) d.setUTCDate(d.getUTCDate() + 1);
-  d.setUTCDate(d.getUTCDate() - 1);
-  return d;
+  const first = utcDay(year, summer ? 4 : 8, 1);
+  return subDays(isMonday(first) ? first : nextMonday(first), 1);
 }
 
 const BOT_NAME = /\[bot\]|github[- ]?actions?|dependabot|github classroom/i;
@@ -77,39 +98,26 @@ function gini(values: number[]): number {
 
 const round = (n: number, d = 3) => Math.round(n * 10 ** d) / 10 ** d;
 
-const hourFmt = new Intl.DateTimeFormat('en-US', {
-  timeZone: timezone,
-  hour: 'numeric',
-  hourCycle: 'h23',
-  weekday: 'short',
-});
-const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+/** Weekday (0 = Sun) and hour of a timestamp in the configured timezone. */
 function localSlot(iso: string): { dow: number; hour: number } {
-  const parts = hourFmt.formatToParts(new Date(iso));
-  const hour = Number(parts.find((p) => p.type === 'hour')!.value) % 24;
-  const dow = DOW.indexOf(parts.find((p) => p.type === 'weekday')!.value);
-  return { dow, hour };
+  const d = parseDate(iso);
+  return { dow: getDay(d, { in: LOCAL }), hour: getHours(d, { in: LOCAL }) };
 }
 
-const dateFmt = new Intl.DateTimeFormat('en-CA', {
-  timeZone: timezone,
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-});
 /** Local calendar date as YYYY-MM-DD in the configured timezone. */
-const localDate = (iso: string) => dateFmt.format(new Date(iso));
+const localDate = (iso: string) => isoDate(parseDate(iso), LOCAL);
 
-const ymd = (d: Date) => d.toISOString().slice(0, 10);
-/** The nth weekday (0=Sun) of a month, UTC. n = -1 means the last one before `before`. */
-function nthWeekday(year: number, month: number, dow: number, n: number): Date {
-  const d = new Date(Date.UTC(year, month, 1));
-  while (d.getUTCDay() !== dow) d.setUTCDate(d.getUTCDate() + 1);
-  d.setUTCDate(d.getUTCDate() + 7 * (n - 1));
-  return d;
+/** A UTC calendar day (month is 0-based), optionally at a time of day. */
+const utcDay = (year: number, month: number, day: number, h = 0, m = 0, s = 0) =>
+  new TZDate(year, month, day, h, m, s, 'UTC');
+
+/** The nth weekday (0 = Sun) of a month, UTC. */
+function nthWeekday(year: number, month: number, dow: Day, n: number): Date {
+  const first = nextDay(subDays(utcDay(year, month, 1), 1), dow);
+  return addWeeks(first, n - 1);
 }
 const range = (from: Date, days: number) =>
-  Array.from({ length: days }, (_, i) => ymd(new Date(from.getTime() + i * 86_400_000)));
+  eachDayOfInterval({ start: from, end: addDays(from, days - 1) }).map((d) => isoDate(d));
 
 /**
  * BC / UBCO holidays and breaks that fall inside a session, as local dates.
@@ -118,13 +126,17 @@ const range = (from: Date, days: number) =>
  */
 function holidaysFor(year: number, summer: boolean): Set<string> {
   if (summer) {
-    const victoria = new Date(Date.UTC(year, 4, 24));
-    while (victoria.getUTCDay() !== 1) victoria.setUTCDate(victoria.getUTCDate() - 1);
-    return new Set([ymd(victoria), `${year}-07-01`, ymd(nthWeekday(year, 7, 1, 1))]);
+    const may24 = utcDay(year, 4, 24);
+    const victoria = isMonday(may24) ? may24 : previousMonday(may24);
+    return new Set([
+      isoDate(victoria),
+      `${year}-07-01`,
+      isoDate(nthWeekday(year, 7, 1, 1)),
+    ]);
   }
   const y2 = year + 1;
   return new Set([
-    ymd(nthWeekday(year, 9, 1, 2)), // Thanksgiving
+    isoDate(nthWeekday(year, 9, 1, 2)), // Thanksgiving
     `${year}-12-24`,
     `${year}-12-25`,
     `${year}-12-26`,
@@ -138,8 +150,8 @@ function holidaysFor(year: number, summer: boolean): Set<string> {
 function examDaysFor(year: number, summer: boolean): Set<string> {
   if (summer) return new Set();
   return new Set([
-    ...range(new Date(Date.UTC(year, 11, 8)), 14),
-    ...range(new Date(Date.UTC(year + 1, 3, 11)), 17),
+    ...range(utcDay(year, 11, 8), 14),
+    ...range(utcDay(year + 1, 3, 11), 17),
   ]);
 }
 
@@ -170,27 +182,24 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
   const slug = cohortSlug(cfg);
 
   const termStart = termStartFor(cfg.year, summer);
-  const windowStart = termStart.getTime() - termLeadWeeks * WEEK;
+  const windowStart = subWeeks(termStart, termLeadWeeks);
   // Winter runs to the end of the following May; summer to mid-September.
   const windowEnd = summer
-    ? Date.UTC(cfg.year, 8, 15, 23, 59, 59)
-    : Date.UTC(cfg.year + 1, 4, 31, 23, 59, 59);
+    ? utcDay(cfg.year, 8, 15, 23, 59, 59)
+    : utcDay(cfg.year + 1, 4, 31, 23, 59, 59);
   const inWindow = (iso: string | null) => {
     if (!iso) return false;
-    const t = Date.parse(iso);
+    const t = parseDate(iso);
     return t >= windowStart && t <= windowEnd;
   };
-  const weekOf = (iso: string) =>
-    Math.floor((Date.parse(iso) - termStart.getTime()) / WEEK);
-  const weekStart = (w: number) =>
-    new Date(termStart.getTime() + w * WEEK).toISOString().slice(0, 10);
+  const weekOf = (iso: string) => weeksSince(iso, termStart);
+  const weekStart = (w: number) => isoDate(addWeeks(termStart, w));
 
-  const nowWeek = Math.floor((now.getTime() - termStart.getTime()) / WEEK);
+  const nowWeek = weeksSince(now, termStart);
   // Last week of classes: end of April (winter) or mid-August (summer).
-  const termEndWeek = weekOf(
-    new Date(
-      summer ? Date.UTC(cfg.year, 7, 15) : Date.UTC(cfg.year + 1, 3, 30)
-    ).toISOString()
+  const termEndWeek = weeksSince(
+    summer ? utcDay(cfg.year, 7, 15) : utcDay(cfg.year + 1, 3, 30),
+    termStart
   );
   const isCurrent = slug === currentCohort;
   const holidays = holidaysFor(cfg.year, summer);
@@ -228,6 +237,9 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
   const cohortWeekly = new Map<number, WeekPoint>();
   const cohortLang = new Map<string, number>();
   const cohortMergeHours: number[] = [];
+  // Per term week, for the in-progress "this week" tiles.
+  const mergeHoursByWeek = new Map<number, number[]>();
+  const linesByWeek = new Map<number, number>();
   let cohortMerged = 0;
   let cohortReviewed = 0;
 
@@ -330,8 +342,10 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
           p.deletions += c.deletions;
         }
         const w = weekOf(c.date);
-        if (w === nowWeek && c.additions + c.deletions <= lineOutlierThreshold)
-          thisWeekLines += c.additions + c.deletions;
+        if (c.additions + c.deletions <= lineOutlierThreshold) {
+          linesByWeek.set(w, (linesByWeek.get(w) ?? 0) + c.additions + c.deletions);
+          if (w === nowWeek) thisWeekLines += c.additions + c.deletions;
+        }
         p.weeks.add(w);
         wp(w).commits++;
         wp(w).score += scoreWeights.commits;
@@ -377,8 +391,10 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
           merged++;
           discussion +=
             pr.comments + pr.reviews.filter((r) => !r.login || !isBot(r.login)).length;
-          const hours = (Date.parse(pr.mergedAt) - Date.parse(pr.createdAt)) / 3_600_000;
+          const hours = hoursBetween(pr.mergedAt, pr.createdAt);
           mergeHours.push(hours);
+          const mw = weekOf(pr.mergedAt);
+          mergeHoursByWeek.set(mw, [...(mergeHoursByWeek.get(mw) ?? []), hours]);
           if ((!pr.login || !isBot(pr.login)) && pr.changedFiles <= MEGA_PR_CAP) {
             const pick = (value: number) => ({
               number: pr.number,
@@ -633,11 +649,16 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     });
   }
 
-  const weekTotals = (w: number) => ({
-    commits: cohortWeekly.get(w)?.commits ?? 0,
-    prsMerged: cohortWeekly.get(w)?.prs ?? 0,
-    reviews: cohortWeekly.get(w)?.reviews ?? 0,
-  });
+  const weekTotals = (w: number) => {
+    const m = median(mergeHoursByWeek.get(w) ?? []);
+    return {
+      commits: cohortWeekly.get(w)?.commits ?? 0,
+      prsMerged: cohortWeekly.get(w)?.prs ?? 0,
+      reviews: cohortWeekly.get(w)?.reviews ?? 0,
+      lines: linesByWeek.get(w) ?? 0,
+      medianMergeHours: m === null ? null : round(m, 1),
+    };
+  };
 
   const n = Math.max(teams.length, 1);
   const lines = teams.reduce((a, x) => a + x.additions + x.deletions, 0);
@@ -652,7 +673,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     hasOrg: !!cfg.org,
     contributors: cfg.contributors ?? [],
     isCurrent,
-    termStart: termStart.toISOString().slice(0, 10),
+    termStart: isoDate(termStart),
     teams,
     totals: {
       teams: teams.length,
@@ -694,7 +715,7 @@ export function aggregate() {
     .filter((c): c is CohortStats => !!c);
 
   const summary: Summary = {
-    generatedAt: now.toISOString(),
+    generatedAt: isoTimestamp(now),
     currentYear,
     currentCohort,
     topN,

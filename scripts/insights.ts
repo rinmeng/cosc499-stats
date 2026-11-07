@@ -6,6 +6,17 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
+import { TZDate } from '@date-fns/tz';
+import {
+  differenceInMilliseconds,
+  isMonday,
+  nextMonday,
+  subDays,
+  subWeeks,
+} from 'date-fns';
+import { millisecondsInWeek } from 'date-fns/constants';
+
+import { hoursBetween, parseDate, weeksSince } from '../lib/dates';
 import type { Era, Insights, InsightMetric, ShareSlice } from '../lib/types/insights';
 import type { CohortStats, RawRepo, TeamStats } from '../lib/types/stats';
 import {
@@ -28,15 +39,15 @@ import {
 } from './lib/stats';
 
 const RAW_DIR = path.join(process.cwd(), 'data', 'raw');
-const WEEK = 7 * 86_400_000;
 
 /** Weeks from term start through mid-August (summer) or the end of April (full year). */
 function termWeeks(year: number, summer: boolean): number {
-  const start = new Date(Date.UTC(year, summer ? 4 : 8, 1));
-  while (start.getUTCDay() !== 1) start.setUTCDate(start.getUTCDate() + 1);
-  start.setUTCDate(start.getUTCDate() - 1);
-  const end = summer ? Date.UTC(year, 7, 15) : Date.UTC(year + 1, 3, 30);
-  return Math.max(1, Math.floor((end - start.getTime()) / WEEK));
+  const first = new TZDate(year, summer ? 4 : 8, 1, 'UTC');
+  const start = subDays(isMonday(first) ? first : nextMonday(first), 1);
+  const end = summer
+    ? new TZDate(year, 7, 15, 'UTC')
+    : new TZDate(year + 1, 3, 30, 'UTC');
+  return Math.max(1, weeksSince(end, start));
 }
 const LARGE_COMMIT_LINES = 300;
 const BOT_NAME = /\[bot\]|github[- ]?actions?|dependabot|github classroom/i;
@@ -96,18 +107,19 @@ function scanCohort(c: CohortStats): {
 } {
   const cfg = cohortConfigs.find((cfg) => cohortSlug(cfg) === c.slug);
   const repos = cfg ? loadRaw(cohortDir(cfg)) : [];
-  const termStart = Date.parse(c.termStart);
-  const windowStart = termStart - termLeadWeeks * WEEK;
+  const termStart = parseDate(c.termStart);
+  const windowStart = subWeeks(termStart, termLeadWeeks);
   const windowEnd =
     c.session === 'summer'
-      ? Date.UTC(c.year, 8, 15, 23, 59, 59)
-      : Date.UTC(c.year + 1, 4, 31, 23, 59, 59);
+      ? new TZDate(c.year, 8, 15, 23, 59, 59, 'UTC')
+      : new TZDate(c.year + 1, 4, 31, 23, 59, 59, 'UTC');
   const inWindow = (iso: string | null) => {
     if (!iso) return false;
-    const t = Date.parse(iso);
+    const t = parseDate(iso);
     return t >= windowStart && t <= windowEnd;
   };
-  const weeksIn = (iso: string) => (Date.parse(iso) - termStart) / WEEK;
+  const weeksIn = (iso: string) =>
+    differenceInMilliseconds(parseDate(iso), termStart) / millisecondsInWeek;
   const weekOf = (iso: string) => Math.floor(weeksIn(iso));
   const staff = new Set(c.staffExcluded.map((s) => s.toLowerCase()));
   const skip = (login: string | null) => {
@@ -171,7 +183,7 @@ function scanCohort(c: CohortStats): {
             week: weekOf(pr.mergedAt),
             additions: pr.additions,
             files: pr.changedFiles,
-            hours: (Date.parse(pr.mergedAt) - Date.parse(pr.createdAt)) / 3_600_000,
+            hours: hoursBetween(pr.mergedAt, pr.createdAt),
             ai: isAiBot(pr.login) || pr.reviews.some((r) => isAiBot(r.login)),
           });
         }
@@ -333,9 +345,7 @@ function shareSlices(
 
 export function buildInsights(cohorts: CohortStats[], now: Date): Insights {
   const current = cohorts.find((c) => c.isCurrent);
-  const W = current
-    ? Math.max(0, Math.floor((now.getTime() - Date.parse(current.termStart)) / WEEK))
-    : 0;
+  const W = current ? Math.max(0, weeksSince(now, current.termStart)) : 0;
 
   const factsByCohort = new Map<string, Map<number, TeamFacts>>();
   let trailersScanned = false;

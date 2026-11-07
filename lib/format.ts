@@ -1,3 +1,6 @@
+import { differenceInMinutes, format } from 'date-fns';
+
+import { LOCAL, parseDate, UTC } from '@/lib/dates';
 import type { Era } from '@/lib/types/insights';
 
 const nf = new Intl.NumberFormat('en-US');
@@ -19,18 +22,15 @@ export function fmtHours(h: number | null): string {
 
 export function fmtDate(iso: string | null, withYear = true): string {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-CA', {
-    month: 'short',
-    day: 'numeric',
-    ...(withYear ? { year: 'numeric' } : {}),
-    // date-only strings (YYYY-MM-DD) are UTC midnight; don't shift them a day back
-    timeZone: iso.length === 10 ? 'UTC' : 'America/Vancouver',
+  // date-only strings (YYYY-MM-DD) are UTC midnight; don't shift them a day back
+  return format(parseDate(iso), withYear ? 'MMM d, yyyy' : 'MMM d', {
+    in: iso.length === 10 ? UTC : LOCAL,
   });
 }
 
-export function fmtRelative(iso: string | null, now = Date.now()): string {
+export function fmtRelative(iso: string | null, now: Date = new Date()): string {
   if (!iso) return '—';
-  const mins = Math.round((now - Date.parse(iso)) / 60_000);
+  const mins = differenceInMinutes(now, parseDate(iso), { roundingMethod: 'round' });
   if (mins < 1) return 'just now';
   if (mins < 60) return `${mins} min ago`;
   const hrs = Math.round(mins / 60);

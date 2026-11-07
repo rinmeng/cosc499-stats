@@ -2,6 +2,7 @@
  * Sync configuration. Edit this file to add a new cohort (e.g. COSC-499-W2027)
  * or to tweak which repos and accounts are counted.
  */
+import { getYear } from 'date-fns';
 
 export type Session = 'winter' | 'summer';
 
@@ -159,7 +160,7 @@ export const currentCohort = '2026';
 
 /** Start year of the current cohort (derived; used for colors and the trend chart). */
 export const currentYear =
-  cohorts.find((c) => cohortSlug(c) === currentCohort)?.year ?? new Date().getFullYear();
+  cohorts.find((c) => cohortSlug(c) === currentCohort)?.year ?? getYear(new Date());
 
 /** Repos whose name matches any of these are skipped (starters, templates, empty copies). */
 export const repoExclude: RegExp[] = [

@@ -245,8 +245,8 @@ export interface CohortStats {
   cumulativeScore: { week: number; value: number }[];
   punch: number[][];
   languages: { name: string; bytes: number }[];
-  thisWeek: { commits: number; prsMerged: number; reviews: number };
-  lastWeek: { commits: number; prsMerged: number; reviews: number };
+  thisWeek: WeekTotals;
+  lastWeek: WeekTotals;
   medianMergeHours: number | null;
   reviewCoverage: number;
   staffExcluded: string[];
@@ -262,4 +262,15 @@ export interface Summary {
   timezone: string;
   cohorts: CohortStats[];
   insights: Insights;
+}
+
+/** Cohort totals for one term week (in-progress "this week" tiles). */
+export interface WeekTotals {
+  commits: number;
+  prsMerged: number;
+  reviews: number;
+  /** added + deleted, excl. very large commits */
+  lines: number;
+  /** median hours from opened to merged, for PRs merged that week */
+  medianMergeHours: number | null;
 }
