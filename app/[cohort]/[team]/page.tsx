@@ -290,19 +290,6 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
         </div>
       </Grid>
 
-      {radars.length > 0 && (
-        <section className='space-y-3'>
-          <div className={next()}>
-            <h2 className='font-heading text-lg font-semibold'>Contribution profiles</h2>
-            <p className='text-sm text-muted-foreground'>
-              Each axis is scaled to the team’s best on that measure, so the shape shows
-              where each person shines.
-            </p>
-          </div>
-          <MemberRadars members={radars} />
-        </section>
-      )}
-
       {t.members.length > 1 && (
         <Section
           className={next()}
@@ -318,6 +305,19 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
             edges={t.reviewNetwork ?? []}
           />
         </Section>
+      )}
+
+      {radars.length > 0 && (
+        <section className='space-y-3'>
+          <div className={next()}>
+            <h2 className='font-heading text-lg font-semibold'>Contribution profiles</h2>
+            <p className='text-sm text-muted-foreground'>
+              Each axis is scaled to the team’s best on that measure, so the shape shows
+              where each person shines.
+            </p>
+          </div>
+          <MemberRadars members={radars} />
+        </section>
       )}
 
       <CohortTrendChart
