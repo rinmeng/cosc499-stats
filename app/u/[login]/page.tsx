@@ -163,7 +163,6 @@ export default async function PersonPage({ params }: PageProps<'/u/[login]'>) {
             }}
           />
         }
-        eyebrow='COSC 499 capstone'
         title={
           <span className='flex flex-wrap items-center gap-x-4 gap-y-2'>
             <Avatar className='size-12 md:size-14'>

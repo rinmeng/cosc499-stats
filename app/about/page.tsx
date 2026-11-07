@@ -45,7 +45,7 @@ export default function AboutPage() {
 
   return (
     <div className='mx-auto max-w-3xl space-y-10'>
-      <PageHeader eyebrow='About' title='Why I made this site'>
+      <PageHeader title='Why I made this site'>
         COSC 499 is the biggest thing most of us build at UBC Okanagan: eight months, a
         real client, a team that has to figure out how to work together. Then it ends, the
         repos go quiet, and the next cohort starts from zero. I wanted a place where that

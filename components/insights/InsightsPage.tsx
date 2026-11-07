@@ -38,7 +38,7 @@ export function InsightsPage({
   const summary = getSummary();
   if (!summary?.insights) {
     return (
-      <PageHeader eyebrow='Insights' title={title}>
+      <PageHeader title={title}>
         This page appears after the dataset is aggregated.
       </PageHeader>
     );
@@ -59,7 +59,6 @@ export function InsightsPage({
             }}
           />
         }
-        eyebrow='Insights'
         title={title}
       >
         {intro}

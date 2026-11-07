@@ -225,10 +225,7 @@ export default function Overview() {
 
   return (
     <div className='space-y-8'>
-      <PageHeader
-        eyebrow='UBC Okanagan · COSC 499'
-        title='UBCO COSC 499 capstone stats, every cohort'
-      >
+      <PageHeader title='UBCO COSC 499 capstone stats, every cohort'>
         Contribution highlights from the last {TOTALS_YEARS} years of UBCO COSC 499
         capstone cohorts on GitHub. Older cohorts and summer sessions are in the Years
         menu.

@@ -33,7 +33,7 @@ export default function GradesPage() {
 
   if (!view || view.sessions.length === 0)
     return (
-      <PageHeader eyebrow='Insights' title='How COSC 499 classes finished'>
+      <PageHeader title='How COSC 499 classes finished'>
         This page appears after grade data is synced (pnpm sync:grades).
       </PageHeader>
     );
@@ -53,7 +53,6 @@ export default function GradesPage() {
             item={{ path: seo.path, title: seo.title, description: seo.description }}
           />
         }
-        eyebrow='Insights'
         title='How COSC 499 classes finished'
       >
         <p>

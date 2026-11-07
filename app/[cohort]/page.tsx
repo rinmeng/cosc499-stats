@@ -158,7 +158,6 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
               }}
             />
           }
-          eyebrow='COSC 499 capstone'
           title={`${c.label} cohort`}
           meta={[
             c.hasOrg && <OrgLink org={c.org} />,
@@ -700,12 +699,8 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             }}
           />
         }
-        eyebrow={
-          <span className='flex items-center gap-2'>
-            COSC 499 capstone
-            {live && <Badge>In progress · week {week}</Badge>}
-          </span>
-        }
+        // Only the live term gets a line above the title: how far along it is.
+        eyebrow={live && <Badge>In progress · week {week}</Badge>}
         title={`${c.label} cohort`}
         meta={
           live

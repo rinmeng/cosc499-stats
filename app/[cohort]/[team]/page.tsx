@@ -123,7 +123,6 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
           />
         }
         start={1}
-        eyebrow={c.org}
         title={t.name}
         meta={[
           ...t.repos.map((r) => (
