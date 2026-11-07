@@ -183,8 +183,8 @@ export function PeopleSearch({
         }}
       >
         <Search className='size-4' />
-        <span className='hidden xl:inline'>Find yourself or your team</span>
-        <span className='sr-only xl:hidden'>Find yourself or your team</span>
+        <span className='hidden xl:inline'>Find yourself or team</span>
+        <span className='sr-only xl:hidden'>Find yourself or team</span>
         <KbdGroup className='ml-1 hidden xl:inline-flex'>
           <Kbd>{modKey}</Kbd>
           <Kbd>K</Kbd>
@@ -199,7 +199,7 @@ export function PeopleSearch({
             setPage(1);
           }
         }}
-        title='Find yourself or your team'
+        title='Find yourself or team'
         description='Search by name, GitHub username or team name'
       >
         {/* This CommandDialog doesn't add a cmdk root itself; input and list need one. */}

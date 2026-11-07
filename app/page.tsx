@@ -14,6 +14,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
+import { ArrowLink } from '@/components/ArrowLink';
 import { CohortTrendChart } from '@/components/charts/CohortTrendChart';
 import { LanguageDonut } from '@/components/charts/LanguageDonut';
 import { MetricBarChart } from '@/components/charts/MetricBarChart';
@@ -255,16 +256,9 @@ export default function Overview() {
             by week of term (week 0 = first week of September, or of May for summer
             sessions; summer is dashed). Click a cohort to bring it forward.
             {current && (
-              <Link
-                href={`/${current.slug}#tracking`}
-                className='group mt-2 flex w-fit items-center gap-1 font-medium
-                  text-foreground hover:underline'
-              >
+              <ArrowLink href={`/${current.slug}#tracking`} className='mt-2 flex'>
                 View this year’s benchmark
-                <ArrowRight
-                  className='size-4 transition-transform group-hover:translate-x-0.5'
-                />
-              </Link>
+              </ArrowLink>
             )}
           </>
         }
@@ -381,13 +375,9 @@ export default function Overview() {
             The same cohorts, lined up as before AI tools, the Copilot and ChatGPT years,
             and the agentic era. Medians of teams, not a ranking of people.
           </p>
-          <Link
-            href='/insights'
-            className='inline-flex items-center gap-1 text-sm font-medium'
-          >
+          <ArrowLink href='/insights' className='text-sm'>
             See the comparison
-            <ArrowRight className='size-4' />
-          </Link>
+          </ArrowLink>
         </CardContent>
       </Card>
 

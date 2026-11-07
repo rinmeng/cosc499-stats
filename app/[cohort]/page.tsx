@@ -1,7 +1,5 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
-  ArrowRight,
   Clock,
   GitMerge,
   GitPullRequest,
@@ -30,6 +28,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 
+import { ArrowLink } from '@/components/ArrowLink';
 import { ActivityChart } from '@/components/charts/ActivityChart';
 import { CohortTrendChart } from '@/components/charts/CohortTrendChart';
 import { LanguageDonut } from '@/components/charts/LanguageDonut';
@@ -131,16 +130,7 @@ function OrgLink({ org }: { org?: string }) {
 
 /** Opens this session on the Grades page (its grade spread and the year-by-year view). */
 function GradesLink({ slug }: { slug: string }) {
-  return (
-    <Link
-      href={`/insights/grades#${slug}`}
-      className='group inline-flex items-center gap-1 font-medium text-foreground
-        underline-offset-2 hover:underline'
-    >
-      Grades report
-      <ArrowRight className='size-3.5 transition-transform group-hover:translate-x-0.5' />
-    </Link>
-  );
+  return <ArrowLink href={`/insights/grades#${slug}`}>Grades report</ArrowLink>;
 }
 
 /** "Taught by A", "Taught by A and B": the instructors PAIR lists, if any. */

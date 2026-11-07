@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 
+import { ArrowLink } from '@/components/ArrowLink';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Card,
@@ -177,16 +178,13 @@ export function TopContributors({
               </Link>
             </CardTitle>
             <CardAction>
-              <Link
+              <ArrowLink
                 href={t.href}
-                className='group inline-flex items-center gap-1 text-xs
-                  text-muted-foreground hover:text-foreground'
+                className='text-xs font-normal text-muted-foreground
+                  hover:text-foreground'
               >
                 View team
-                <ArrowRight
-                  className='size-3 transition-transform group-hover:translate-x-0.5'
-                />
-              </Link>
+              </ArrowLink>
             </CardAction>
           </CardHeader>
           <CardContent>

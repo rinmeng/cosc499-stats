@@ -1,6 +1,4 @@
-import Link from 'next/link';
 import {
-  ArrowRight,
   ExternalLink,
   Award,
   Ghost,
@@ -11,6 +9,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
+import { ArrowLink } from '@/components/ArrowLink';
 import { PageHeader } from '@/components/stats/Blocks';
 import { getSummary } from '@/lib/data';
 import { aboutSeo, pageMetadata } from '@/lib/seo';
@@ -82,13 +81,11 @@ export default function AboutPage() {
         </p>
         <p className='flex flex-wrap gap-x-5 gap-y-2'>
           {current && (
-            <Link href={`/${currentCohort}`} className={linkClass}>
-              See how {current.label} is tracking <ArrowRight className='size-4' />
-            </Link>
+            <ArrowLink href={`/${currentCohort}`}>
+              See how {current.label} is tracking
+            </ArrowLink>
           )}
-          <Link href='/' className={linkClass}>
-            Compare every cohort <ArrowRight className='size-4' />
-          </Link>
+          <ArrowLink href='/'>Compare every cohort</ArrowLink>
         </p>
       </Reason>
 

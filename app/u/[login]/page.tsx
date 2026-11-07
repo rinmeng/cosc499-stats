@@ -1,7 +1,5 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
-  ArrowRight,
   ExternalLink,
   CalendarDays,
   CircleDot,
@@ -11,6 +9,7 @@ import {
   MessageSquareCode,
 } from 'lucide-react';
 
+import { ArrowLink } from '@/components/ArrowLink';
 import { ShareButton } from '@/components/ShareDialog';
 import { Grid, PageHeader, Section, StatTile } from '@/components/stats/Blocks';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -66,21 +65,12 @@ function CapstoneSection({ c, step }: { c: Capstone; step: number }) {
       description={
         <>
           {c.cohort.isCurrent ? 'In progress. ' : ''}
-          <Link
-            href={`/${c.cohort.slug}/${c.team.team}`}
-            className='inline-flex items-center gap-1 font-medium text-foreground
-              underline-offset-2 hover:underline'
-          >
-            See the team <ArrowRight className='size-3.5' />
-          </Link>{' '}
-          ·{' '}
-          <Link
-            href={`/${c.cohort.slug}`}
-            className='inline-flex items-center gap-1 font-medium text-foreground
-              underline-offset-2 hover:underline'
-          >
-            See the {c.cohort.label} cohort <ArrowRight className='size-3.5' />
-          </Link>
+          <ArrowLink href={`/${c.cohort.slug}/${c.team.team}`}>
+            See the team
+          </ArrowLink> ·{' '}
+          <ArrowLink href={`/${c.cohort.slug}`}>
+            See the {c.cohort.label} cohort
+          </ArrowLink>
         </>
       }
     >

@@ -111,7 +111,7 @@ const CHANGES = [
   {
     icon: GraduationCap,
     title: 'Grades',
-    body: 'A new Grades page under Insights charts class size and how every session finished since 2017, from UBC’s public grade reports. Cohort pages show who taught the class and link to its grades report.',
+    body: 'Class size and grades for every session since 2017, from UBC’s public reports.',
   },
   {
     icon: CalendarDays,
