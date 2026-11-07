@@ -46,9 +46,7 @@ export function ActivityInfo({ timezone }: { timezone: string }) {
         <DialogHeader>
           <DialogTitle>What counts as activity</DialogTitle>
           <DialogDescription>
-            The rhythm stats (night owls, early birds, weekends, 3 am, holidays, exams and
-            the day-and-hour heatmap) count every timed action on GitHub, not just
-            commits, so they show when people were working on anything.
+            This metric counts when people were working on anything.
           </DialogDescription>
         </DialogHeader>
 

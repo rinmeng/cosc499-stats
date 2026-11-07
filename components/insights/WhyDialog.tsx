@@ -15,7 +15,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 /** Copy for one chart's "Why might this be?" dialog. */
 export interface Why {
-  /** What the chart measures, in one or two plain sentences. */
+  /** What the chart measures, as one short “This metric …” sentence. */
   measures: string;
   /** Possible explanations for the pattern. Hedged: none of these are proven. */
   reasons: { title: string; detail: string }[];

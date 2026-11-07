@@ -80,9 +80,7 @@ export function ScoreInfo({
         <DialogHeader>
           <DialogTitle>How points are calculated</DialogTitle>
           <DialogDescription>
-            The Overall score adds up each person’s GitHub activity, with weights so that
-            shipping and reviewing work counts for more than a single commit. A team’s
-            score is the sum of its members’ scores.
+            This metric adds up weighted GitHub activity, per person and per team.
           </DialogDescription>
         </DialogHeader>
 
@@ -140,9 +138,9 @@ export function ScoreInfo({
             )}
 
             <p className='text-xs text-muted-foreground'>
-              Lines of code aren’t part of the score, since they say more about generated
-              files than effort. Bots and course staff aren’t counted. Only activity
-              during the term is included.
+              A team’s score is the sum of its members’ scores. Lines of code aren’t part
+              of the score, since they say more about generated files than effort. Bots
+              and course staff aren’t counted. Only activity during the term is included.
             </p>
           </div>
         </ScrollArea>

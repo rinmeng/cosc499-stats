@@ -8,8 +8,7 @@ import type { Why } from './WhyDialog';
  */
 export const WHY = {
   commitSize: {
-    measures:
-      'How many lines a typical commit changes, and how many commits change more than 300 lines at once.',
+    measures: 'This metric shows how big a typical commit is.',
     reasons: [
       {
         title: 'Assistants write whole features at once',
@@ -33,11 +32,11 @@ export const WHY = {
       },
     ],
     method:
-      'Commits over 5,000 lines (lockfiles, vendored code) are left out. Each team’s median comes first, then the median cohort in each era.',
+      'Size is lines changed, and a big commit changes more than 300 lines. Commits over 5,000 lines (lockfiles, vendored code) are left out. Each team’s median comes first, then the median cohort in each era.',
   },
   pullRequests: {
     measures:
-      'For merged pull requests: how many lines they add, how many files they touch, and how long they stay open before merging.',
+      'This metric shows how big merged pull requests are and how long they take to merge.',
     reasons: [
       {
         title: 'Waiting for a reviewer',
@@ -60,11 +59,11 @@ export const WHY = {
           'CI pipelines, linters and preview deployments became common in recent cohorts, and they add time before a merge.',
       },
     ],
-    method: 'Only merged pull requests count. Time to merge is from opening to merging.',
+    method:
+      'Size is lines added and files touched. Only merged pull requests count. Time to merge is from opening to merging.',
   },
   output: {
-    measures:
-      'Work per person in an active week: commits, merged pull requests and lines changed, divided by the weeks each person actually committed or opened a pull request.',
+    measures: 'This metric shows how much each person gets done in a week they worked.',
     reasons: [
       {
         title: 'Code is cheaper to produce',
@@ -83,10 +82,10 @@ export const WHY = {
       },
     ],
     method:
-      'Every cohort is cut to the same weeks of term so the in-progress year is compared fairly. Summer rates are scaled to a full-year term.',
+      'Work is commits, merged pull requests and lines changed, divided by the weeks each person committed or opened a pull request. Every cohort is cut to the same weeks of term so the in-progress year is compared fairly. Summer rates are scaled to a full-year term.',
   },
   churn: {
-    measures: 'How many lines teams delete for every line they add, over the whole term.',
+    measures: 'This metric shows how many lines teams delete for every line they add.',
     reasons: [
       {
         title: 'More new code, less rewriting',
@@ -108,8 +107,7 @@ export const WHY = {
       'Full term only, so the in-progress cohort is hollow and left out of the era medians.',
   },
   ramp: {
-    measures:
-      'How quickly teams get going: the share of early-term work done in the first four weeks, and the week a team reaches a quarter of its whole-term work.',
+    measures: 'This metric shows how quickly teams get going.',
     reasons: [
       {
         title: 'Faster setup',
@@ -128,11 +126,10 @@ export const WHY = {
       },
     ],
     method:
-      'The quarter mark needs a finished term, so the in-progress cohort is left out of that measure.',
+      'It uses the share of early-term work done in the first four weeks, and the week a team reaches a quarter of its whole-term work. The quarter mark needs a finished term, so the in-progress cohort is left out of that measure.',
   },
   review: {
-    measures:
-      'The share of merged pull requests reviewed by someone other than the author, and the comments plus reviews each one gets.',
+    measures: 'This metric shows how much merged pull requests get reviewed.',
     reasons: [
       {
         title: 'Reviews became part of the course',
@@ -151,11 +148,10 @@ export const WHY = {
       },
     ],
     method:
-      'Teams with no merged pull requests are left out rather than counted as zero.',
+      'A pull request counts as reviewed when someone other than its author reviews it; feedback is its comments plus reviews. Teams with no merged pull requests are left out rather than counted as zero.',
   },
   languages: {
-    measures:
-      'The share of code in each language, summed across teams in an era. GitHub detects the language of every file.',
+    measures: 'This metric shows which languages teams write in.',
     reasons: [
       {
         title: 'TypeScript and modern web stacks',
@@ -169,10 +165,10 @@ export const WHY = {
       },
     ],
     method:
-      'Cohorts with fewer than 3 teams and the in-progress year are left out of the bars.',
+      'It’s the share of code in each language, summed across teams in an era, as detected by GitHub. Cohorts with fewer than 3 teams and the in-progress year are left out of the bars.',
   },
   languagesPerTeam: {
-    measures: 'How many languages a typical team’s repositories contain.',
+    measures: 'This metric counts how many languages a typical team uses.',
     reasons: [
       {
         title: 'Full-stack projects',
@@ -188,8 +184,7 @@ export const WHY = {
     method: 'Repositories with no detected language are left out.',
   },
   trailers: {
-    measures:
-      'The share of teams with at least one commit whose message names an AI tool as a co-author (a “Co-authored-by” line).',
+    measures: 'This metric shows how many teams credit an AI tool as a co-author.',
     reasons: [
       {
         title: 'Only some tools add the line',
@@ -203,10 +198,10 @@ export const WHY = {
       },
     ],
     method:
-      'Only repositories re-fetched with trailer scanning are counted; the rest are unknown, not zero. Messages are read during sync and never stored.',
+      'A team counts when at least one commit message has a “Co-authored-by” line naming an AI tool. Only repositories re-fetched with trailer scanning are counted; the rest are unknown, not zero. Messages are read during sync and never stored.',
   },
   tools: {
-    measures: 'Which AI tools are named in co-author lines, in the agentic era.',
+    measures: 'This metric shows which AI tools teams credit as co-authors.',
     reasons: [
       {
         title: 'Defaults decide what shows up',
@@ -215,11 +210,10 @@ export const WHY = {
       },
     ],
     method:
-      'A commit that names two tools counts toward both, and the bar is rescaled to 100%.',
+      'Agentic era only. A commit that names two tools counts toward both, and the bar is rescaled to 100%.',
   },
   bots: {
-    measures:
-      'The share of teams with at least one merged pull request opened or reviewed by an AI bot, such as Copilot’s reviewer or coding agent.',
+    measures: 'This metric shows how many teams work with an AI bot on pull requests.',
     reasons: [
       {
         title: 'Few teams turned bots on',
@@ -233,11 +227,10 @@ export const WHY = {
       },
     ],
     method:
-      'A team counts once, however many bot pull requests it has. Bot accounts are still left out of every human total on the site.',
+      'A team counts once if any merged pull request was opened or reviewed by an AI bot, such as Copilot’s reviewer or coding agent. Bot accounts are still left out of every human total on the site.',
   },
   curves: {
-    measures:
-      'Each line is one cohort’s commits over the same early share of its own term, as a running share. Summer terms are shorter, so this lines a summer week up with the matching point of a full year. Steeper early means work started sooner.',
+    measures: 'This metric shows how early in the term each cohort did its work.',
     reasons: [
       {
         title: 'Quicker starts',
@@ -249,11 +242,12 @@ export const WHY = {
         detail: 'Steps in a line usually line up with milestone due dates in that year.',
       },
     ],
-    method: 'Every line ends at 100% of its own window. Summer cohorts are dashed.',
+    method:
+      'Each line is a cohort’s running share of commits over the same early share of its own term, so a summer week lines up with the matching point of a full year. Steeper early means work started sooner. Every line ends at 100% of its own window. Summer cohorts are dashed.',
   },
   prsPer100: {
     measures:
-      'How many pull requests a team merges for every 100 commits it makes. A higher number means the work is split into more, smaller merges.',
+      'This metric counts how many pull requests a team merges for every 100 commits.',
     reasons: [
       {
         title: 'Required by the course',
@@ -277,11 +271,10 @@ export const WHY = {
       },
     ],
     method:
-      'A proxy: pull requests aren’t linked to individual commits, so this shows how often the two appear together, not which commits went through review. Only merged pull requests count.',
+      'Higher means the work is split into more, smaller merges. A proxy: pull requests aren’t linked to individual commits, so this shows how often the two appear together, not which commits went through review. Only merged pull requests count.',
   },
   prWeeks: {
-    measures:
-      'The share of a team’s active weeks in which at least one pull request was merged. 100% means that every week the team worked, something was merged.',
+    measures: 'This metric shows how often teams merge in the weeks they work.',
     reasons: [
       {
         title: 'A weekly rhythm',
@@ -305,11 +298,10 @@ export const WHY = {
       },
     ],
     method:
-      'Active weeks are weeks with at least one commit or opened pull request. A proxy for how steadily work is merged, not for how well it is reviewed.',
+      'It’s the share of active weeks with at least one merged pull request. Active weeks are weeks with at least one commit or opened pull request. A proxy for how steadily work is merged, not for how well it is reviewed.',
   },
   nightOwl: {
-    measures:
-      'The share of a team’s activity (commits, pull requests opened and merged, reviews and issues opened) between 10 pm and 4 am, in Vancouver time.',
+    measures: 'This metric counts how much work happens late at night.',
     reasons: [
       {
         title: 'Steadier progress',
@@ -333,11 +325,10 @@ export const WHY = {
       },
     ],
     method:
-      'Full term only, so the in-progress cohort is hollow and left out of the era medians.',
+      'Activity is commits, pull requests opened and merged, reviews and issues opened between 10 pm and 4 am, Vancouver time. Full term only, so the in-progress cohort is hollow and left out of the era medians.',
   },
   weekend: {
-    measures:
-      'The share of a team’s activity (commits, pull requests opened and merged, reviews and issues opened) on a Saturday or Sunday.',
+    measures: 'This metric counts how much work happens on weekends.',
     reasons: [
       {
         title: 'Weekdays are full',
@@ -361,11 +352,10 @@ export const WHY = {
       },
     ],
     method:
-      'Full term only, so the in-progress cohort is hollow and left out of the era medians.',
+      'Activity is commits, pull requests opened and merged, reviews and issues opened on a Saturday or Sunday. Full term only, so the in-progress cohort is hollow and left out of the era medians.',
   },
   holiday: {
-    measures:
-      'The share of a team’s activity made on a holiday or break: Thanksgiving, Christmas and New Year, reading week, and in summer Victoria Day, Canada Day and BC Day.',
+    measures: 'This metric counts how much work happens on holidays and breaks.',
     reasons: [
       {
         title: 'Fewer commits to begin with',
@@ -384,11 +374,11 @@ export const WHY = {
       },
     ],
     method:
-      'Full term only, so the in-progress cohort is hollow and left out of the era medians. A holiday that falls on a weekend is counted once.',
+      'Holidays are Thanksgiving, Christmas and New Year, reading week, and in summer Victoria Day, Canada Day and BC Day. Full term only, so the in-progress cohort is hollow and left out of the era medians. A holiday that falls on a weekend is counted once.',
   },
   session: {
     measures:
-      'Commits per person-week in summer and winter sessions, with summer scaled to a full-year term.',
+      'This metric compares how much people commit in summer and winter sessions.',
     reasons: [
       {
         title: 'Summer is often the only class',
@@ -402,6 +392,6 @@ export const WHY = {
       },
     ],
     method:
-      'Summer rates are multiplied by the summer term length over a full-year term before comparing.',
+      'Commits per person-week. Summer rates are multiplied by the summer term length over a full-year term before comparing.',
   },
 } satisfies Record<string, Why>;

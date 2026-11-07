@@ -43,9 +43,7 @@ export function CollaborationInfo() {
         <DialogHeader>
           <DialogTitle>How collaboration is calculated</DialogTitle>
           <DialogDescription>
-            Collaboration shows how evenly a team’s points are spread across its members,
-            from 0 to 100. A team scores 100 when everyone earned the same number of
-            points.
+            This metric shows how evenly a team’s points are shared, from 0 to 100.
           </DialogDescription>
         </DialogHeader>
 
