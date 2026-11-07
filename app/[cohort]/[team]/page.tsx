@@ -279,7 +279,6 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
         <Section
           className={cn('lg:col-span-3', next())}
           title={`Top ${summary.topN} contributors`}
-          description='Switch the measure to see who leads on each.'
           action={<ScoreInfo weights={summary.scoreWeights} />}
         >
           <TopContributorsSingle view={view} />
@@ -338,23 +337,18 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
         termStart={c.termStart}
         session={c.session}
         title='Team activity by week'
-        description='Every commit, pull request, review and issue on the team, by week. Narrow the time range above.'
       />
 
       <Grid className='lg:grid-cols-5'>
         <Section
           className={cn('lg:col-span-3', next())}
           title='When the team is active'
-          description='Every commit, pull request, review and issue, by day and hour.'
           action={<ActivityInfo timezone={summary.timezone} />}
         >
           <Punchcard data={t.punch} timezone={summary.timezone} />
         </Section>
         <div className='lg:col-span-2'>
-          <LanguageDonut
-            languages={t.languages}
-            description='Share of code in this team’s repos'
-          />
+          <LanguageDonut languages={t.languages} />
         </div>
       </Grid>
     </div>

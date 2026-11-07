@@ -69,7 +69,6 @@ export default function Overview() {
   // Headline totals: the last few cohort years, each with its summer session.
   const totalsFrom = s.currentYear - (TOTALS_YEARS - 1);
   const totalsCohorts = cohorts.filter((c) => c.year >= totalsFrom);
-  const yearLabel = (y: number) => `${y}–${String(y + 1).slice(2)}`;
 
   const allTeams = totalsCohorts.flatMap((c) =>
     c.teams.map((t) => ({ ...t, cohort: c }))
@@ -289,7 +288,6 @@ export default function Overview() {
             languages={[...languages]
               .map(([name, bytes]) => ({ name, bytes }))
               .sort((a, b) => b.bytes - a.bytes)}
-            description='Share of code across every team repository'
           />
         </div>
       </Grid>
@@ -299,10 +297,6 @@ export default function Overview() {
           <h2 className='font-heading text-xl font-semibold'>
             Oddities, last {TOTALS_YEARS} years
           </h2>
-          <p className='text-sm text-muted-foreground'>
-            The most memorable individual habits from {yearLabel(totalsFrom)} to{' '}
-            {yearLabel(s.currentYear)}.
-          </p>
         </div>
         <Grid className='md:grid-cols-2 xl:grid-cols-3'>
           {oddities
@@ -322,7 +316,6 @@ export default function Overview() {
             className={next()}
             icon={Trophy}
             title='Most commits by one person'
-            description='Top committer of each cohort'
             items={recordPeople.map(({ c, best }) => ({
               label: best!.name,
               href: `/${c.slug}/${best!.team.team}`,
@@ -335,7 +328,6 @@ export default function Overview() {
             className={next()}
             icon={MessageSquareCode}
             title='Most reviews by one person'
-            description='Top reviewer of each cohort'
             items={recordReviewers.map(({ c, best }) => ({
               label: best!.name,
               href: `/${c.slug}/${best!.team.team}`,
@@ -348,7 +340,6 @@ export default function Overview() {
             className={next()}
             icon={Users}
             title='Highest team output'
-            description={`Overall score, ${yearLabel(totalsFrom)} to ${yearLabel(s.currentYear)}`}
             items={biggestTeams.map((t) => ({
               label: t.name,
               href: `/${t.cohort.slug}/${t.team}`,
@@ -362,7 +353,6 @@ export default function Overview() {
             className={next()}
             icon={GitMerge}
             title='Most merged PRs'
-            description={`Teams with the most shipped PRs`}
             items={mostPrs.map((t) => ({
               label: t.name,
               href: `/${t.cohort.slug}/${t.team}`,

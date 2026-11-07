@@ -80,7 +80,7 @@ export function GradeTrendChart({ view }: { view: GradesView }) {
   return (
     <ChartCard
       title='Through the years'
-      description='Each point is one session, by the year it started. Summer sessions are dashed. Pick a measure above.'
+      description='Each point is one session, by the year it started. Summer sessions are dashed.'
       metrics={[
         { key: 'students', label: 'Students', value: fmt(t.students) },
         {

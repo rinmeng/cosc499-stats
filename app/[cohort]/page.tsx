@@ -250,7 +250,6 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     {
       icon: GitMerge,
       title: 'Most PRs merged this week',
-      description: 'Pull requests merged since last Sunday',
     },
     topTeams(c, (t) => t.thisWeekPrsMerged ?? 0, 3),
     (t) => ({ value: fmt(t.thisWeekPrsMerged ?? 0), unit: 'PRs' })
@@ -288,14 +287,11 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
   const weeklySections: HighlightSection[] = [
     {
       title: 'Weekly momentum',
-      description:
-        'The busiest teams this week, by activity, lines and pull requests merged.',
       action: activityInfo,
       cards: [mostActiveThisWeek, mostLinesThisWeek, mostPrsThisWeek],
     },
     {
       title: 'Weekly teamwork',
-      description: 'Teams pitching in together since last Sunday.',
       action: <CollaborationInfo />,
       cards: [
         card(
@@ -329,7 +325,6 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: CircleCheckBig,
             title: 'Most issues closed this week',
-            description: 'Issues closed since last Sunday',
           },
           topTeams(c, (t) => t.thisWeekIssuesClosed ?? 0, 3),
           (t) => ({ value: fmt(t.thisWeekIssuesClosed ?? 0), unit: 'issues' })
@@ -338,7 +333,6 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     },
     {
       title: 'Weekly rhythm',
-      description: 'When teams worked this week, counting all their activity.',
       action: activityInfo,
       cards: [
         card(
@@ -376,14 +370,10 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
   const termSections: HighlightSection[] = [
     {
       title: 'Across the term',
-      description: live
-        ? 'Who started fast and had the biggest week so far.'
-        : 'Who started fast, had the biggest week and finished strong.',
       cards: [fastestStart, biggestWeek, strongestFinish],
     },
     {
       title: 'Strangest stats',
-      description: 'The odd, the heroic and the slightly concerning.',
       cards: [
         card(
           {
@@ -459,7 +449,6 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     },
     {
       title: 'Work rhythm',
-      description: 'When teams like to work, counting all their activity.',
       action: activityInfo,
       cards: [
         card(
@@ -683,7 +672,6 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       data={c.weekly}
       termStart={c.termStart}
       session={c.session}
-      description='Every commit, pull request, review and issue across the cohort, by week. Narrow the time range above.'
     />
   );
 
@@ -878,7 +866,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       <Section
         className={next()}
         title='Top contributors'
-        description={`Top 10 across the cohort, or the top ${summary.topN} on each team. Switch the measure to rank by just one thing.`}
+        description={`Top 10 across the cohort, or the top ${summary.topN} on each team.`}
         action={<ScoreInfo weights={summary.scoreWeights} />}
       >
         <TopContributors
@@ -891,8 +879,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         title='Team output'
         description={
           <>
-            The top half of teams, or every team highest first. Overall weighs commits,
-            merged PRs, reviews and issues, plus a teamwork bonus.
+            The top half of teams, or every team highest first.
             <div className='mt-1 -ml-2'>
               <ScoreInfo weights={summary.scoreWeights} bonus={summary.teamworkBonus} />
             </div>
@@ -909,7 +896,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       <Section
         className={next()}
         title='Teams'
-        description='Every team at a glance. Click a column to see who leads on it.'
+        description='Click a column to see who leads on it.'
         action={<CollaborationInfo />}
       >
         <TeamTable rows={teamRows(c)} live={live} />
@@ -928,7 +915,6 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         <Section
           className={cn('lg:col-span-3', next())}
           title='When the cohort is active'
-          description='Every commit, pull request, review and issue, by day and hour. Hover a cell for the count.'
           action={activityInfo}
         >
           <Punchcard data={c.punch} timezone={summary.timezone} />

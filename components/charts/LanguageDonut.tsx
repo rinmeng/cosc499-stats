@@ -24,7 +24,7 @@ const SLICES = 4;
 /** Donut of the top languages (plus "Other") with the leading language in the middle. */
 export function LanguageDonut({
   languages,
-  description = 'Share of code across team repositories',
+  description,
 }: {
   languages: { name: string; bytes: number }[];
   description?: string;
@@ -56,7 +56,7 @@ export function LanguageDonut({
     <Card className='flex h-full flex-col'>
       <CardHeader className='items-center pb-0'>
         <CardTitle>Languages</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
       <CardContent className='flex-1 pb-0'>
         <ChartContainer config={config} className='mx-auto aspect-square max-h-60'>

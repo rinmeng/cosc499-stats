@@ -248,7 +248,7 @@ export interface HighlightItem {
 
 export interface HighlightProps {
   title: string;
-  description: string;
+  description?: string;
   icon: LucideIcon;
   items: HighlightItem[];
   /** Shown under the list, e.g. a "How points are calculated" button */
@@ -275,7 +275,7 @@ export function Highlight({
           <Icon className='size-4 text-chart-1' />
           {title}
         </CardTitle>
-        <CardDescription>{description}</CardDescription>
+        {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
       <CardContent>
         {items.length === 0 && empty && (

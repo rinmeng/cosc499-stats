@@ -129,7 +129,7 @@ export default function GradesPage() {
       <Section
         className={next()}
         title='Who taught each session'
-        description='As listed by UBC PAIR, newest first. Click a session for its cohort page.'
+        description='As listed by UBC PAIR.'
       >
         <Table>
           <TableHeader>
