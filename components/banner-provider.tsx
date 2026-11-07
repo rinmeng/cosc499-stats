@@ -18,6 +18,8 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from './ui';
 
 /**
  * Site-wide announcement banner. Like the theme (next-themes), the "seen it" flag lives in
@@ -156,7 +158,7 @@ export function Banner() {
             render={
               <Button variant='ghost' size='sm' className='h-7 shrink-0 gap-1 px-2'>
                 What’s new
-                <ChevronDown className='size-3.5' />
+                <ChevronDown />
               </Button>
             }
           />
@@ -164,17 +166,25 @@ export function Banner() {
             <PopoverHeader>
               <PopoverTitle>What’s new</PopoverTitle>
             </PopoverHeader>
-            <ul className='space-y-3'>
-              {CHANGES.map((c) => (
-                <li key={c.title} className='flex gap-3'>
-                  <c.icon className='mt-0.5 size-4 shrink-0 text-muted-foreground' />
-                  <div className='space-y-0.5'>
-                    <p className='font-medium'>{c.title}</p>
-                    <p className='text-muted-foreground'>{c.body}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <div className='gap-2 flex flex-col'>
+              <Separator />
+              {/* Fixed height so a long list scrolls here; the title and buttons stay put.
+                  Edge to edge (-mx-4) so the scrollbar sits at the popover's edge. */}
+              <ScrollArea className='-mx-4 h-64'>
+                <ul className='space-y-3 px-4'>
+                  {CHANGES.map((c) => (
+                    <li key={c.title} className='flex gap-3'>
+                      <c.icon className='mt-0.5 size-4 shrink-0 text-muted-foreground' />
+                      <div className='space-y-0.5'>
+                        <p className='font-medium'>{c.title}</p>
+                        <p className='text-muted-foreground'>{c.body}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </ScrollArea>
+              <Separator />
+            </div>
             <div className='flex justify-end gap-2'>
               {/* Hides the banner for good; "Got it" just closes this and keeps it. */}
               <Button size='sm' variant='ghost' onClick={dismiss}>
