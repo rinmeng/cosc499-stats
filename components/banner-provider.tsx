@@ -1,7 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import { CalendarDays, ChevronDown, Sparkles, TrendingUp, Trophy } from 'lucide-react';
+import {
+  CalendarDays,
+  ChevronDown,
+  GraduationCap,
+  Sparkles,
+  TrendingUp,
+  Trophy,
+} from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -102,6 +109,11 @@ const STRIP = 'h-10';
 /** What changed in this version, listed in the banner's "What's new" popover. */
 const CHANGES = [
   {
+    icon: GraduationCap,
+    title: 'Final grades and instructors',
+    body: 'Each cohort page shows who taught the class, how many students took it and how the class finished, from UBC’s public grade reports.',
+  },
+  {
     icon: CalendarDays,
     title: 'Weekly highlights first',
     body: 'The current cohort’s page leads with this week’s standouts. The term-long highlights are still a click away under “Show more”.',
@@ -132,8 +144,8 @@ export function Banner() {
         <Sparkles className='size-4 shrink-0 text-muted-foreground' />
         <p className='min-w-0 flex-1 truncate'>
           <span className='hidden sm:inline'>
-            <span className='font-bold'>New:</span> weekly highlights, a team podium and
-            team tracking by points.{' '}
+            <span className='font-bold'>New:</span> final grades for each class, weekly
+            highlights, a team podium and team tracking by points.{' '}
           </span>
           <span className='sm:hidden'>
             <span className='font-bold'>New</span> on the dashboard.{' '}
