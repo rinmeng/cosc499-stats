@@ -671,7 +671,6 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
                 c.hasOrg && <OrgLink org={c.org} />,
                 c.session === 'summer' && 'Summer session, May to August',
                 `${c.totals.teams} teams`,
-                `${fmt(c.totals.contributors)} contributors`,
                 `Started ${fmtDate(c.termStart)}`,
               ]
         }
