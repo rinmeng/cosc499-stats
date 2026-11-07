@@ -1,5 +1,7 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
+  ArrowRight,
   Clock,
   GitMerge,
   GitPullRequest,
@@ -30,7 +32,6 @@ import {
 
 import { ActivityChart } from '@/components/charts/ActivityChart';
 import { CohortTrendChart } from '@/components/charts/CohortTrendChart';
-import { GradeDistribution } from '@/components/charts/GradeDistribution';
 import { LanguageDonut } from '@/components/charts/LanguageDonut';
 import { MetricBarChart } from '@/components/charts/MetricBarChart';
 import { Punchcard } from '@/components/charts/Punchcard';
@@ -59,7 +60,7 @@ import { Badge } from '@/components/ui/badge';
 import { getCohort, getSummary } from '@/lib/data';
 import type { TeamStats } from '@/lib/types/stats';
 import { cohortSeo, pageMetadata } from '@/lib/seo';
-import { cohortColor, fmt, fmtCompact, fmtDate, fmtHours, pct } from '@/lib/format';
+import { fmt, fmtCompact, fmtDate, fmtHours, pct } from '@/lib/format';
 import {
   cohortTopView,
   currentWeek,
@@ -128,6 +129,20 @@ function OrgLink({ org }: { org?: string }) {
   );
 }
 
+/** Opens this session on the Grades page (its grade spread and the year-by-year view). */
+function GradesLink({ slug }: { slug: string }) {
+  return (
+    <Link
+      href={`/insights/grades#${slug}`}
+      className='group inline-flex items-center gap-1 font-medium text-foreground
+        underline-offset-2 hover:underline'
+    >
+      Grades report
+      <ArrowRight className='size-3.5 transition-transform group-hover:translate-x-0.5' />
+    </Link>
+  );
+}
+
 /** "Taught by A", "Taught by A and B": the instructors PAIR lists, if any. */
 function taughtBy(names: string[] | undefined) {
   if (!names?.length) return null;
@@ -165,18 +180,11 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             c.hasOrg && <OrgLink org={c.org} />,
             taughtBy(c.grades?.instructors),
             c.grades && `${fmt(c.grades.students)} students`,
+            c.grades && <GradesLink slug={c.slug} />,
           ]}
         >
           No team repositories from this session are visible on GitHub yet.
         </PageHeader>
-        {c.grades && (
-          <Reveal className={fadeUp(3)}>
-            <GradeDistribution
-              grades={c.grades}
-              color={cohortColor(c.year, summary.currentYear, c.session)}
-            />
-          </Reveal>
-        )}
         <Reveal className={fadeUp(3)}>
           <HelpComplete
             label={c.label}
@@ -698,6 +706,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
                 `${c.totals.teams} teams`,
                 `${fmt(c.totals.contributors)} contributors`,
                 `Started ${fmtDate(c.termStart)}`,
+                c.grades && <GradesLink slug={c.slug} />,
               ]
         }
       >
@@ -807,15 +816,6 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           </>
         )}
       </Grid>
-
-      {c.grades && (
-        <Reveal className={next()}>
-          <GradeDistribution
-            grades={c.grades}
-            color={cohortColor(c.year, summary.currentYear, c.session)}
-          />
-        </Reveal>
-      )}
 
       <div id='tracking' className='scroll-mt-20'>
         <CohortTrendChart

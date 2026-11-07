@@ -114,6 +114,7 @@ export function StackedShareChart({
               tickMargin={10}
               axisLine={false}
               interval={0}
+              tick={{ fontSize: 12, fontWeight: 600, fill: 'var(--foreground)' }}
             />
             <YAxis
               tickLine={false}

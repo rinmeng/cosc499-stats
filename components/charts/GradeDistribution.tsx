@@ -6,6 +6,7 @@ import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from 'recharts'
 import {
   Card,
   CardContent,
+  CardAction,
   CardDescription,
   CardFooter,
   CardHeader,
@@ -30,11 +31,20 @@ const num = (n: number | null) => (n === null ? '—' : `${Math.round(n * 10) / 
 export function GradeDistribution({
   grades: g,
   color,
+  title = 'Final grades',
+  action,
 }: {
   grades: CohortGrades;
   /** The cohort's color (cohortColor) */
   color: string;
+  title?: string;
+  /** Top-right control, e.g. a session picker */
+  action?: React.ReactNode;
 }) {
+  const names = g.instructors;
+  const taught = names.length
+    ? ` Taught by ${names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : names[0]}.`
+    : '';
   // Ten ranges don't fit side by side on a phone: tilt the labels.
   const tilt = useIsMobile();
   const config: ChartConfig = { count: { label: 'Students', color } };
@@ -64,12 +74,13 @@ export function GradeDistribution({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className='text-base'>Final grades</CardTitle>
+        <CardTitle className='text-base'>{title}</CardTitle>
         <CardDescription>
           How the {fmt(g.students)} students in COSC 499 finished
-          {g.sections > 1 ? `, across ${g.sections} sections` : ''}. Course-wide only:
-          grades are not linked to teams or people.
+          {g.sections > 1 ? `, across ${g.sections} sections` : ''}.{taught} Course-wide
+          only: grades are not linked to teams or people.
         </CardDescription>
+        {action && <CardAction>{action}</CardAction>}
       </CardHeader>
       <CardContent className='grid gap-6 lg:grid-cols-[minmax(0,14rem)_1fr]'>
         <dl className='grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3 lg:grid-cols-1'>
@@ -81,7 +92,11 @@ export function GradeDistribution({
           ))}
         </dl>
         <ChartContainer config={config} className='aspect-auto h-60 w-full'>
-          <BarChart data={data} margin={{ top: 20, left: -20, right: 4 }}>
+          <BarChart
+            key={g.yearsession}
+            data={data}
+            margin={{ top: 20, left: -20, right: 4 }}
+          >
             <CartesianGrid vertical={false} />
             <XAxis
               dataKey='label'
@@ -89,7 +104,8 @@ export function GradeDistribution({
               axisLine={false}
               tickMargin={8}
               interval={0}
-              fontSize={11}
+              // Bold labels in the foreground color, as in every bar chart (MetricBarChart).
+              tick={{ fontSize: 11, fontWeight: 600, fill: 'var(--foreground)' }}
               angle={tilt ? -45 : 0}
               textAnchor={tilt ? 'end' : 'middle'}
               height={tilt ? 44 : 30}

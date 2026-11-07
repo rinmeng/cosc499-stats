@@ -22,6 +22,12 @@ import {
   type InsightKind,
 } from '@/lib/format';
 import { finding, FINDING_KEYS, sessionFinding } from '@/lib/findings';
+import type {
+  GradeMeasure,
+  GradeSession,
+  GradesView,
+  GradeTrendRow,
+} from '@/lib/types/grades';
 import type { Era, Estimate, InsightMetric } from '@/lib/types/insights';
 import type { CohortStats, MetricKey, Summary, TeamStats } from '@/lib/types/stats';
 
@@ -609,4 +615,64 @@ export function topTeams<T>(
     .filter((t) => filter(t) && (value(t) ?? 0) > 0)
     .sort((a, b) => (value(b) ?? 0) - (value(a) ?? 0))
     .slice(0, n) as (TeamStats & T)[];
+}
+
+/* --------------------------------- Grades --------------------------------- */
+
+/** Every cohort with UBC PAIR grades, shaped for /insights/grades. */
+export function gradesView(s: Summary): GradesView {
+  const sessions: GradeSession[] = [...s.cohorts]
+    .sort(byTermStart)
+    .reverse()
+    .filter((c) => c.grades)
+    .map((c) => ({
+      slug: c.slug,
+      label: c.label,
+      session: c.session,
+      year: c.year,
+      color: cohortColor(c.year, s.currentYear, c.session),
+      grades: c.grades!,
+    }));
+
+  const students = sessions.reduce((a, x) => a + x.grades.students, 0);
+  const weighted = (f: (x: GradeSession) => number) =>
+    students ? sessions.reduce((a, x) => a + f(x) * x.grades.students, 0) / students : 0;
+
+  const trend = (measure: GradeMeasure): GradeTrendRow[] => {
+    const rows = new Map<number, GradeTrendRow>();
+    for (const x of [...sessions].reverse()) {
+      const row = rows.get(x.year) ?? { year: x.year };
+      const g = x.grades;
+      const value =
+        measure === 'average'
+          ? g.average
+          : measure === 'students'
+            ? g.students
+            : Math.round(g.share80 * 1000) / 10;
+      row[x.session] = value;
+      row[x.session === 'winter' ? 'winterLabel' : 'summerLabel'] = x.label;
+      rows.set(x.year, row);
+    }
+    return [...rows.values()].sort((a, b) => a.year - b.year);
+  };
+
+  return {
+    sessions,
+    totals: {
+      students,
+      sessions: sessions.length,
+      since: sessions.at(-1)?.label ?? '',
+      share80: weighted((x) => x.grades.share80),
+      average: Math.round(weighted((x) => x.grades.average) * 10) / 10,
+      largest: sessions.reduce<GradeSession | null>(
+        (best, x) => (!best || x.grades.students > best.grades.students ? x : best),
+        null
+      ),
+    },
+    trend: {
+      average: trend('average'),
+      students: trend('students'),
+      share80: trend('share80'),
+    },
+  };
 }

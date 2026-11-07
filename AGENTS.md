@@ -31,3 +31,15 @@ Contributors must keep the site's positive tone: never add "least contributed" v
 ## Keep SEO in sync
 
 When a change alters what a page shows (new or removed sections, data, counts, titles or wording a search snippet would describe), update that page's SEO in the same change: its `*Seo()` helper in `lib/seo.ts` (title and description, shared by `<head>` metadata and the social image), its `opengraph-image.tsx`, `SITE_DESCRIPTION` in `lib/site.ts` for site-wide changes, and `app/sitemap.ts` when a page is added or removed. Descriptions must only claim what the page actually shows, and follow the tone rule (no ranks or comparisons on personal pages).
+
+## Chart accessibility
+
+Color is never the only cue in a chart. Every chart with more than one series needs:
+
+- **A shape per series**, in the chart marks, the legend and the tooltip. Use `SeriesIcon` / `coloredIcon` from `components/charts/SeriesIcon.tsx` (circle, square, triangle, diamond…), or the era shapes in `EraShape.tsx` for era charts. Line charts draw those shapes as their dots, not plain circles (see `CohortTrendChart`, `GradeTrendChart`).
+- **A legend** that shows the shape, plus a short line sample for line charts. Summer sessions are always dashed, in the line and in the legend sample.
+- **The same colors as everywhere else**: `--chart-1..8`, `--seq-0..6`, and `cohortColor` / `ERA_COLOR` from `lib/format.ts`. Don't pick new colors.
+
+A plain shadcn `ChartLegendContent` with color swatches isn't enough on its own; give each series an `icon` in the `ChartConfig` (`coloredIcon`) or render the legend yourself. Single-series charts (one bar color) don't need a legend.
+
+Bar chart category labels (the axis that names each bar) are bold, in the foreground color: `tick={{ fontSize: 12, fontWeight: 600, fill: 'var(--foreground)' }}`.

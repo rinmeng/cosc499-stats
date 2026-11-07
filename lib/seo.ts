@@ -34,6 +34,13 @@ export const fingerprintsSeo = (): PageSeo => ({
   path: '/insights/fingerprints',
 });
 
+export const gradesSeo = (): PageSeo => ({
+  title: 'Grades',
+  description:
+    'UBCO COSC 499 final grades from UBC PAIR: class size, class average and how each year-long and summer session finished since 2017, with who taught it. Course-wide only, never a team or a person.',
+  path: '/insights/grades',
+});
+
 export const trendsSeo = (): PageSeo => ({
   title: 'Trends',
   description:
@@ -57,12 +64,12 @@ export function cohortSeo(c: CohortStats): PageSeo {
   const taught = names.length
     ? ` Taught by ${names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : names[0]}.`
     : '';
-  const grades = g ? `final grades for the class of ${fmt(g.students)}` : '';
+  const students = g ? ` for a class of ${fmt(g.students)} students` : '';
   return {
     title: `${c.label} cohort`,
     description: c.teams.length
-      ? `UBCO COSC 499 ${c.label} ${kind}: ${teams}, ${fmt(c.totals.commits)} commits and ${fmt(c.totals.prsMerged)} merged PRs. Top contributors, team highlights, weekly activity${g ? ` and ${grades}` : ''}.${taught}`
-      : `UBCO COSC 499 ${c.label} ${kind}. No team repositories are visible on GitHub yet${g ? `, but the ${grades} are here` : ''}. Help add your team.${taught}`,
+      ? `UBCO COSC 499 ${c.label} ${kind}: ${teams}, ${fmt(c.totals.commits)} commits and ${fmt(c.totals.prsMerged)} merged PRs. Top contributors, team highlights and weekly activity${students}.${taught}`
+      : `UBCO COSC 499 ${c.label} ${kind}. No team repositories are visible on GitHub yet${g ? `, but it had a class of ${fmt(g.students)} students` : ''}. Help add your team.${taught}`,
     path: `/${c.slug}`,
   };
 }

@@ -180,7 +180,7 @@ export function MetricBarChart({
                 angle={podiumData.length > 6 ? -45 : 0}
                 textAnchor={podiumData.length > 6 ? 'end' : 'middle'}
                 height={podiumData.length > 6 ? 64 : 30}
-                tick={{ fontSize: 12, fontWeight: 500, fill: 'var(--foreground)' }}
+                tick={{ fontSize: 12, fontWeight: 600, fill: 'var(--foreground)' }}
               />
               <YAxis tickLine={false} axisLine={false} width={40} allowDecimals={false} />
               {tooltip}
@@ -239,7 +239,7 @@ export function MetricBarChart({
               angle={crowded ? -45 : 0}
               textAnchor={crowded ? 'end' : 'middle'}
               height={crowded ? 64 : 30}
-              tick={{ fontSize: 12, fontWeight: 500, fill: 'var(--foreground)' }}
+              tick={{ fontSize: 12, fontWeight: 600, fill: 'var(--foreground)' }}
             />
             <YAxis tickLine={false} axisLine={false} width={40} allowDecimals={false} />
             {tooltip}

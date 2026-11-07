@@ -51,9 +51,10 @@ const links: NavLink[] = [
   { href: '/about', label: 'About', live: false },
 ];
 const insightLinks: NavLink[] = [
+  { href: '/insights/grades', label: 'Grades', live: false },
   { href: '/insights', label: 'AI impact', live: false },
-  { href: '/insights/fingerprints', label: 'AI tools', live: false },
   { href: '/insights/trends', label: 'Trends', live: false },
+  { href: '/insights/fingerprints', label: 'AI tools', live: false },
 ];
 const yearLinks = winter.map((c) => {
   const link = toLink(c);
@@ -126,9 +127,10 @@ function Brand({ onClick, className }: { onClick?: () => void; className?: strin
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  // '/' and '/insights' are parents of other links, so they match only exactly.
   const isActive = (href: string) =>
-    href === '/'
-      ? pathname === '/'
+    href === '/' || href === '/insights'
+      ? pathname === href
       : pathname === href || pathname.startsWith(`${href}/`);
 
   const items = (onClick?: () => void, className?: string, list = links) =>

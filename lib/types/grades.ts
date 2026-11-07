@@ -65,3 +65,43 @@ export interface CohortGrades {
   buckets: GradeBucket[];
   source: { dataset: string; fetchedAt: string };
 }
+
+/* ---------- Grades page (/insights/grades) view, built by gradesView in lib/views.ts ---------- */
+
+export interface GradeSession {
+  /** Cohort slug: "2023" or "summer-2023" */
+  slug: string;
+  label: string;
+  session: 'winter' | 'summer';
+  year: number;
+  /** The cohort's color (cohortColor) */
+  color: string;
+  grades: CohortGrades;
+}
+
+export type GradeMeasure = 'average' | 'students' | 'share80';
+
+/** One start year on the trend chart; a session missing that year is left out. */
+export interface GradeTrendRow {
+  year: number;
+  winter?: number;
+  summer?: number;
+  winterLabel?: string;
+  summerLabel?: string;
+}
+
+export interface GradesView {
+  /** Newest first */
+  sessions: GradeSession[];
+  totals: {
+    students: number;
+    sessions: number;
+    since: string;
+    /** 0–1, of every graded student */
+    share80: number;
+    /** Average over every student (weighted by class size) */
+    average: number;
+    largest: GradeSession | null;
+  };
+  trend: Record<GradeMeasure, GradeTrendRow[]>;
+}

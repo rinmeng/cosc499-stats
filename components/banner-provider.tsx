@@ -110,8 +110,8 @@ const STRIP = 'h-10';
 const CHANGES = [
   {
     icon: GraduationCap,
-    title: 'Final grades and instructors',
-    body: 'Each cohort page shows who taught the class, how many students took it and how the class finished, from UBC’s public grade reports.',
+    title: 'Grades',
+    body: 'A new Grades page under Insights charts class size and how every session finished since 2017, from UBC’s public grade reports. Cohort pages show who taught the class and link to its grades report.',
   },
   {
     icon: CalendarDays,
@@ -144,8 +144,8 @@ export function Banner() {
         <Sparkles className='size-4 shrink-0 text-muted-foreground' />
         <p className='min-w-0 flex-1 truncate'>
           <span className='hidden sm:inline'>
-            <span className='font-bold'>New:</span> final grades for each class, weekly
-            highlights, a team podium and team tracking by points.{' '}
+            <span className='font-bold'>New:</span> a Grades page, weekly highlights, a
+            team podium and team tracking by points.{' '}
           </span>
           <span className='sm:hidden'>
             <span className='font-bold'>New</span> on the dashboard.{' '}

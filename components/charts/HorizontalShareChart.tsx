@@ -91,6 +91,7 @@ export function HorizontalShareChart({
               tickMargin={10}
               axisLine={false}
               width={80}
+              tick={{ fontSize: 12, fontWeight: 600, fill: 'var(--foreground)' }}
             />
             <ChartTooltip
               cursor={false}
@@ -117,7 +118,7 @@ export function HorizontalShareChart({
                 />
               }
             />
-            <Bar dataKey='value' radius={5} isAnimationActive={false}>
+            <Bar dataKey='value' radius={5}>
               {data.map((d) => (
                 <Cell key={d.name} fill={d.fill} />
               ))}
