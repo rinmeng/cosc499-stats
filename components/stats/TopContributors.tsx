@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 import type { MetricKey } from '@/lib/types/stats';
+import { Progress } from '../ui';
 
 export interface TopEntryView {
   id: string;
@@ -133,11 +134,8 @@ export function TopList({
                 {`${e.value.toLocaleString()} ${unit}`}
               </span>
             </div>
-            <div className='mt-1 h-1 bg-muted'>
-              <div
-                className='h-full rounded-r-[4px] bg-chart-1'
-                style={{ width: `${Math.max(4, (e.value / best) * 100)}%` }}
-              />
+            <div className='mt-1 h-1'>
+              <Progress value={Math.max(4, (e.value / best) * 100)} />
             </div>
           </div>
         </li>
