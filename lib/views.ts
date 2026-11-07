@@ -113,7 +113,6 @@ export function teamBars(c: CohortStats): { rows: BarRow[]; metrics: BarMetric[]
   const rows = c.teams.map((t) => ({
     label: `T${t.team}`,
     name: t.name,
-    href: teamHref(c.slug, t),
     values: {
       score: overallScore(t),
       memberPoints: t.score,

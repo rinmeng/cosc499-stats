@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   Bar,
   BarChart,
@@ -34,8 +33,6 @@ export interface BarRow {
   /** full label for the tooltip */
   name: string;
   values: Record<string, number>;
-  /** page for this row; podium bars link to it */
-  href?: string;
 }
 
 export interface BarMetric {
@@ -89,14 +86,12 @@ export function MetricBarChart({
 }) {
   const [active, setActive] = useState(metrics[0]?.key);
   const [view, setView] = useState<'podium' | 'all'>('podium');
-  const router = useRouter();
   const metric = metrics.find((m) => m.key === active) ?? metrics[0];
   const parts = metric?.parts ?? [];
   const stacked = parts.length > 0;
   const data = rows.map((r) => ({
     label: r.label,
     name: r.name,
-    href: r.href,
     value: r.values[active] ?? 0,
     ...Object.fromEntries(parts.map((p) => [p.key, r.values[p.key] ?? 0])),
   }));
@@ -272,11 +267,6 @@ export function MetricBarChart({
                   shape={stacked ? shape(roomy ? 8 : 4) : undefined}
                   maxBarSize={160}
                   isAnimationActive={!stacked}
-                  className='cursor-pointer'
-                  onClick={(d) => {
-                    const href = (d.payload as { href?: string }).href;
-                    if (href) router.push(href);
-                  }}
                 >
                   {i === keys.length - 1 && (
                     <LabelList
