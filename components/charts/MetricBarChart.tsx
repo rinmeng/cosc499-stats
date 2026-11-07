@@ -2,10 +2,21 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from 'recharts';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  LabelList,
+  Rectangle,
+  XAxis,
+  YAxis,
+  type BarShapeProps,
+} from 'recharts';
 
 import {
   ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
@@ -15,6 +26,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { fmtCompact } from '@/lib/format';
 
 import { ChartCard } from './ChartCard';
+import { SeriesIcon, coloredIcon } from './SeriesIcon';
 
 export interface BarRow {
   /** short axis label, e.g. "T8" or "2025–26" */
@@ -32,7 +44,15 @@ export interface BarMetric {
   /** headline shown in the header button */
   total: string;
   unit?: string;
+  /**
+   * Row value keys that add up to this metric, drawn as a stacked bar (bottom first)
+   * with a legend, e.g. Overall = member points + teamwork bonus.
+   */
+  parts?: { key: string; label: string }[];
 }
+
+/** Stack colors: the usual bar color first, then lighter steps of the same palette. */
+const PART_COLORS = ['var(--series)', 'var(--chart-1)', 'var(--chart-5)'];
 
 /**
  * Interactive bar chart: one measure at a time, chosen from the header.
@@ -71,11 +91,14 @@ export function MetricBarChart({
   const [view, setView] = useState<'podium' | 'all'>('podium');
   const router = useRouter();
   const metric = metrics.find((m) => m.key === active) ?? metrics[0];
+  const parts = metric?.parts ?? [];
+  const stacked = parts.length > 0;
   const data = rows.map((r) => ({
     label: r.label,
     name: r.name,
     href: r.href,
     value: r.values[active] ?? 0,
+    ...Object.fromEntries(parts.map((p) => [p.key, r.values[p.key] ?? 0])),
   }));
   if (sortDesc || podium) data.sort((a, b) => b.value - a.value);
   const crowded = rows.length > 6;
@@ -92,33 +115,87 @@ export function MetricBarChart({
   // Many places: smaller labels, compact values (the tooltip keeps the full number).
   const roomy = podiumData.length <= 5;
 
-  const config = {
-    value: { label: metric?.label, color: 'var(--series)' },
-  } satisfies ChartConfig;
+  const config: ChartConfig = stacked
+    ? Object.fromEntries(
+        parts.map((p, i) => [
+          p.key,
+          {
+            label: p.label,
+            color: PART_COLORS[i % PART_COLORS.length],
+            icon: coloredIcon(i, PART_COLORS[i % PART_COLORS.length]),
+          },
+        ])
+      )
+    : { value: { label: metric?.label, color: 'var(--series)' } };
+  const unit = metric?.unit ? ` ${metric.unit}` : '';
 
   const tooltip = (
     <ChartTooltip
       cursor={{ fill: 'var(--muted)', opacity: 0.6 }}
       content={
         <ChartTooltipContent
-          className='w-44'
+          className={stacked ? 'w-56' : 'w-44'}
           labelFormatter={(_, p) => (p?.[0]?.payload as { name: string })?.name}
-          formatter={(value) => (
-            <div className='flex w-full items-center justify-between gap-3'>
-              <span className='flex items-center gap-1.5 text-muted-foreground'>
-                <span className='size-2.5 shrink-0 rounded-[2px] bg-(--color-value)' />
-                {metric?.label}
-              </span>
-              <span className='font-mono font-medium tabular-nums'>
-                {Number(value).toLocaleString()}
-                {metric?.unit ? ` ${metric.unit}` : ''}
-              </span>
-            </div>
-          )}
+          formatter={(value, name, item, index) => {
+            const i = parts.findIndex((p) => p.key === name);
+            return (
+              <div className='flex w-full flex-col gap-1'>
+                <div className='flex w-full items-center justify-between gap-3'>
+                  <span className='flex items-center gap-1.5 text-muted-foreground'>
+                    {stacked ? (
+                      <SeriesIcon
+                        index={i}
+                        color={PART_COLORS[i % PART_COLORS.length]}
+                        className='size-3'
+                      />
+                    ) : (
+                      <span className='size-2.5 shrink-0 rounded-[2px] bg-(--color-value)' />
+                    )}
+                    {stacked ? parts[i]?.label : metric?.label}
+                  </span>
+                  <span className='font-mono font-medium tabular-nums'>
+                    {Number(value).toLocaleString()}
+                    {unit}
+                  </span>
+                </div>
+                {stacked && index === parts.length - 1 && (
+                  <div
+                    className='flex w-full items-center justify-between gap-3 border-t
+                      pt-1 font-medium'
+                  >
+                    <span>{metric?.label}</span>
+                    <span className='font-mono tabular-nums'>
+                      {Number((item.payload as { value: number }).value).toLocaleString()}
+                      {unit}
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          }}
         />
       }
     />
   );
+
+  const legend = stacked && (
+    <ChartLegend
+      content={<ChartLegendContent className='flex-wrap gap-x-4 gap-y-1.5' />}
+    />
+  );
+
+  /**
+   * Stacked: round only the top segment that has height, so a team with no bonus
+   * still gets a rounded bar.
+   */
+  const shape = (r: number) =>
+    function StackShape(props: BarShapeProps) {
+      const key = (props as { dataKey?: string }).dataKey;
+      const row = props.payload as Record<string, number>;
+      const at = parts.findIndex((p) => p.key === key);
+      const top = parts.slice(at + 1).every((p) => !row[p.key]);
+      return <Rectangle {...props} radius={top ? [r, r, 0, 0] : 0} />;
+    };
 
   return (
     <ChartCard
@@ -184,37 +261,48 @@ export function MetricBarChart({
               />
               <YAxis tickLine={false} axisLine={false} width={40} allowDecimals={false} />
               {tooltip}
-              <Bar
-                dataKey='value'
-                fill='var(--color-value)'
-                radius={roomy ? [8, 8, 0, 0] : [4, 4, 0, 0]}
-                maxBarSize={160}
-                className='cursor-pointer'
-                onClick={(d) => {
-                  const href = (d.payload as { href?: string }).href;
-                  if (href) router.push(href);
-                }}
-              >
-                <LabelList
-                  dataKey='value'
-                  position='top'
-                  offset={10}
-                  className='fill-foreground font-mono'
-                  fontSize={roomy ? 12 : 10}
-                  formatter={(v) =>
-                    roomy
-                      ? `${Number(v).toLocaleString()}${metric?.unit ? ` ${metric.unit}` : ''}`
-                      : fmtCompact(Number(v))
-                  }
-                />
-                <LabelList
-                  dataKey='rank'
-                  position='insideTop'
-                  offset={roomy ? 12 : 6}
-                  className='fill-background font-heading font-bold'
-                  fontSize={roomy ? 28 : 14}
-                />
-              </Bar>
+              {legend}
+              {(stacked ? parts.map((p) => p.key) : ['value']).map((key, i, keys) => (
+                <Bar
+                  key={key}
+                  dataKey={key}
+                  stackId={stacked ? 'parts' : undefined}
+                  fill={`var(--color-${key})`}
+                  radius={roomy ? [8, 8, 0, 0] : [4, 4, 0, 0]}
+                  shape={stacked ? shape(roomy ? 8 : 4) : undefined}
+                  maxBarSize={160}
+                  isAnimationActive={!stacked}
+                  className='cursor-pointer'
+                  onClick={(d) => {
+                    const href = (d.payload as { href?: string }).href;
+                    if (href) router.push(href);
+                  }}
+                >
+                  {i === keys.length - 1 && (
+                    <LabelList
+                      dataKey='value'
+                      position='top'
+                      offset={10}
+                      className='fill-foreground font-mono'
+                      fontSize={roomy ? 12 : 10}
+                      formatter={(v) =>
+                        roomy
+                          ? `${Number(v).toLocaleString()}${metric?.unit ? ` ${metric.unit}` : ''}`
+                          : fmtCompact(Number(v))
+                      }
+                    />
+                  )}
+                  {i === 0 && (
+                    <LabelList
+                      dataKey='rank'
+                      position='insideTop'
+                      offset={roomy ? 12 : 6}
+                      className='fill-background font-heading font-bold'
+                      fontSize={roomy ? 28 : 14}
+                    />
+                  )}
+                </Bar>
+              ))}
             </BarChart>
           </ChartContainer>
         ) : (
@@ -243,12 +331,19 @@ export function MetricBarChart({
             />
             <YAxis tickLine={false} axisLine={false} width={40} allowDecimals={false} />
             {tooltip}
-            <Bar
-              dataKey='value'
-              fill='var(--color-value)'
-              radius={[4, 4, 0, 0]}
-              maxBarSize={56}
-            />
+            {legend}
+            {(stacked ? parts.map((p) => p.key) : ['value']).map((key) => (
+              <Bar
+                key={key}
+                dataKey={key}
+                stackId={stacked ? 'parts' : undefined}
+                fill={`var(--color-${key})`}
+                radius={[4, 4, 0, 0]}
+                shape={stacked ? shape(4) : undefined}
+                maxBarSize={56}
+                isAnimationActive={!stacked}
+              />
+            ))}
           </BarChart>
         </ChartContainer>
       )}

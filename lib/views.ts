@@ -116,6 +116,8 @@ export function teamBars(c: CohortStats): { rows: BarRow[]; metrics: BarMetric[]
     href: teamHref(c.slug, t),
     values: {
       score: overallScore(t),
+      memberPoints: t.score,
+      teamworkBonus: t.teamworkBonus,
       commits: t.commits,
       prsMerged: t.prsMerged,
       reviews: t.reviews,
@@ -125,7 +127,16 @@ export function teamBars(c: CohortStats): { rows: BarRow[]; metrics: BarMetric[]
   return {
     rows,
     metrics: [
-      { key: 'score', label: 'Overall', total: fmtCompact(sum('score')), unit: 'pts' },
+      {
+        key: 'score',
+        label: 'Overall',
+        total: fmtCompact(sum('score')),
+        unit: 'pts',
+        parts: [
+          { key: 'memberPoints', label: 'Member points' },
+          { key: 'teamworkBonus', label: 'Teamwork bonus' },
+        ],
+      },
       { key: 'commits', label: 'Commits', total: fmtCompact(sum('commits')) },
       { key: 'prsMerged', label: 'Merged PRs', total: fmt(sum('prsMerged')) },
       { key: 'reviews', label: 'Reviews', total: fmt(sum('reviews')) },
