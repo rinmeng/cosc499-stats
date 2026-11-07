@@ -61,6 +61,9 @@ export function ChartCard<K extends string>({
   // Each emphasized metric spans two columns; plain ones take one. No spare cells.
   const emphasised = (metrics?.length ?? 0) - plain;
   const stackedCols = { '--cols-lg': plain + emphasised * 2 } as React.CSSProperties;
+  const hasMetrics = !!metrics && metrics.length > 0;
+  // Desktop: the right-hand side (action and/or metrics) takes exactly half the header.
+  const half = !!action || wideMetrics;
 
   return (
     <Card className={cn('gap-0 py-0', className)}>
@@ -77,75 +80,84 @@ export function ChartCard<K extends string>({
           <CardTitle>{title}</CardTitle>
           {description && <CardDescription>{description}</CardDescription>}
         </div>
-        {action && (
-          <div
-            className={cn(
-              `flex items-center px-4 pb-4 sm:px-6 w-full lg:w-1/2 justify-center
-              lg:justify-end`,
-              !stacked && 'lg:py-5 lg:pl-0'
-            )}
-          >
-            {action}
-          </div>
-        )}
-        {metrics && metrics.length > 0 && (
-          <div
-            className={cn(
-              'grid gap-px border-t bg-border',
-              stacked
-                ? // phones: wrap 3 per row and let the last row stretch (no empty cells)
-                  `flex flex-wrap lg:grid
-                    lg:grid-cols-[repeat(var(--cols-lg),minmax(0,1fr))]`
-                : 'lg:flex lg:border-t-0 lg:border-l',
-              wideMetrics && !stacked && 'lg:w-1/2 lg:shrink-0'
-            )}
-            style={
-              stacked
-                ? stackedCols
-                : { gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }
-            }
-          >
-            {metrics.map((m) => (
-              <button
-                key={m.key}
-                type='button'
-                data-active={active === m.key}
-                data-emphasis={m.emphasis || undefined}
-                aria-pressed={active === m.key}
-                onClick={() => onActive?.(m.key)}
-                style={m.emphasis && !stacked ? { gridColumn: '1 / -1' } : undefined}
-                data-stacked={stacked || undefined}
-                className='group/metric flex min-w-0 flex-col justify-center gap-1 bg-card
-                  px-3 py-3 text-left transition-colors hover:bg-muted/40
-                  data-[active=true]:bg-muted sm:px-5 sm:py-4 lg:min-w-28 lg:flex-1
-                  lg:px-6 lg:py-5 sm:data-emphasis:py-5 lg:data-emphasis:min-w-56
-                  lg:data-emphasis:flex-[2] data-stacked:grow data-stacked:basis-[30%]
-                  data-stacked:data-emphasis:basis-full lg:data-stacked:basis-auto
-                  lg:data-stacked:data-emphasis:col-span-2'
-              >
-                <span
-                  className='flex min-w-0 items-center gap-1.5 text-[11px]
-                    text-muted-foreground sm:text-xs
-                    group-data-emphasis/metric:font-medium
-                    group-data-emphasis/metric:text-foreground'
+        {/* Desktop row layout: the action and metrics share the right half of the header */}
+        <div
+          className={cn(
+            'flex flex-col',
+            stacked ? 'contents' : 'lg:flex-row',
+            !stacked && half && 'lg:w-1/2 lg:shrink-0'
+          )}
+        >
+          {action && (
+            <div
+              className={cn(
+                'flex w-full items-center justify-center px-4 pb-4 sm:px-6',
+                !stacked && 'lg:justify-end lg:py-5 lg:pl-0',
+                !stacked && (hasMetrics ? 'lg:w-auto lg:shrink-0' : 'lg:flex-1')
+              )}
+            >
+              {action}
+            </div>
+          )}
+          {hasMetrics && (
+            <div
+              className={cn(
+                'grid gap-px border-t bg-border',
+                stacked
+                  ? // phones: wrap 3 per row and let the last row stretch (no empty cells)
+                    `flex flex-wrap lg:grid
+                      lg:grid-cols-[repeat(var(--cols-lg),minmax(0,1fr))]`
+                  : 'lg:flex lg:border-t-0 lg:border-l',
+                !stacked && half && 'lg:min-w-0 lg:flex-1'
+              )}
+              style={
+                stacked
+                  ? stackedCols
+                  : { gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }
+              }
+            >
+              {metrics.map((m) => (
+                <button
+                  key={m.key}
+                  type='button'
+                  data-active={active === m.key}
+                  data-emphasis={m.emphasis || undefined}
+                  aria-pressed={active === m.key}
+                  onClick={() => onActive?.(m.key)}
+                  style={m.emphasis && !stacked ? { gridColumn: '1 / -1' } : undefined}
+                  data-stacked={stacked || undefined}
+                  className='group/metric flex min-w-0 flex-col justify-center gap-1
+                    bg-card px-3 py-3 text-left transition-colors hover:bg-muted/40
+                    data-[active=true]:bg-muted sm:px-5 sm:py-4 lg:min-w-28 lg:flex-1
+                    lg:px-6 lg:py-5 sm:data-emphasis:py-5 lg:data-emphasis:min-w-56
+                    lg:data-emphasis:flex-[2] data-stacked:grow data-stacked:basis-[30%]
+                    data-stacked:data-emphasis:basis-full lg:data-stacked:basis-auto
+                    lg:data-stacked:data-emphasis:col-span-2'
                 >
-                  {m.icon}
-                  <span className='truncate'>{m.label}</span>
-                </span>
-                <span
-                  className='font-heading text-lg leading-none font-bold tabular-nums
-                    sm:text-2xl group-data-emphasis/metric:text-4xl
-                    sm:group-data-emphasis/metric:text-5xl'
-                >
-                  {m.value}
-                </span>
-                {m.emphasis && m.hint && (
-                  <span className='text-xs text-muted-foreground'>{m.hint}</span>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
+                  <span
+                    className='flex min-w-0 items-center gap-1.5 text-[11px]
+                      text-muted-foreground sm:text-xs
+                      group-data-emphasis/metric:font-medium
+                      group-data-emphasis/metric:text-foreground'
+                  >
+                    {m.icon}
+                    <span className='truncate'>{m.label}</span>
+                  </span>
+                  <span
+                    className='font-heading text-lg leading-none font-bold tabular-nums
+                      sm:text-2xl group-data-emphasis/metric:text-4xl
+                      sm:group-data-emphasis/metric:text-5xl'
+                  >
+                    {m.value}
+                  </span>
+                  {m.emphasis && m.hint && (
+                    <span className='text-xs text-muted-foreground'>{m.hint}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </CardHeader>
       {/* flex-1 so cards sharing a grid row stretch to the same height; charts grow into it */}
       <CardContent className='flex flex-1 flex-col px-2 py-4 sm:p-6'>

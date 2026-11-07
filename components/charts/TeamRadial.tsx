@@ -26,7 +26,7 @@ export interface RadialItem {
   hint: string;
 }
 
-/** Radial bars (with labels) for a team's 0–100 habits: review culture, collaboration, steadiness. */
+/** Radial bars (with labels) for a team's 0–100 habits: reviews, discussion, steadiness, sharing. */
 export function TeamRadial({ items }: { items: RadialItem[] }) {
   const config: ChartConfig = {
     value: { label: 'Score' },
@@ -61,7 +61,14 @@ export function TeamRadial({ items }: { items: RadialItem[] }) {
                   nameKey='key'
                   formatter={(value, _n, item) => (
                     <div className='flex w-full items-center justify-between gap-3'>
-                      <span className='text-muted-foreground'>{item.payload.label}</span>
+                      <span className='flex items-center gap-1.5 text-muted-foreground'>
+                        <SeriesIcon
+                          index={items.findIndex((x) => x.key === item.payload.key)}
+                          color={String(config[item.payload.key]?.color)}
+                          className='size-3'
+                        />
+                        {item.payload.label}
+                      </span>
                       <span className='font-mono tabular-nums'>
                         {Math.round(Number(value))}
                       </span>

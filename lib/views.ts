@@ -151,6 +151,9 @@ export function cohortBars(s: Summary): { rows: BarRow[]; metrics: BarMetric[] }
   };
 }
 
+/** Comments + reviews per merged PR that fill the Discussion ring. */
+const DISCUSSION_FULL = 4;
+
 /** 0–100 team habits for the radial chart. */
 export function teamHabits(c: CohortStats, t: TeamStats): RadialItem[] {
   const lastWeek = c.isCurrent
@@ -160,12 +163,31 @@ export function teamHabits(c: CohortStats, t: TeamStats): RadialItem[] {
   const active = t.weekly.filter(
     (w) => w.week >= 0 && w.week <= lastWeek && w.commits > 0
   ).length;
-  return [
+  const habits: RadialItem[] = [
     {
       key: 'review',
       label: 'Reviews',
       value: t.reviewCoverage * 100,
       hint: 'merged PRs reviewed by a teammate',
+    },
+    // Next to Reviews, since both are about PR feedback. Only teams with merged PRs get
+    // it; an empty ring would read as a flag. 4 comments + reviews per PR fills it (the
+    // median team has about 2).
+    ...(t.prsMerged > 0
+      ? [
+          {
+            key: 'discuss',
+            label: 'Discussion',
+            value: Math.min(100, (t.discussionPerPr / DISCUSSION_FULL) * 100),
+            hint: 'comments and reviews per merged PR',
+          },
+        ]
+      : []),
+    {
+      key: 'steady',
+      label: 'Steady',
+      value: Math.min(100, (active / span) * 100),
+      hint: 'weeks with commits this term',
     },
     {
       key: 'collab',
@@ -173,13 +195,8 @@ export function teamHabits(c: CohortStats, t: TeamStats): RadialItem[] {
       value: t.collaboration * 100,
       hint: 'how evenly commits are shared',
     },
-    {
-      key: 'steady',
-      label: 'Steady',
-      value: Math.min(100, (active / span) * 100),
-      hint: 'weeks with commits this term',
-    },
   ];
+  return habits;
 }
 
 /** Oldest first, by when the term started (summer 2024 sits between 2023–24 and 2024–25). */
