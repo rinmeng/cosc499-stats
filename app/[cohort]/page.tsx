@@ -183,6 +183,9 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
 
   const week = currentWeek(c);
   const live = c.isCurrent;
+  // Whole-term points: what members earned, plus each team's teamwork bonus.
+  const earned = c.teams.reduce((a, t) => a + t.score, 0);
+  const bonus = c.teams.reduce((a, t) => a + t.teamworkBonus, 0);
 
   // Shares need enough actions to mean something.
   const enough = (t: TeamStats) => t.activity >= 100;
@@ -714,13 +717,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         </Reveal>
       )}
 
-      <Grid
-        className={
-          live
-            ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6'
-            : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-5'
-        }
-      >
+      <Grid className='grid-cols-2 md:grid-cols-3 lg:grid-cols-6'>
         {live ? (
           <>
             <StatTile
@@ -801,6 +798,18 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           </>
         ) : (
           <>
+            <StatTile
+              className={next()}
+              icon={Star}
+              label='Overall'
+              value={fmtCompact(earned + bonus)}
+              unit='pts'
+              hint={
+                bonus > 0
+                  ? `${fmt(earned)} earned + ${fmt(bonus)} teamwork bonus`
+                  : undefined
+              }
+            />
             <StatTile
               className={next()}
               icon={GitPullRequest}

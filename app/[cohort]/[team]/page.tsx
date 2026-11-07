@@ -230,7 +230,7 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
               unit='pts'
               hint={
                 t.teamworkBonus > 0
-                  ? `${fmt(t.score)} + ${fmt(t.teamworkBonus)} teamwork bonus`
+                  ? `${fmt(t.score)} earned + ${fmt(t.teamworkBonus)} teamwork bonus`
                   : undefined
               }
             />
