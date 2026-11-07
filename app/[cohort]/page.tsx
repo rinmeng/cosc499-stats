@@ -346,7 +346,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: Moon,
             title: 'Night owls this week',
-            description: 'Actions between 10 pm and 4 am since last Sunday',
+            description: 'Activity between 10 pm and 4 am since last Sunday',
           },
           topTeams(c, (t) => t.thisWeekNightActivity ?? 0, 3),
           (t) => ({ value: fmt(t.thisWeekNightActivity ?? 0), unit: 'actions' })
@@ -355,7 +355,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: Sunrise,
             title: 'Early birds this week',
-            description: 'Actions between 5 am and 9 am since last Sunday',
+            description: 'Activity between 5 am and 9 am since last Sunday',
             empty: 'No teams were early birds this week.',
           },
           topTeams(c, (t) => t.thisWeekEarlyActivity ?? 0, 3),
@@ -365,7 +365,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: CalendarDays,
             title: 'Weekend warriors this week',
-            description: 'Actions on Saturday or Sunday this week',
+            description: 'Activity on Saturday or Sunday this week',
           },
           topTeams(c, (t) => t.thisWeekWeekendActivity ?? 0, 3),
           (t) => ({ value: fmt(t.thisWeekWeekendActivity ?? 0), unit: 'actions' })
@@ -417,7 +417,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: Ghost,
             title: 'Witching hour',
-            description: 'Actions between 3 and 4 am',
+            description: 'Activity between 3 and 4 am',
           },
           topTeams(c, (t) => t.witchingActivity, 3),
           (t) => ({ value: fmt(t.witchingActivity), unit: 'actions' })
@@ -428,8 +428,8 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             title: 'Holiday heroes',
             description:
               c.session === 'summer'
-                ? 'Actions on Victoria Day, Canada Day or BC Day'
-                : 'Actions on Thanksgiving, over Christmas and New Year, or in reading week',
+                ? 'Activity on Victoria Day, Canada Day or BC Day'
+                : 'Activity on Thanksgiving, over Christmas and New Year, or in reading week',
           },
           topTeams(c, (t) => t.holidayActivity, 3),
           (t) => ({ value: fmt(t.holidayActivity), unit: 'actions' })
@@ -438,7 +438,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: NotebookPen,
             title: 'Exam-season grinders',
-            description: 'Actions during the December and April exam periods',
+            description: 'Activity during the December and April exam periods',
           },
           topTeams(c, (t) => t.examActivity, 3),
           (t) => ({ value: fmt(t.examActivity), unit: 'actions' })

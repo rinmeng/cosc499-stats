@@ -35,7 +35,7 @@ const RANGES: { value: Range; label: string }[] = [
 const shortDate = (iso: string) => format(parseDate(iso), 'MMM d', { in: UTC });
 
 /**
- * Weekly actions as an area chart: every commit, PR opened or merged, review and issue
+ * Weekly activity (actions) as an area chart: every commit, PR opened or merged, review and issue
  * opened, like the rhythm stats. Narrow the time range with the select.
  */
 export function ActivityChart({
@@ -87,14 +87,14 @@ export function ActivityChart({
 
   const total = rows.reduce((a, r) => a + r.activity, 0).toLocaleString();
   const config = {
-    activity: { label: 'Actions', color: 'var(--series)' },
+    activity: { label: 'Activity', color: 'var(--series)' },
   } satisfies ChartConfig;
 
   return (
     <ChartCard
       title={title}
       description={description}
-      metrics={[{ key: 'activity', label: 'Actions', value: total }]}
+      metrics={[{ key: 'activity', label: 'Activity', value: total }]}
       active='activity'
       action={
         <div className='flex flex-wrap items-center justify-center gap-1 lg:justify-end'>
@@ -145,6 +145,22 @@ export function ActivityChart({
                   const r = p?.[0]?.payload as
                     { week: number; start: string } | undefined;
                   return r ? `Week ${r.week} · from ${shortDate(r.start)}` : '';
+                }}
+                formatter={(value) => {
+                  const n = Number(value);
+                  return (
+                    <div className='flex w-full items-center justify-between gap-3'>
+                      <span className='flex items-center gap-1.5 text-muted-foreground'>
+                        <span
+                          className='size-2.5 shrink-0 rounded-full bg-(--color-activity)'
+                        />
+                        Activity
+                      </span>
+                      <span className='font-mono font-medium tabular-nums'>
+                        {n.toLocaleString()} {n === 1 ? 'action' : 'actions'}
+                      </span>
+                    </div>
+                  );
                 }}
               />
             }

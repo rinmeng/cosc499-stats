@@ -133,7 +133,7 @@ export default function Overview() {
     {
       icon: Ghost,
       title: '3 am regulars',
-      description: 'Most actions between 3 and 4 am',
+      description: 'Most activity between 3 and 4 am',
       items: top3(people, (p) => p.m.witchingActivity).map((p) =>
         personItem(p, fmt(p.m.witchingActivity), 'actions')
       ),
@@ -150,7 +150,7 @@ export default function Overview() {
     {
       icon: TreePine,
       title: 'Holiday heroes',
-      description: 'Most actions on holidays and breaks',
+      description: 'Most activity on holidays and breaks',
       items: top3(people, (p) => p.m.holidayActivity).map((p) =>
         personItem(p, fmt(p.m.holidayActivity), 'actions')
       ),
