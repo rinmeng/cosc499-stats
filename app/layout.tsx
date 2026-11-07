@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/next';
 
 import { Footer } from '@/components/Footer';
 import { Navbar } from '@/components/Navbar';
+import { ScrollToTop } from '@/components/ScrollToTop';
 
 import './globals.css';
 
@@ -125,6 +126,7 @@ export default function RootLayout({
         <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
           <TooltipProvider>
             <BannerProvider>
+              <ScrollToTop />
               <Navbar />
               <main className='page-container pt-26 pb-16'>
                 <BannerSpacer />
