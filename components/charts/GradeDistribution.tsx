@@ -18,6 +18,7 @@ import {
   type ChartConfig,
 } from '@/components/ui/chart';
 import { fmt, pct } from '@/lib/format';
+import { useIsMobile } from '@/hooks/use-mobile';
 import type { CohortGrades } from '@/lib/types';
 
 const PAIR_URL =
@@ -34,6 +35,8 @@ export function GradeDistribution({
   /** The cohort's color (cohortColor) */
   color: string;
 }) {
+  // Ten ranges don't fit side by side on a phone: tilt the labels.
+  const tilt = useIsMobile();
   const config: ChartConfig = { count: { label: 'Students', color } };
   const data = g.buckets.map((b) => ({
     label: b.label,
@@ -77,7 +80,7 @@ export function GradeDistribution({
             </div>
           ))}
         </dl>
-        <ChartContainer config={config} className='aspect-auto h-56 w-full'>
+        <ChartContainer config={config} className='aspect-auto h-60 w-full'>
           <BarChart data={data} margin={{ top: 20, left: -20, right: 4 }}>
             <CartesianGrid vertical={false} />
             <XAxis
@@ -87,6 +90,9 @@ export function GradeDistribution({
               tickMargin={8}
               interval={0}
               fontSize={11}
+              angle={tilt ? -45 : 0}
+              textAnchor={tilt ? 'end' : 'middle'}
+              height={tilt ? 44 : 30}
             />
             <YAxis tickLine={false} axisLine={false} allowDecimals={false} width={48} />
             <ChartTooltip
