@@ -205,6 +205,9 @@ export function CohortTrendChart({
         : `${valueLabel} by the end of term`;
     if (!prev) return base;
     const diff = Math.round(valueAt(s) - valueAt(prev));
+    // Live term: the label already says the week, so just the lead, as a percentage.
+    if (currentWeek !== undefined && diff > 0 && valueAt(prev) > 0)
+      return `${Math.round((diff / valueAt(prev)) * 100)}% ahead of ${prev.label}`;
     return diff > 0
       ? `${base} · ${diff.toLocaleString()} ahead of ${prev.label} ${when}`
       : `${base} · ${prev.label} was at ${Math.round(valueAt(prev)).toLocaleString()} ${when}`;
@@ -227,7 +230,9 @@ export function CohortTrendChart({
       action={action}
       metrics={tiles.map((s) => ({
         key: s.slug,
-        label: s.isCurrent ? `${s.label} · now` : s.label,
+        label: s.isCurrent
+          ? `${s.label} · ${currentWeek !== undefined ? `Week ${currentWeek}` : 'now'}`
+          : s.label,
         icon: <ShapeIcon Icon={shapeOf.get(s.slug)!} color={s.color} size={11} />,
         value: fmt(valueAt(s)),
         emphasis: s === main,
