@@ -49,6 +49,7 @@ There is no `tailwind.config.js`. Tailwind v4 is configured entirely via PostCSS
 
 - `sync.config.ts`: cohorts (orgs), repo filters, excluded logins, score weights.
 - `scripts/sync.ts`: GitHub GraphQL → `data/raw/<org>/<repo>.json` (types: `RawRepo` in `lib/types/stats.ts`).
+- `scripts/sync-grades.ts` (`pnpm sync:grades`): COSC 499 grades/professors from UBC PAIR via the UBCGrades API → `data/raw/pair/<yearsession>.json` (source in `data/raw/pair/README.md`).
 - `scripts/aggregate.ts`: raw → `data/summary.json` (`Summary` type). Pure, no network.
 - `lib/data.ts` (server-only) reads the summary; `lib/views.ts` shapes it into client props.
 - Pages: `/` overview, `/[year]` cohort, `/[year]/[team]` team detail.

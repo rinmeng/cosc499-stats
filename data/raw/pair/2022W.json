@@ -1,0 +1,77 @@
+{
+  "yearsession": "2022W",
+  "source": {
+    "origin": "UBC PAIR Grade Distribution Report",
+    "dataset": "https://github.com/DonneyF/ubc-pair-grade-data",
+    "api": "https://ubcgrades.com/api/v3",
+    "fetchedAt": "2026-11-07"
+  },
+  "sections": [
+    {
+      "average": 89.9,
+      "campus": "UBCO",
+      "course": "499",
+      "course_title": "Capstone Software Engineering Project",
+      "detail": "",
+      "educators": "Gema Rodriguez-Perez",
+      "faculty_title": "Faculty of Arts and Sciences",
+      "grades": {
+        "50-54%": 0,
+        "55-59%": 0,
+        "60-63%": 0,
+        "64-67%": 0,
+        "68-71%": 0,
+        "72-75%": 6,
+        "76-79%": 4,
+        "80-84%": 11,
+        "85-89%": 17,
+        "90-100%": 57,
+        "<50%": 0
+      },
+      "high": 99,
+      "low": 74,
+      "median": 92,
+      "percentile_25": 85,
+      "percentile_75": 96,
+      "reported": 95,
+      "section": "001",
+      "session": "W",
+      "subject": "COSC",
+      "subject_title": "Computer Science",
+      "year": "2022"
+    },
+    {
+      "average": 89.9,
+      "campus": "UBCO",
+      "course": "499",
+      "course_title": "Capstone Software Engineering Project",
+      "detail": "",
+      "educators": null,
+      "faculty_title": "Faculty of Arts and Sciences",
+      "grades": {
+        "50-54%": 0,
+        "55-59%": 0,
+        "60-63%": 0,
+        "64-67%": 0,
+        "68-71%": 0,
+        "72-75%": 6,
+        "76-79%": 4,
+        "80-84%": 11,
+        "85-89%": 17,
+        "90-100%": 57,
+        "<50%": 0
+      },
+      "high": 99,
+      "low": 74,
+      "median": null,
+      "percentile_25": null,
+      "percentile_75": null,
+      "reported": 95,
+      "section": "OVERALL",
+      "session": "W",
+      "subject": "COSC",
+      "subject_title": "Computer Science",
+      "year": "2022"
+    }
+  ]
+}

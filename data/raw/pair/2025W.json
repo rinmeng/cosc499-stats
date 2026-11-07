@@ -1,0 +1,77 @@
+{
+  "yearsession": "2025W",
+  "source": {
+    "origin": "UBC PAIR Grade Distribution Report",
+    "dataset": "https://github.com/DonneyF/ubc-pair-grade-data",
+    "api": "https://ubcgrades.com/api/v3",
+    "fetchedAt": "2026-11-07"
+  },
+  "sections": [
+    {
+      "average": 79.3,
+      "campus": "UBCO",
+      "course": "499",
+      "course_title": "Capstone Software Engineering Project",
+      "detail": "",
+      "educators": "Bowen Hui",
+      "faculty_title": "Faculty of Arts and Sciences",
+      "grades": {
+        "50-54%": 0,
+        "55-59%": 1,
+        "60-63%": 1,
+        "64-67%": 2,
+        "68-71%": 4,
+        "72-75%": 8,
+        "76-79%": 13,
+        "80-84%": 27,
+        "85-89%": 27,
+        "90-100%": 23,
+        "<50%": 10
+      },
+      "high": 96,
+      "low": 12,
+      "median": 83,
+      "percentile_25": 77,
+      "percentile_75": 88,
+      "reported": 116,
+      "section": "001",
+      "session": "W",
+      "subject": "COSC",
+      "subject_title": "Computer Science",
+      "year": "2025"
+    },
+    {
+      "average": 79.3,
+      "campus": "UBCO",
+      "course": "499",
+      "course_title": "Capstone Software Engineering Project",
+      "detail": "",
+      "educators": null,
+      "faculty_title": "Faculty of Arts and Sciences",
+      "grades": {
+        "50-54%": 0,
+        "55-59%": 1,
+        "60-63%": 1,
+        "64-67%": 2,
+        "68-71%": 4,
+        "72-75%": 8,
+        "76-79%": 13,
+        "80-84%": 27,
+        "85-89%": 27,
+        "90-100%": 23,
+        "<50%": 10
+      },
+      "high": 96,
+      "low": 12,
+      "median": null,
+      "percentile_25": null,
+      "percentile_75": null,
+      "reported": 116,
+      "section": "OVERALL",
+      "session": "W",
+      "subject": "COSC",
+      "subject_title": "Computer Science",
+      "year": "2025"
+    }
+  ]
+}

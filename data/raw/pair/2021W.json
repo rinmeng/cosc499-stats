@@ -1,0 +1,44 @@
+{
+  "yearsession": "2021W",
+  "source": {
+    "origin": "UBC PAIR Grade Distribution Report",
+    "dataset": "https://github.com/DonneyF/ubc-pair-grade-data",
+    "api": "https://ubcgrades.com/api/v3",
+    "fetchedAt": "2026-11-07"
+  },
+  "sections": [
+    {
+      "average": 84.9,
+      "campus": "UBCO",
+      "course": "499",
+      "course_title": "Capstone Software Engineering Project",
+      "detail": "",
+      "educators": "Gema Rodriguez-Perez",
+      "faculty_title": "Faculty of Arts and Sciences",
+      "grades": {
+        "50-54%": null,
+        "55-59%": null,
+        "60-63%": null,
+        "64-67%": null,
+        "68-71%": null,
+        "72-75%": 11,
+        "76-79%": 6,
+        "80-84%": 22,
+        "85-89%": 26,
+        "90-100%": 24,
+        "<50%": null
+      },
+      "high": 98,
+      "low": 70,
+      "median": 85,
+      "percentile_25": 80.3,
+      "percentile_75": 90.8,
+      "reported": 90,
+      "section": "001",
+      "session": "W",
+      "subject": "COSC",
+      "subject_title": "Computer Science",
+      "year": "2021"
+    }
+  ]
+}

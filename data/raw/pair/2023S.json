@@ -1,0 +1,77 @@
+{
+  "yearsession": "2023S",
+  "source": {
+    "origin": "UBC PAIR Grade Distribution Report",
+    "dataset": "https://github.com/DonneyF/ubc-pair-grade-data",
+    "api": "https://ubcgrades.com/api/v3",
+    "fetchedAt": "2026-11-07"
+  },
+  "sections": [
+    {
+      "average": 85.03,
+      "campus": "UBCO",
+      "course": "499",
+      "course_title": "Capstone Software Engineering Project",
+      "detail": "",
+      "educators": "Scott Fazackerley",
+      "faculty_title": "Faculty of Arts and Sciences",
+      "grades": {
+        "50-54%": 0,
+        "55-59%": 0,
+        "60-63%": 5,
+        "64-67%": 2,
+        "68-71%": 1,
+        "72-75%": 1,
+        "76-79%": 6,
+        "80-84%": 0,
+        "85-89%": 3,
+        "90-100%": 21,
+        "<50%": 0
+      },
+      "high": 100,
+      "low": 60,
+      "median": 90,
+      "percentile_25": 76,
+      "percentile_75": 97,
+      "reported": 41,
+      "section": "201",
+      "session": "S",
+      "subject": "COSC",
+      "subject_title": "Computer Science",
+      "year": "2023"
+    },
+    {
+      "average": 85.03,
+      "campus": "UBCO",
+      "course": "499",
+      "course_title": "Capstone Software Engineering Project",
+      "detail": "",
+      "educators": null,
+      "faculty_title": "Faculty of Arts and Sciences",
+      "grades": {
+        "50-54%": 0,
+        "55-59%": 0,
+        "60-63%": 5,
+        "64-67%": 2,
+        "68-71%": 1,
+        "72-75%": 1,
+        "76-79%": 6,
+        "80-84%": 0,
+        "85-89%": 3,
+        "90-100%": 21,
+        "<50%": 0
+      },
+      "high": 100,
+      "low": 60,
+      "median": null,
+      "percentile_25": null,
+      "percentile_75": null,
+      "reported": 41,
+      "section": "OVERALL",
+      "session": "S",
+      "subject": "COSC",
+      "subject_title": "Computer Science",
+      "year": "2023"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "yearsession": "2019W",
+  "source": {
+    "origin": "UBC PAIR Grade Distribution Report",
+    "dataset": "https://github.com/DonneyF/ubc-pair-grade-data",
+    "api": "https://ubcgrades.com/api/v2",
+    "fetchedAt": "2026-11-07"
+  },
+  "sections": [
+    {
+      "average": 87.882352941,
+      "campus": "UBCO",
+      "course": "499",
+      "course_title": "Capstone Software Engineering Project",
+      "detail": "",
+      "educators": "John Graham-Knight;Bowen Hui",
+      "enrolled": 34,
+      "faculty_title": "Faculty of Arts and Sciences",
+      "grades": {
+        "50-54%": 0,
+        "55-59%": 1,
+        "60-63%": 0,
+        "64-67%": 0,
+        "68-71%": 0,
+        "72-75%": 2,
+        "76-79%": 2,
+        "80-84%": 7,
+        "85-89%": 3,
+        "90-100%": 19,
+        "<50%": 0
+      },
+      "high": 100,
+      "low": 57,
+      "section": "001",
+      "session": "W",
+      "stdev": 9.021068625,
+      "subject": "COSC",
+      "subject_title": "Computer Science",
+      "year": "2019"
+    },
+    {
+      "average": 87.882352941,
+      "campus": "UBCO",
+      "course": "499",
+      "course_title": "Capstone Software Engineering Project",
+      "detail": "",
+      "educators": "",
+      "enrolled": 34,
+      "faculty_title": "Faculty of Arts and Sciences",
+      "grades": {
+        "50-54%": 0,
+        "55-59%": 1,
+        "60-63%": 0,
+        "64-67%": 0,
+        "68-71%": 0,
+        "72-75%": 2,
+        "76-79%": 2,
+        "80-84%": 7,
+        "85-89%": 3,
+        "90-100%": 19,
+        "<50%": 0
+      },
+      "high": 100,
+      "low": 57,
+      "section": "OVERALL",
+      "session": "W",
+      "stdev": 9.021068625,
+      "subject": "COSC",
+      "subject_title": "Computer Science",
+      "year": "2019"
+    }
+  ]
+}
