@@ -377,6 +377,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
           prs: 0,
           reviews: 0,
           score: 0,
+          activity: 0,
         });
       return weekly.get(w)!;
     };
@@ -437,6 +438,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       const isWeekend = dow === 0 || dow === 6;
       punch[dow][hour]++;
       activity++;
+      wp(weekOf(iso)).activity++;
       if (isNight) night++;
       if (isEarly) early++;
       if (isWeekend) weekend++;
@@ -688,8 +690,10 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
         prs: 0,
         reviews: 0,
         score: 0,
+        activity: 0,
       };
       c.commits += w.commits;
+      c.activity += w.activity;
       c.score += w.score;
       c.prs += w.prs;
       c.reviews += w.reviews;

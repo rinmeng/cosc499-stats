@@ -841,10 +841,11 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       </div>
 
       <ActivityChart
+        info={activityInfo}
         data={c.weekly}
         termStart={c.termStart}
         session={c.session}
-        description='Across the whole cohort. Pick a measure above, or narrow the time range.'
+        description='Every commit, pull request, review and issue across the cohort, by week. Narrow the time range above.'
       />
 
       <Section

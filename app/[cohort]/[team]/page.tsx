@@ -316,11 +316,12 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
       />
 
       <ActivityChart
+        info={<ActivityInfo timezone={summary.timezone} />}
         data={t.weekly}
         termStart={c.termStart}
         session={c.session}
         title='Team activity by week'
-        description='Pick a measure above, or narrow the time range.'
+        description='Every commit, pull request, review and issue on the team, by week. Narrow the time range above.'
       />
 
       <Grid className='lg:grid-cols-5'>

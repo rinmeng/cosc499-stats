@@ -124,6 +124,8 @@ export interface WeekPoint {
   reviews: number;
   /** contribution points earned that week (same weights as PersonStats.score) */
   score: number;
+  /** timed actions that week: commits, PRs opened and merged, reviews, issues opened */
+  activity: number;
 }
 
 export interface PrHighlight {
