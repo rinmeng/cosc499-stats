@@ -281,6 +281,8 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     let holidayCommits = 0;
     let examCommits = 0;
     let witchingCommits = 0;
+    /** lines changed on the default branch this week (outlier commits skipped) */
+    let thisWeekLines = 0;
     /** commits per local calendar day, for the team's biggest day */
     const perDay = new Map<string, number>();
     type PrPick = { number: number; repo: string; value: number } | null;
@@ -314,6 +316,8 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
           p.deletions += c.deletions;
         }
         const w = weekOf(c.date);
+        if (w === nowWeek && c.additions + c.deletions <= lineOutlierThreshold)
+          thisWeekLines += c.additions + c.deletions;
         p.weeks.add(w);
         wp(w).commits++;
         const { dow, hour } = localSlot(c.date);
@@ -527,6 +531,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       punch,
       members,
       thisWeekCommits: weekly.get(nowWeek)?.commits ?? 0,
+      thisWeekLines,
       prsClosedUnmerged: closedUnmerged,
       shipRate: merged + closedUnmerged ? round(merged / (merged + closedUnmerged)) : 0,
       discussionPerPr: merged ? round(discussion / merged, 1) : 0,

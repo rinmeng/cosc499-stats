@@ -188,6 +188,8 @@ export interface TeamStats {
   /** Members sorted by composite score. The UI only ever shows the top N. */
   members: PersonStats[];
   thisWeekCommits: number;
+  /** lines added + deleted on the default branch this week */
+  thisWeekLines: number;
 }
 
 export interface CohortStats {

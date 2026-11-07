@@ -7,7 +7,7 @@ import {
   MessageSquareCode,
   CalendarDays,
   ExternalLink,
-  CalendarFold,
+  FileDiff,
   CircleCheckBig,
   Flag,
   Gem,
@@ -284,19 +284,6 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             sub: `PR #${t.megaPr!.number}`,
           })
         ),
-        card(
-          {
-            icon: CalendarFold,
-            title: 'Biggest day',
-            description: 'Most commits a team made in a single day',
-          },
-          topTeams(c, (t) => t.biggestDay?.commits ?? 0, 3),
-          (t) => ({
-            value: fmt(t.biggestDay!.commits),
-            unit: 'commits',
-            sub: `on ${fmtDate(t.biggestDay!.date)}`,
-          })
-        ),
       ],
     },
     {
@@ -333,8 +320,10 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       ],
     },
     {
-      title: 'Momentum',
-      description: 'Who got going early, finished strong and had the biggest weeks.',
+      title: 'Weekly momentum',
+      description: live
+        ? 'The busiest teams this week, and the biggest weeks of term so far.'
+        : 'The biggest weeks of term, and who started fast or finished strong.',
       cards: [
         live
           ? card(
@@ -369,15 +358,26 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           topTeams(c, (t) => t.finishCommits ?? 0, 3),
           (t) => ({ value: fmt(t.finishCommits ?? 0), unit: 'commits' })
         ),
-        card(
-          {
-            icon: Rocket,
-            title: 'Fastest start',
-            description: 'Commits in the first 4 weeks of term',
-          },
-          topTeams(c, (t) => t.startCommits, 3),
-          (t) => ({ value: fmt(t.startCommits), unit: 'commits' })
-        ),
+        // Live: this week's merged lines. Once the term ends: the start, to pair with the finish.
+        live
+          ? card(
+              {
+                icon: FileDiff,
+                title: 'Most lines this week',
+                description: 'Lines added and deleted on the main branch since Sunday',
+              },
+              topTeams(c, (t) => t.thisWeekLines ?? 0, 3),
+              (t) => ({ value: fmtCompact(t.thisWeekLines ?? 0), unit: 'lines' })
+            )
+          : card(
+              {
+                icon: Rocket,
+                title: 'Fastest start',
+                description: 'Commits in the first 4 weeks of term',
+              },
+              topTeams(c, (t) => t.startCommits, 3),
+              (t) => ({ value: fmt(t.startCommits), unit: 'commits' })
+            ),
       ],
     },
     {
@@ -550,8 +550,8 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
   // Most interesting first; on a live cohort, "this week" momentum leads.
   const sections = live
     ? [
-        ...allSections.filter((x) => x.title === 'Momentum'),
-        ...allSections.filter((x) => x.title !== 'Momentum'),
+        ...allSections.filter((x) => x.title === 'Weekly momentum'),
+        ...allSections.filter((x) => x.title !== 'Weekly momentum'),
       ]
     : allSections;
 
