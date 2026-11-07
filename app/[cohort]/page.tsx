@@ -25,6 +25,7 @@ import {
   Trophy,
   Sunrise,
   Sparkles,
+  Star,
 } from 'lucide-react';
 
 import { ArrowLink } from '@/components/ArrowLink';
@@ -713,9 +714,23 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         </Reveal>
       )}
 
-      <Grid className='grid-cols-2 md:grid-cols-3 lg:grid-cols-5'>
+      <Grid
+        className={
+          live
+            ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6'
+            : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-5'
+        }
+      >
         {live ? (
           <>
+            <StatTile
+              className={next()}
+              icon={Star}
+              label='Points this week'
+              value={fmt(c.thisWeek.points)}
+              unit='pts'
+              trend={{ now: c.thisWeek.points, last: c.lastWeek.points, unit: 'pts' }}
+            />
             <StatTile
               className={next()}
               icon={GitPullRequest}
