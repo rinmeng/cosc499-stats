@@ -5,6 +5,8 @@ import { fadeUp } from '@/utils/animations';
 export interface HighlightSection {
   title: string;
   description?: string;
+  /** Shown beside the title, e.g. a help dialog trigger */
+  action?: React.ReactNode;
   /** Hidden behind "Show more highlights" */
   more?: boolean;
   /** null entries (e.g. live-only cards) and cards with no teams (and no `empty` text) are skipped */
@@ -18,11 +20,14 @@ function SectionBlock({
 }) {
   return (
     <section className='space-y-3'>
-      <div className={fadeUp(0)}>
-        <h2 className='font-heading text-lg font-semibold'>{s.title}</h2>
-        {s.description && (
-          <p className='text-sm text-muted-foreground'>{s.description}</p>
-        )}
+      <div className={`flex flex-wrap items-start justify-between gap-2 ${fadeUp(0)}`}>
+        <div>
+          <h2 className='font-heading text-lg font-semibold'>{s.title}</h2>
+          {s.description && (
+            <p className='text-sm text-muted-foreground'>{s.description}</p>
+          )}
+        </div>
+        {s.action}
       </div>
       <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
         {s.cards.map((h, i) => (

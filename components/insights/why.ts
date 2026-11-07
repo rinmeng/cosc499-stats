@@ -309,7 +309,7 @@ export const WHY = {
   },
   nightOwl: {
     measures:
-      'The share of a team’s commits made between 10 pm and 4 am, in Vancouver time.',
+      'The share of a team’s activity (commits, pull requests opened and merged, reviews and issues opened) between 10 pm and 4 am, in Vancouver time.',
     reasons: [
       {
         title: 'Steadier progress',
@@ -329,14 +329,15 @@ export const WHY = {
       {
         title: 'Time zones',
         detail:
-          'A teammate working from another time zone can make late commits look like night work.',
+          'A teammate working from another time zone can make late activity look like night work.',
       },
     ],
     method:
       'Full term only, so the in-progress cohort is hollow and left out of the era medians.',
   },
   weekend: {
-    measures: 'The share of a team’s commits made on a Saturday or Sunday.',
+    measures:
+      'The share of a team’s activity (commits, pull requests opened and merged, reviews and issues opened) on a Saturday or Sunday.',
     reasons: [
       {
         title: 'Weekdays are full',
@@ -364,12 +365,12 @@ export const WHY = {
   },
   holiday: {
     measures:
-      'The share of a team’s commits made on a holiday or break: Thanksgiving, Christmas and New Year, reading week, and in summer Victoria Day, Canada Day and BC Day.',
+      'The share of a team’s activity made on a holiday or break: Thanksgiving, Christmas and New Year, reading week, and in summer Victoria Day, Canada Day and BC Day.',
     reasons: [
       {
         title: 'Fewer commits to begin with',
         detail:
-          'Holidays are only a few days a term, so even small changes in a handful of commits move this share.',
+          'Holidays are only a few days a term, so even a handful of actions moves this share.',
       },
       {
         title: 'Breaks are catch-up time',

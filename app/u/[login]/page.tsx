@@ -11,8 +11,10 @@ import {
 import { ArrowLink } from '@/components/ArrowLink';
 import { ExternalLink } from '@/components/ExternalLink';
 import { ShareButton } from '@/components/ShareDialog';
+import { ActivityInfo } from '@/components/stats/ActivityInfo';
 import { Grid, PageHeader, Section, StatTile } from '@/components/stats/Blocks';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getSummary } from '@/lib/data';
 import { fmt, fmtCompact, pct } from '@/lib/format';
 import { getPeople, getPerson, type Capstone } from '@/lib/people';
 import { pageMetadata, personSeo } from '@/lib/seo';
@@ -43,17 +45,18 @@ export async function generateMetadata({ params }: PageProps<'/u/[login]'>) {
 }
 
 const share = (n: number, d: number) => (d ? n / d : 0);
+const actions = (n: number) => `${fmt(n)} ${n === 1 ? 'action' : 'actions'}`;
 
 /** `step` is this section's animation step; its stat tiles follow it. */
 function CapstoneSection({ c, step }: { c: Capstone; step: number }) {
   const m = c.stats;
   const habits = [
-    m.nightCommits > 0 &&
-      `${pct(share(m.nightCommits, m.commits))} of commits between 10 pm and 4 am`,
-    m.earlyCommits > 0 &&
-      `${pct(share(m.earlyCommits, m.commits))} of commits between 5 and 9 am`,
-    m.witchingCommits > 0 && `${fmt(m.witchingCommits)} commits between 3 and 4 am`,
-    m.holidayCommits > 0 && `${fmt(m.holidayCommits)} commits on holidays and breaks`,
+    m.nightActivity > 0 &&
+      `${pct(share(m.nightActivity, m.activity))} of activity between 10 pm and 4 am`,
+    m.earlyActivity > 0 &&
+      `${pct(share(m.earlyActivity, m.activity))} of activity between 5 and 9 am`,
+    m.witchingActivity > 0 && `${actions(m.witchingActivity)} between 3 and 4 am`,
+    m.holidayActivity > 0 && `${actions(m.holidayActivity)} on holidays and breaks`,
     m.biggestCommit > 0 &&
       `Biggest single commit: ${fmtCompact(m.biggestCommit)} lines changed`,
   ].filter(Boolean) as string[];
@@ -124,13 +127,18 @@ function CapstoneSection({ c, step }: { c: Capstone; step: number }) {
           />
         </Grid>
         {habits.length > 0 && (
-          <ul className={cn('flex flex-wrap gap-2 text-sm', fadeUp(step + 7))}>
-            {habits.map((h) => (
-              <li key={h} className='rounded-full border px-3 py-1'>
-                {h}
-              </li>
-            ))}
-          </ul>
+          <div
+            className={cn('flex flex-wrap items-center gap-2 text-sm', fadeUp(step + 7))}
+          >
+            <ul className='contents'>
+              {habits.map((h) => (
+                <li key={h} className='rounded-full border px-3 py-1'>
+                  {h}
+                </li>
+              ))}
+            </ul>
+            <ActivityInfo timezone={getSummary()?.timezone ?? 'America/Vancouver'} />
+          </div>
         )}
       </div>
     </Section>

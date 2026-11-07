@@ -94,9 +94,9 @@ export default function Overview() {
     )
   );
 
-  // Individual records from the same window (shares need at least 50 commits).
+  // Individual records from the same window (shares need at least 100 actions).
   const people = everyone(s).filter((p) => p.cohort.year >= totalsFrom);
-  const regulars = people.filter((p) => p.m.commits >= 50);
+  const regulars = people.filter((p) => p.m.activity >= 100);
   const top3 = <T,>(list: T[], value: (x: T) => number) =>
     [...list]
       .filter((x) => value(x) > 0)
@@ -114,25 +114,25 @@ export default function Overview() {
     {
       icon: Moon,
       title: 'Night owls',
-      description: 'Biggest share of their commits made between 10 pm and 4 am',
-      items: top3(regulars, (p) => share(p.m.nightCommits, p.m.commits)).map((p) =>
-        personItem(p, pct(share(p.m.nightCommits, p.m.commits)), 'of commits')
+      description: 'Biggest share of their activity between 10 pm and 4 am',
+      items: top3(regulars, (p) => share(p.m.nightActivity, p.m.activity)).map((p) =>
+        personItem(p, pct(share(p.m.nightActivity, p.m.activity)), 'of activity')
       ),
     },
     {
       icon: Sunrise,
       title: 'Early birds',
-      description: 'Biggest share of their commits made between 5 am and 9 am',
-      items: top3(regulars, (p) => share(p.m.earlyCommits, p.m.commits)).map((p) =>
-        personItem(p, pct(share(p.m.earlyCommits, p.m.commits)), 'of commits')
+      description: 'Biggest share of their activity between 5 am and 9 am',
+      items: top3(regulars, (p) => share(p.m.earlyActivity, p.m.activity)).map((p) =>
+        personItem(p, pct(share(p.m.earlyActivity, p.m.activity)), 'of activity')
       ),
     },
     {
       icon: Ghost,
       title: '3 am regulars',
-      description: 'Most commits made between 3 and 4 am',
-      items: top3(people, (p) => p.m.witchingCommits).map((p) =>
-        personItem(p, fmt(p.m.witchingCommits), 'commits')
+      description: 'Most actions between 3 and 4 am',
+      items: top3(people, (p) => p.m.witchingActivity).map((p) =>
+        personItem(p, fmt(p.m.witchingActivity), 'actions')
       ),
     },
     {
@@ -147,9 +147,9 @@ export default function Overview() {
     {
       icon: TreePine,
       title: 'Holiday heroes',
-      description: 'Most commits on holidays and breaks',
-      items: top3(people, (p) => p.m.holidayCommits).map((p) =>
-        personItem(p, fmt(p.m.holidayCommits), 'commits')
+      description: 'Most actions on holidays and breaks',
+      items: top3(people, (p) => p.m.holidayActivity).map((p) =>
+        personItem(p, fmt(p.m.holidayActivity), 'actions')
       ),
     },
     {

@@ -100,11 +100,16 @@ export interface PersonStats {
   issues: number;
   activeWeeks: number;
   score: number;
-  /** commits 10 pm–4 am, 5–9 am, 3–4 am, and on holidays (local time) */
-  nightCommits: number;
-  earlyCommits: number;
-  witchingCommits: number;
-  holidayCommits: number;
+  /**
+   * Timed actions: commits, PRs opened, PRs merged (by whoever merged), reviews and
+   * issues opened. The rhythm stats below count these, not just commits.
+   */
+  activity: number;
+  /** actions 10 pm–4 am, 5–9 am, 3–4 am, and on holidays (local time) */
+  nightActivity: number;
+  earlyActivity: number;
+  witchingActivity: number;
+  holidayActivity: number;
   /** lines changed in their single biggest commit (≤ 20,000, to skip vendored code) */
   biggestCommit: number;
 }
@@ -151,8 +156,10 @@ export interface TeamStats {
   reviewCoverage: number;
   medianMergeHours: number | null;
   peakWeek: { week: number; start: string; commits: number } | null;
+  /** timed actions (see PersonStats.activity), including ones not tied to a member */
+  activity: number;
+  /** 0–1, share of activity 10 pm–4 am, 5–9 am, and on Saturday or Sunday */
   nightOwlShare: number;
-  /** 0–1, commits made between 5 am and 9 am */
   earlyBirdShare: number;
   weekendShare: number;
   /** PRs closed without merging */
@@ -173,12 +180,12 @@ export interface TeamStats {
   longestStreak: number;
   /** the local calendar day (YYYY-MM-DD) with the most commits */
   biggestDay: { date: string; commits: number } | null;
-  /** commits on holidays / breaks (Thanksgiving, Dec 24–26, Dec 31–Jan 1, reading week; summer: Victoria Day, Canada Day, BC Day) */
-  holidayCommits: number;
-  /** commits during final exam periods (winter only) */
-  examCommits: number;
-  /** commits between 3 and 4 am */
-  witchingCommits: number;
+  /** actions on holidays / breaks (Thanksgiving, Dec 24–26, Dec 31–Jan 1, reading week; summer: Victoria Day, Canada Day, BC Day) */
+  holidayActivity: number;
+  /** actions during final exam periods (winter only) */
+  examActivity: number;
+  /** actions between 3 and 4 am */
+  witchingActivity: number;
   /** single merged PRs: fastest / slowest (hours from open to merge) and biggest (files changed) */
   fastestPr: PrHighlight | null;
   slowestPr: PrHighlight | null;
@@ -186,11 +193,13 @@ export interface TeamStats {
   lastActivity: string | null;
   languages: { name: string; bytes: number }[];
   weekly: WeekPoint[];
-  /** commits by [weekday 0=Sun][hour] in the configured timezone */
+  /** actions by [weekday 0=Sun][hour] in the configured timezone */
   punch: number[][];
   /** Members sorted by composite score. The UI only ever shows the top N. */
   members: PersonStats[];
   thisWeekCommits: number;
+  /** Actions since Sunday (see PersonStats.activity) */
+  thisWeekActivity: number;
   /** lines added + deleted on the default branch this week */
   thisWeekLines: number;
   /** PRs merged since Sunday */
@@ -203,10 +212,10 @@ export interface TeamStats {
   thisWeekEvenness: number;
   /** Issues closed since Sunday */
   thisWeekIssuesClosed: number;
-  /** This week's commits 10 pm–4 am, 5–9 am, and on Saturday or Sunday (local time) */
-  thisWeekNightCommits: number;
-  thisWeekEarlyCommits: number;
-  thisWeekWeekendCommits: number;
+  /** This week's actions 10 pm–4 am, 5–9 am, and on Saturday or Sunday (local time) */
+  thisWeekNightActivity: number;
+  thisWeekEarlyActivity: number;
+  thisWeekWeekendActivity: number;
 }
 
 export interface CohortStats {

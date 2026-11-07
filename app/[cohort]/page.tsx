@@ -53,6 +53,7 @@ import {
 } from '@/components/stats/HighlightSections';
 import { ShareButton } from '@/components/ShareDialog';
 import { TeamTable } from '@/components/stats/TeamTable';
+import { ActivityInfo } from '@/components/stats/ActivityInfo';
 import { ScoreInfo } from '@/components/stats/ScoreInfo';
 import { TopContributors } from '@/components/stats/TopContributors';
 import { Badge } from '@/components/ui/badge';
@@ -181,7 +182,9 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
   const week = currentWeek(c);
   const live = c.isCurrent;
 
-  const enough = (t: TeamStats) => t.commits >= 50;
+  // Shares need enough actions to mean something.
+  const enough = (t: TeamStats) => t.activity >= 100;
+  const activityInfo = <ActivityInfo timezone={summary.timezone} />;
   const card = (
     h: Omit<HighlightProps, 'items'>,
     teams: TeamStats[],
@@ -225,10 +228,10 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     {
       icon: Sparkles,
       title: 'Most active this week',
-      description: 'Commits since Sunday',
+      description: 'Commits, pull requests, reviews and issues since Sunday',
     },
-    topTeams(c, (t) => t.thisWeekCommits, 3),
-    (t) => ({ value: fmt(t.thisWeekCommits), unit: 'commits' })
+    topTeams(c, (t) => t.thisWeekActivity ?? 0, 3),
+    (t) => ({ value: fmt(t.thisWeekActivity ?? 0), unit: 'actions' })
   );
   const mostLinesThisWeek = card(
     {
@@ -282,7 +285,8 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     {
       title: 'Weekly momentum',
       description:
-        'The busiest teams this week, by commits, lines and pull requests merged.',
+        'The busiest teams this week, by activity, lines and pull requests merged.',
+      action: activityInfo,
       cards: [mostActiveThisWeek, mostLinesThisWeek, mostPrsThisWeek],
     },
     {
@@ -330,35 +334,36 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     },
     {
       title: 'Weekly rhythm',
-      description: 'When teams worked this week.',
+      description: 'When teams worked this week, counting all their activity.',
+      action: activityInfo,
       cards: [
         card(
           {
             icon: Moon,
             title: 'Night owls this week',
-            description: 'Commits between 10 pm and 4 am since Sunday',
+            description: 'Actions between 10 pm and 4 am since Sunday',
           },
-          topTeams(c, (t) => t.thisWeekNightCommits ?? 0, 3),
-          (t) => ({ value: fmt(t.thisWeekNightCommits ?? 0), unit: 'commits' })
+          topTeams(c, (t) => t.thisWeekNightActivity ?? 0, 3),
+          (t) => ({ value: fmt(t.thisWeekNightActivity ?? 0), unit: 'actions' })
         ),
         card(
           {
             icon: Sunrise,
             title: 'Early birds this week',
-            description: 'Commits between 5 am and 9 am since Sunday',
+            description: 'Actions between 5 am and 9 am since Sunday',
             empty: 'No teams were early birds this week.',
           },
-          topTeams(c, (t) => t.thisWeekEarlyCommits ?? 0, 3),
-          (t) => ({ value: fmt(t.thisWeekEarlyCommits ?? 0), unit: 'commits' })
+          topTeams(c, (t) => t.thisWeekEarlyActivity ?? 0, 3),
+          (t) => ({ value: fmt(t.thisWeekEarlyActivity ?? 0), unit: 'actions' })
         ),
         card(
           {
             icon: CalendarDays,
             title: 'Weekend warriors this week',
-            description: 'Commits on Saturday or Sunday this week',
+            description: 'Actions on Saturday or Sunday this week',
           },
-          topTeams(c, (t) => t.thisWeekWeekendCommits ?? 0, 3),
-          (t) => ({ value: fmt(t.thisWeekWeekendCommits ?? 0), unit: 'commits' })
+          topTeams(c, (t) => t.thisWeekWeekendActivity ?? 0, 3),
+          (t) => ({ value: fmt(t.thisWeekWeekendActivity ?? 0), unit: 'actions' })
         ),
       ],
     },
@@ -407,10 +412,10 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: Ghost,
             title: 'Witching hour',
-            description: 'Commits made between 3 and 4 am',
+            description: 'Actions between 3 and 4 am',
           },
-          topTeams(c, (t) => t.witchingCommits, 3),
-          (t) => ({ value: fmt(t.witchingCommits), unit: 'commits' })
+          topTeams(c, (t) => t.witchingActivity, 3),
+          (t) => ({ value: fmt(t.witchingActivity), unit: 'actions' })
         ),
         card(
           {
@@ -418,20 +423,20 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             title: 'Holiday heroes',
             description:
               c.session === 'summer'
-                ? 'Commits on Victoria Day, Canada Day or BC Day'
-                : 'Commits on Thanksgiving, over Christmas and New Year, or in reading week',
+                ? 'Actions on Victoria Day, Canada Day or BC Day'
+                : 'Actions on Thanksgiving, over Christmas and New Year, or in reading week',
           },
-          topTeams(c, (t) => t.holidayCommits, 3),
-          (t) => ({ value: fmt(t.holidayCommits), unit: 'commits' })
+          topTeams(c, (t) => t.holidayActivity, 3),
+          (t) => ({ value: fmt(t.holidayActivity), unit: 'actions' })
         ),
         card(
           {
             icon: NotebookPen,
             title: 'Exam-season grinders',
-            description: 'Commits during the December and April exam periods',
+            description: 'Actions during the December and April exam periods',
           },
-          topTeams(c, (t) => t.examCommits, 3),
-          (t) => ({ value: fmt(t.examCommits), unit: 'commits' })
+          topTeams(c, (t) => t.examActivity, 3),
+          (t) => ({ value: fmt(t.examActivity), unit: 'actions' })
         ),
         card(
           {
@@ -450,34 +455,35 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     },
     {
       title: 'Work rhythm',
-      description: 'When teams like to work.',
+      description: 'When teams like to work, counting all their activity.',
+      action: activityInfo,
       cards: [
         card(
           {
             icon: Moon,
             title: 'Night owls',
-            description: 'Share of commits made between 10 pm and 4 am',
+            description: 'Share of activity between 10 pm and 4 am',
           },
           topTeams(c, (t) => t.nightOwlShare, 3, enough),
-          (t) => ({ value: pct(t.nightOwlShare), unit: 'of commits' })
+          (t) => ({ value: pct(t.nightOwlShare), unit: 'of activity' })
         ),
         card(
           {
             icon: Sunrise,
             title: 'Early birds',
-            description: 'Share of commits made between 5 am and 9 am',
+            description: 'Share of activity between 5 am and 9 am',
           },
           topTeams(c, (t) => t.earlyBirdShare, 3, enough),
-          (t) => ({ value: pct(t.earlyBirdShare), unit: 'of commits' })
+          (t) => ({ value: pct(t.earlyBirdShare), unit: 'of activity' })
         ),
         card(
           {
             icon: CalendarDays,
             title: 'Weekend warriors',
-            description: 'Share of commits made on Saturday or Sunday',
+            description: 'Share of activity on Saturday or Sunday',
           },
           topTeams(c, (t) => t.weekendShare, 3, enough),
-          (t) => ({ value: pct(t.weekendShare), unit: 'of commits' })
+          (t) => ({ value: pct(t.weekendShare), unit: 'of activity' })
         ),
       ],
     },
@@ -863,8 +869,9 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       <Grid className='lg:grid-cols-5'>
         <Section
           className={cn('lg:col-span-3', next())}
-          title='When the cohort commits'
-          description='Hover a cell for the count.'
+          title='When the cohort is active'
+          description='Every commit, pull request, review and issue, by day and hour. Hover a cell for the count.'
+          action={activityInfo}
         >
           <Punchcard data={c.punch} timezone={summary.timezone} />
         </Section>

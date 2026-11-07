@@ -340,10 +340,11 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
           issues: 0,
           activeWeeks: 0,
           score: 0,
-          nightCommits: 0,
-          earlyCommits: 0,
-          witchingCommits: 0,
-          holidayCommits: 0,
+          activity: 0,
+          nightActivity: 0,
+          earlyActivity: 0,
+          witchingActivity: 0,
+          holidayActivity: 0,
           biggestCommit: 0,
           weeks: new Set(),
         };
@@ -371,17 +372,22 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     const mergeHours: number[] = [];
     let merged = 0;
     let reviewed = 0;
-    let holidayCommits = 0;
-    let examCommits = 0;
-    let witchingCommits = 0;
+    let activity = 0;
+    let holidayActivity = 0;
+    let examActivity = 0;
+    let witchingActivity = 0;
     /** lines changed on the default branch this week (outlier commits skipped) */
     let thisWeekLines = 0;
     /** commits since Sunday per author key (merged with the people map below) */
     const thisWeekByAuthor = new Map<string, number>();
     let thisWeekIssuesClosed = 0;
+    let thisWeekActivity = 0;
     let thisWeekNight = 0;
     let thisWeekEarly = 0;
     let thisWeekWeekend = 0;
+    let night = 0;
+    let early = 0;
+    let weekend = 0;
     /** commits per local calendar day, for the team's biggest day */
     const perDay = new Map<string, number>();
     type PrPick = { number: number; repo: string; value: number } | null;
@@ -397,6 +403,38 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     let last: string | null = null;
     const touch = (iso: string | null) => {
       if (iso && (!last || iso > last)) last = iso;
+    };
+    /**
+     * One timed action (commit, PR opened, PR merged, review, issue opened) for the
+     * rhythm stats: punchcard, night / early / weekend, 3 am, holidays and exams.
+     * `p` is who did it, or null when GitHub doesn't say (the team still gets it).
+     */
+    const act = (iso: string, p: PersonStats | null) => {
+      const { dow, hour } = localSlot(iso);
+      const day = localDate(iso);
+      const isNight = hour >= 22 || hour < 4;
+      const isEarly = hour >= 5 && hour < 9;
+      const isWeekend = dow === 0 || dow === 6;
+      punch[dow][hour]++;
+      activity++;
+      if (isNight) night++;
+      if (isEarly) early++;
+      if (isWeekend) weekend++;
+      if (hour === 3) witchingActivity++;
+      if (holidays.has(day)) holidayActivity++;
+      if (examDays.has(day)) examActivity++;
+      if (weekOf(iso) === nowWeek) {
+        thisWeekActivity++;
+        if (isNight) thisWeekNight++;
+        if (isEarly) thisWeekEarly++;
+        if (isWeekend) thisWeekWeekend++;
+      }
+      if (!p) return;
+      p.activity++;
+      if (isNight) p.nightActivity++;
+      if (isEarly) p.earlyActivity++;
+      if (hour === 3) p.witchingActivity++;
+      if (holidays.has(day)) p.holidayActivity++;
     };
 
     for (const repo of teamRepos) {
@@ -423,23 +461,11 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
         p.weeks.add(w);
         wp(w).commits++;
         wp(w).score += scoreWeights.commits;
-        const { dow, hour } = localSlot(c.date);
-        punch[dow][hour]++;
-        if (w === nowWeek) {
+        act(c.date, p);
+        if (w === nowWeek)
           thisWeekByAuthor.set(key, (thisWeekByAuthor.get(key) ?? 0) + 1);
-          if (hour >= 22 || hour < 4) thisWeekNight++;
-          if (hour >= 5 && hour < 9) thisWeekEarly++;
-          if (dow === 0 || dow === 6) thisWeekWeekend++;
-        }
         const day = localDate(c.date);
         perDay.set(day, (perDay.get(day) ?? 0) + 1);
-        if (holidays.has(day)) holidayCommits++;
-        if (examDays.has(day)) examCommits++;
-        if (hour === 3) witchingCommits++;
-        if (hour >= 22 || hour < 4) p.nightCommits++;
-        if (hour >= 5 && hour < 9) p.earlyCommits++;
-        if (hour === 3) p.witchingCommits++;
-        if (holidays.has(day)) p.holidayCommits++;
         // Biggest hand-written commit: skip huge ones that are vendored/generated code.
         const size = c.additions + c.deletions;
         if (size <= BIGGEST_COMMIT_CAP && size > p.biggestCommit) p.biggestCommit = size;
@@ -450,6 +476,17 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
         if (!inWindow(pr.createdAt)) continue;
         if (pr.state === 'OPEN') openPrs++;
         if (pr.state === 'CLOSED' && !pr.mergedAt) closedUnmerged++;
+        if (!skip(pr.login))
+          act(
+            pr.createdAt,
+            pr.login ? person(pr.login.toLowerCase(), pr.login, null) : null
+          );
+        // Merging is an action of whoever pressed the button (bots and staff skipped).
+        if (pr.mergedAt && inWindow(pr.mergedAt) && !skip(pr.mergedBy))
+          act(
+            pr.mergedAt,
+            pr.mergedBy ? person(pr.mergedBy.toLowerCase(), pr.mergedBy, null) : null
+          );
         if (pr.login && !skip(pr.login)) {
           const p = person(pr.login.toLowerCase(), pr.login, null);
           p.prsOpened++;
@@ -492,6 +529,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
           const p = person(r.login.toLowerCase(), r.login, null);
           p.reviews++;
           if (r.submittedAt) {
+            act(r.submittedAt, p);
             p.weeks.add(weekOf(r.submittedAt));
             wp(weekOf(r.submittedAt)).reviews++;
             wp(weekOf(r.submittedAt)).score += scoreWeights.reviews;
@@ -507,6 +545,11 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
         if (is.state === 'CLOSED') issuesClosedCount++;
         if (is.state === 'CLOSED' && is.closedAt && weekOf(is.closedAt) === nowWeek)
           thisWeekIssuesClosed++;
+        if (!skip(is.login))
+          act(
+            is.createdAt,
+            is.login ? person(is.login.toLowerCase(), is.login, null) : null
+          );
         if (is.login && !skip(is.login)) {
           person(is.login.toLowerCase(), is.login, null).issuesOpened++;
           wp(weekOf(is.createdAt)).score += scoreWeights.issuesOpened;
@@ -533,10 +576,11 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       match.commits += p.commits;
       match.additions += p.additions;
       match.deletions += p.deletions;
-      match.nightCommits += p.nightCommits;
-      match.earlyCommits += p.earlyCommits;
-      match.witchingCommits += p.witchingCommits;
-      match.holidayCommits += p.holidayCommits;
+      match.activity += p.activity;
+      match.nightActivity += p.nightActivity;
+      match.earlyActivity += p.earlyActivity;
+      match.witchingActivity += p.witchingActivity;
+      match.holidayActivity += p.holidayActivity;
       match.biggestCommit = Math.max(match.biggestCommit, p.biggestCommit);
       p.weeks.forEach((w) => match.weeks.add(w));
       const mk = [...people].find(([, q]) => q === match)![0];
@@ -591,17 +635,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       null
     );
     const totalCommits = sum('commits');
-    let night = 0;
-    let early = 0;
-    let weekend = 0;
-    punch.forEach((row, dow) =>
-      row.forEach((n, h) => {
-        if (h >= 22 || h < 4) night += n;
-        if (h >= 5 && h < 9) early += n;
-        if (dow === 0 || dow === 6) weekend += n;
-        cohortPunch[dow][h] += n;
-      })
-    );
+    punch.forEach((row, dow) => row.forEach((n, h) => (cohortPunch[dow][h] += n)));
 
     for (const w of weeklyArr) {
       const c = cohortWeekly.get(w.week) ?? {
@@ -655,9 +689,10 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       peakWeek: peak
         ? { week: peak.week, start: peak.start, commits: peak.commits }
         : null,
-      nightOwlShare: totalCommits ? round(night / totalCommits) : 0,
-      earlyBirdShare: totalCommits ? round(early / totalCommits) : 0,
-      weekendShare: totalCommits ? round(weekend / totalCommits) : 0,
+      activity,
+      nightOwlShare: activity ? round(night / activity) : 0,
+      earlyBirdShare: activity ? round(early / activity) : 0,
+      weekendShare: activity ? round(weekend / activity) : 0,
       lastActivity: last,
       languages: [...langs]
         .map(([name, bytes]) => ({ name, bytes }))
@@ -666,6 +701,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       punch,
       members,
       thisWeekCommits: weekly.get(nowWeek)?.commits ?? 0,
+      thisWeekActivity,
       thisWeekLines,
       thisWeekPrsMerged: weekly.get(nowWeek)?.prs ?? 0,
       thisWeekReviews: weekly.get(nowWeek)?.reviews ?? 0,
@@ -675,9 +711,9 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
         1 - gini([...people.keys()].map((k) => thisWeekByAuthor.get(k) ?? 0))
       ),
       thisWeekIssuesClosed,
-      thisWeekNightCommits: thisWeekNight,
-      thisWeekEarlyCommits: thisWeekEarly,
-      thisWeekWeekendCommits: thisWeekWeekend,
+      thisWeekNightActivity: thisWeekNight,
+      thisWeekEarlyActivity: thisWeekEarly,
+      thisWeekWeekendActivity: thisWeekWeekend,
       prsClosedUnmerged: closedUnmerged,
       shipRate: merged + closedUnmerged ? round(merged / (merged + closedUnmerged)) : 0,
       discussionPerPr: merged ? round(discussion / merged, 1) : 0,
@@ -692,9 +728,9 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
           !best || commits > best.commits ? { date, commits } : best,
         null
       ),
-      holidayCommits,
-      examCommits,
-      witchingCommits,
+      holidayActivity,
+      examActivity,
+      witchingActivity,
       fastestPr: fastest,
       slowestPr: slowest,
       megaPr: mega,

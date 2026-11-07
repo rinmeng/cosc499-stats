@@ -30,21 +30,21 @@ export const insightsSeo = (): PageSeo => ({
 export const gradesSeo = (): PageSeo => ({
   title: 'Grades',
   description:
-    'UBCO COSC 499 final grades from UBC PAIR: class size, class average and how each year-long and summer session finished since 2017, with who taught it. Course-wide only, never a team or a person.',
+    'UBCO COSC 499 final grades from UBC PAIR: class size, class average and how each year-long and summer session finished since 2017, with who taught it.',
   path: '/insights/grades',
 });
 
 export const trendsSeo = (): PageSeo => ({
   title: 'Trends',
   description:
-    'Cross-year COSC 499 trends: when work lands in the term, pull request adoption, night and weekend commits, and summer versus winter.',
+    'Cross-year COSC 499 trends: when work lands in the term, pull request adoption, night and weekend activity, and summer versus winter.',
   path: '/insights/trends',
 });
 
 export const aboutSeo = (): PageSeo => ({
   title: 'About',
   description:
-    'Why this site exists: so current and future UBCO COSC 499 cohorts can benchmark themselves against past ones, and so the work behind every capstone, from top contributors to 3 am commits, gets recognized.',
+    'Why this site exists: so current and future UBCO COSC 499 cohorts can benchmark themselves against past ones, and so the work behind every capstone, from top contributors to 3 am work sessions, gets recognized.',
   path: '/about',
 });
 

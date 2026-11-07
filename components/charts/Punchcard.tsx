@@ -8,7 +8,7 @@ const STEPS = 5;
 const hourLabel = (h: number) =>
   h === 0 ? '12 am' : h < 12 ? `${h} am` : h === 12 ? '12 pm' : `${h - 12} pm`;
 
-/** Commits by weekday × hour (local time), as a single-hue sequential heatmap. */
+/** Activity (see ActivityInfo) by weekday × hour (local time), as a single-hue sequential heatmap. */
 export function Punchcard({ data, timezone }: { data: number[][]; timezone: string }) {
   const [hover, setHover] = useState<{ d: number; h: number } | null>(null);
   const max = Math.max(1, ...data.flat());
@@ -27,7 +27,7 @@ export function Punchcard({ data, timezone }: { data: number[][]; timezone: stri
         <span className='font-medium text-foreground'>
           {DAYS[focus.d]} {hourLabel(focus.h)}
         </span>{' '}
-        · {n.toLocaleString()} commits
+        · {n.toLocaleString()} {n === 1 ? 'action' : 'actions'}
         {total ? ` (${((n / total) * 100).toFixed(1)}% of all)` : ''}
         {!hover && ' · busiest slot'}
       </p>
@@ -37,7 +37,7 @@ export function Punchcard({ data, timezone }: { data: number[][]; timezone: stri
           style={{ gridTemplateColumns: '2.5rem repeat(24, minmax(0, 1fr))' }}
           onMouseLeave={() => setHover(null)}
           role='img'
-          aria-label={`Commits by day and hour (${timezone}). Busiest: ${DAYS[peak.d]} ${hourLabel(peak.h)}.`}
+          aria-label={`Activity by day and hour (${timezone}). Busiest: ${DAYS[peak.d]} ${hourLabel(peak.h)}.`}
         >
           {data.map((row, d) => (
             <div key={d} className='contents'>

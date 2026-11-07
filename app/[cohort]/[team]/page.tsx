@@ -26,6 +26,7 @@ import {
   Section,
   StatTile,
 } from '@/components/stats/Blocks';
+import { ActivityInfo } from '@/components/stats/ActivityInfo';
 import { ScoreInfo } from '@/components/stats/ScoreInfo';
 import { TopContributors } from '@/components/stats/TopContributors';
 import { getCohort, getSummary, getTeam } from '@/lib/data';
@@ -222,7 +223,12 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
       />
 
       <Grid className='lg:grid-cols-5'>
-        <Section className={cn('lg:col-span-3', next())} title='When the team commits'>
+        <Section
+          className={cn('lg:col-span-3', next())}
+          title='When the team is active'
+          description='Every commit, pull request, review and issue, by day and hour.'
+          action={<ActivityInfo timezone={summary.timezone} />}
+        >
           <Punchcard data={t.punch} timezone={summary.timezone} />
         </Section>
         <div className='lg:col-span-2'>

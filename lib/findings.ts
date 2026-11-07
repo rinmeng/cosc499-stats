@@ -125,11 +125,11 @@ const TEMPLATES: Record<string, Template> = {
   prWeeks: ({ a, b, base }) =>
     `A pull request gets merged in **${v(a, 'share')}** of a team’s active weeks, ${sharePhrase(a, b, base)}.`,
   nightOwl: ({ a, b, base }) =>
-    `**${v(a, 'share')}** of commits land between 10 pm and 4 am, ${sharePhrase(a, b, base)}.`,
+    `**${v(a, 'share')}** of activity lands between 10 pm and 4 am, ${sharePhrase(a, b, base)}.`,
   weekend: ({ a, b, base }) =>
-    `**${v(a, 'share')}** of commits land on a weekend, ${sharePhrase(a, b, base)}.`,
+    `**${v(a, 'share')}** of activity lands on a weekend, ${sharePhrase(a, b, base)}.`,
   holiday: ({ a, b, base }) =>
-    `**${v(a, 'share')}** of commits land on a holiday or break, ${sharePhrase(a, b, base)}.`,
+    `**${v(a, 'share')}** of activity lands on a holiday or break, ${sharePhrase(a, b, base)}.`,
 };
 
 /** Agentic value plus the earliest era that has a value to compare against. */
