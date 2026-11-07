@@ -175,19 +175,21 @@ export default async function PersonPage({ params }: PageProps<'/u/[login]'>) {
             {p.name}
           </span>
         }
-      >
-        <a
-          href={`https://github.com/${p.login}`}
-          target='_blank'
-          rel='noreferrer'
-          className='inline-flex items-center gap-1 underline-offset-2 hover:underline'
-        >
-          @{p.login} <ExternalLink className='size-3.5' />
-        </a>
-        {' · '}
-        {n === 1 ? '1 capstone' : `${n} capstones`}:{' '}
-        {p.capstones.map((c) => c.cohort.label).join(', ')}
-      </PageHeader>
+        meta={[
+          <a
+            key='gh'
+            href={`https://github.com/${p.login}`}
+            target='_blank'
+            rel='noreferrer'
+            className='inline-flex items-center gap-1 underline-offset-2 hover:underline'
+          >
+            @{p.login} <ExternalLink className='size-3.5' />
+          </a>,
+          `${n === 1 ? '1 capstone' : `${n} capstones`}: ${p.capstones
+            .map((c) => c.cohort.label)
+            .join(', ')}`,
+        ]}
+      />
 
       {p.capstones.map((c, i) => (
         <CapstoneSection key={`${c.cohort.slug}-${c.team.team}`} c={c} step={3 + i * 2} />

@@ -2,6 +2,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ExternalLink, BarChart3 } from 'lucide-react';
 
+import { getSummary } from '@/lib/data';
+import { fmtDate } from '@/lib/format';
 import { repoUrl } from '@/sync.config';
 
 const START_YEAR = 2026;
@@ -11,6 +13,7 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
   const yearLabel =
     currentYear > START_YEAR ? `${START_YEAR} - ${currentYear}` : `${START_YEAR}`;
+  const syncedAt = getSummary()?.generatedAt;
 
   return (
     <footer className='border-t'>
@@ -27,7 +30,8 @@ export function Footer() {
 
         <p className='max-w-md text-xs text-muted-foreground'>
           A student-made project for COSC 499 (COSC_O 499), the UBC Okanagan (UBCO)
-          capstone. Not affiliated with UBC. Built from GitHub activity.{' '}
+          capstone. Not affiliated with UBC. Built from GitHub activity
+          {syncedAt && `, last synced ${fmtDate(syncedAt)}`}.{' '}
           <a
             href={repoUrl}
             target='_blank'

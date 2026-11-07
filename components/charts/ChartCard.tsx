@@ -66,7 +66,7 @@ export function ChartCard<K extends string>({
     <Card className={cn('gap-0 py-0', className)}>
       <CardHeader
         className={cn(
-          'flex flex-col items-stretch border-b p-0!',
+          'flex flex-col items-stretch border-b p-0! w-full',
           !stacked && 'lg:flex-row'
         )}
       >
@@ -80,7 +80,8 @@ export function ChartCard<K extends string>({
         {action && (
           <div
             className={cn(
-              'flex items-center px-4 pb-4 sm:px-6',
+              `flex items-center px-4 pb-4 sm:px-6 w-full lg:w-1/2 justify-center
+              lg:justify-end`,
               !stacked && 'lg:py-5 lg:pl-0'
             )}
           >

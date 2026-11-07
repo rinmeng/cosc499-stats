@@ -11,6 +11,7 @@ import {
   type ChartConfig,
 } from '@/components/ui/chart';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { fmtCompact } from '@/lib/format';
 
 import { ChartCard } from './ChartCard';
@@ -48,6 +49,7 @@ export function MetricBarChart({
   sortDesc = false,
   podium = 0,
   height = 'h-64',
+  switcher = 'header',
   className,
 }: {
   title: string;
@@ -58,6 +60,11 @@ export function MetricBarChart({
   /** How many places to show on the podium tab; 0 for no podium */
   podium?: number;
   height?: string;
+  /**
+   * How the measure is picked: 'header' shows clickable totals in the card header;
+   * 'buttons' shows a compact button group instead (no totals).
+   */
+  switcher?: 'header' | 'buttons';
   className?: string;
 }) {
   const [active, setActive] = useState(metrics[0]?.key);
@@ -117,17 +124,40 @@ export function MetricBarChart({
     <ChartCard
       title={title}
       description={description}
-      metrics={metrics.map((m) => ({ key: m.key, label: m.label, value: m.total }))}
+      metrics={
+        switcher === 'header'
+          ? metrics.map((m) => ({ key: m.key, label: m.label, value: m.total }))
+          : undefined
+      }
       active={active}
       onActive={setActive}
       action={
-        podium && (
-          <Tabs value={view} onValueChange={(v) => setView(v as 'podium' | 'all')}>
-            <TabsList>
-              <TabsTrigger value='podium'>Top {podium}</TabsTrigger>
-              <TabsTrigger value='all'>All teams</TabsTrigger>
-            </TabsList>
-          </Tabs>
+        switcher === 'buttons' ? (
+          // One row; scrolls sideways on narrow phones instead of wrapping.
+          <div className='-mx-1 max-w-full overflow-x-auto px-1 pb-1'>
+            <ToggleGroup
+              variant='outline'
+              size='sm'
+              spacing={0}
+              value={[active]}
+              onValueChange={(v) => v[0] && setActive(v[0])}
+            >
+              {metrics.map((m) => (
+                <ToggleGroupItem key={m.key} value={m.key}>
+                  {m.label}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </div>
+        ) : (
+          podium && (
+            <Tabs value={view} onValueChange={(v) => setView(v as 'podium' | 'all')}>
+              <TabsList>
+                <TabsTrigger value='podium'>Top {podium}</TabsTrigger>
+                <TabsTrigger value='all'>All teams</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          )
         )
       }
       className={className}

@@ -15,12 +15,16 @@ export function PageHeader({
   eyebrow,
   title,
   children,
+  meta,
   action,
   start = 0,
 }: {
   eyebrow?: React.ReactNode;
   title: React.ReactNode;
+  /** One short intro sentence: what the page is. */
   children?: React.ReactNode;
+  /** Facts (counts, dates, links) on a small line below the intro, joined by "·". */
+  meta?: React.ReactNode[];
   /**
    * Rendered outside the animated title, for fixed-position things like the Share
    * button: an animated transform would pin them to the title instead of the screen.
@@ -29,6 +33,7 @@ export function PageHeader({
   /** Animation step of the eyebrow; the title and intro follow it. */
   start?: number;
 }) {
+  const facts = (meta ?? []).filter(Boolean);
   return (
     <header className='space-y-2'>
       {action}
@@ -50,9 +55,20 @@ export function PageHeader({
       >
         {title}
       </h1>
-      {children && (
-        <div className={cn('max-w-3xl text-muted-foreground', fadeUp(start + 2))}>
-          {children}
+      {(children || facts.length > 0) && (
+        <div className={cn('max-w-3xl space-y-1.5', fadeUp(start + 2))}>
+          {children && <div className='text-muted-foreground'>{children}</div>}
+          {facts.length > 0 && (
+            <ul
+              className='flex flex-wrap items-center gap-x-2 gap-y-1 text-sm
+                text-muted-foreground [&>li+li]:before:mr-2
+                [&>li+li]:before:content-["·"]'
+            >
+              {facts.map((f, i) => (
+                <li key={i}>{f}</li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
     </header>

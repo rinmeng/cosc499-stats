@@ -117,17 +117,14 @@ export async function generateMetadata({ params }: PageProps<'/[cohort]'>) {
 function OrgLink({ org }: { org?: string }) {
   if (!org) return null;
   return (
-    <>
-      <a
-        href={`https://github.com/${org}`}
-        target='_blank'
-        rel='noreferrer'
-        className='inline-flex items-center gap-1 underline-offset-2 hover:underline'
-      >
-        {org} <ExternalLink className='size-3.5' />
-      </a>
-      {' · '}
-    </>
+    <a
+      href={`https://github.com/${org}`}
+      target='_blank'
+      rel='noreferrer'
+      className='inline-flex items-center gap-1 underline-offset-2 hover:underline'
+    >
+      {org} <ExternalLink className='size-3.5' />
+    </a>
   );
 }
 
@@ -154,8 +151,8 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           }
           eyebrow='COSC 499 capstone'
           title={`${c.label} cohort`}
+          meta={[c.hasOrg && <OrgLink org={c.org} />]}
         >
-          <OrgLink org={c.hasOrg ? c.org : undefined} />
           No team repositories from this session are visible on GitHub yet.
         </PageHeader>
         <Reveal className={fadeUp(3)}>
@@ -663,20 +660,23 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           </span>
         }
         title={`${c.label} cohort`}
+        meta={
+          live
+            ? [
+                c.hasOrg && <OrgLink org={c.org} />,
+                `Started ${fmtDate(c.termStart)}`,
+                `Synced ${fmtDate(summary.generatedAt)}`,
+              ]
+            : [
+                c.hasOrg && <OrgLink org={c.org} />,
+                c.session === 'summer' && 'Summer session, May to August',
+                `${c.totals.teams} teams`,
+                `${fmt(c.totals.contributors)} contributors`,
+                `Started ${fmtDate(c.termStart)}`,
+              ]
+        }
       >
-        <OrgLink org={c.hasOrg ? c.org : undefined} />
-        {live ? (
-          <>
-            {c.totals.teams} teams building right now. Term started {fmtDate(c.termStart)}
-            ; data last synced {fmtDate(summary.generatedAt)}.
-          </>
-        ) : (
-          <>
-            {c.session === 'summer' && 'Summer session (May to August). '}
-            {c.totals.teams} teams, {fmt(c.totals.contributors)} contributors, term
-            starting {fmtDate(c.termStart)}.
-          </>
-        )}
+        {live && `${c.totals.teams} teams building right now.`}
       </PageHeader>
 
       {isSmallCohort(c) && (

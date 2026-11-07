@@ -34,7 +34,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getSummary } from '@/lib/data';
 import { overviewSeo, pageMetadata } from '@/lib/seo';
-import { cohortColor, fmt, fmtDate, fmtCompact, fmtHours, pct } from '@/lib/format';
+import { cohortColor, fmt, fmtCompact, fmtHours, pct } from '@/lib/format';
 import type { TeamStats } from '@/lib/types/stats';
 import {
   byTermStart,
@@ -230,18 +230,15 @@ export default function Overview() {
         eyebrow='UBC Okanagan · COSC 499'
         title='UBCO COSC 499 capstone stats, every cohort'
       >
-        Contribution highlights from {cohorts.length} UBC Okanagan COSC 499 capstone
-        cohorts on GitHub, year-long and summer sessions, from{' '}
-        {[...cohorts].sort(byTermStart)[0]?.label} to today. Last synced{' '}
-        {fmtDate(s.generatedAt)}.
+        Contribution highlights from the last {TOTALS_YEARS} years of UBCO COSC 499
+        capstone cohorts on GitHub. Older cohorts are in the Full year and Summer menus.
       </PageHeader>
 
       <div className='space-y-3'>
         <h2 className={cn('text-sm font-medium', next())}>
-          Last {TOTALS_YEARS} years · {yearLabel(totalsFrom)} to{' '}
-          {yearLabel(s.currentYear)}
+          Totals
           <span className='font-normal text-muted-foreground'>
-            , summer sessions included
+            , {yearLabel(totalsFrom)} to {yearLabel(s.currentYear)} with summer sessions
           </span>
         </h2>
         <Grid className='grid-cols-3 gap-2 md:grid-cols-3 md:gap-4 lg:grid-cols-5'>
@@ -335,12 +332,9 @@ export default function Overview() {
       <Grid className='lg:grid-cols-5'>
         <MetricBarChart
           title='Cohorts side by side'
-          description={
-            current
-              ? `Average per team; header shows all-time totals. S = summer session. ${current.label} is still in progress.`
-              : 'Average per team; header shows all-time totals. S = summer session.'
-          }
+          description={`Every cohort since ${[...cohorts].sort(byTermStart)[0]?.label}. ${current ? ` ${current.label} is still in progress.` : ''}`}
           {...cohortBars(s)}
+          switcher='buttons'
           height='h-72'
           className='lg:col-span-3'
         />

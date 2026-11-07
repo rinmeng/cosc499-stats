@@ -118,10 +118,7 @@ function Brand({ onClick, className }: { onClick?: () => void; className?: strin
       className={cn('flex items-center gap-2 font-semibold', className)}
     >
       <BarChart3 className='size-5 text-chart-1' />
-      <span>
-        UBCO COSC 499{' '}
-        <span className='hidden sm:inline lg:hidden xl:inline'>Capstone Stats</span>
-      </span>
+      <span>UBCO Capstone</span>
     </Link>
   );
 }

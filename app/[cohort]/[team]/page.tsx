@@ -113,29 +113,27 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
         start={1}
         eyebrow={c.org}
         title={t.name}
+        meta={[
+          ...t.repos.map((r) => (
+            <a
+              key={r.name}
+              href={r.url}
+              target='_blank'
+              rel='noreferrer'
+              className='inline-flex items-center gap-1 hover:text-foreground
+                hover:underline'
+            >
+              {r.isPrivate && <Lock className='size-3' />}
+              {r.name}
+              <ExternalLink className='size-3' />
+            </a>
+          )),
+          `Last activity ${fmtDate(t.lastActivity)}`,
+        ]}
       >
-        <div className='space-y-2'>
-          {t.description && !/created by GitHub Classroom/i.test(t.description) && (
-            <p>{t.description}</p>
-          )}
-          <div className='flex flex-wrap gap-x-4 gap-y-1 text-sm'>
-            {t.repos.map((r) => (
-              <a
-                key={r.name}
-                href={r.url}
-                target='_blank'
-                rel='noreferrer'
-                className='inline-flex items-center gap-1 hover:text-foreground
-                  hover:underline'
-              >
-                {r.isPrivate && <Lock className='size-3' />}
-                {r.name}
-                <ExternalLink className='size-3' />
-              </a>
-            ))}
-            <span>Last activity {fmtDate(t.lastActivity)}</span>
-          </div>
-        </div>
+        {t.description && !/created by GitHub Classroom/i.test(t.description) && (
+          <p>{t.description}</p>
+        )}
       </PageHeader>
 
       <Grid className='grid-cols-2 md:grid-cols-3 lg:grid-cols-6'>
