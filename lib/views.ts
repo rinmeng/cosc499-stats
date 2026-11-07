@@ -152,16 +152,42 @@ export function cohortBars(s: Summary): { rows: BarRow[]; metrics: BarMetric[] }
     c.session === 'summer'
       ? `S${String(c.year).slice(2)}`
       : `${String(c.year).slice(2)}–${String(c.year + 1).slice(2)}`;
-  const rows = cohorts.map((c) => ({
-    label: short(c),
-    name: `${c.label} · average per team`,
-    values: { ...c.avgPerTeam },
-  }));
+  // Average points per team: what members earned plus the teamwork bonus, stacked.
+  const avg = (c: CohortStats, f: (t: TeamStats) => number) =>
+    Math.round(c.teams.reduce((a, t) => a + f(t), 0) / c.teams.length);
+  const rows = cohorts.map((c) => {
+    const memberPoints = avg(c, (t) => t.score);
+    const teamworkBonus = avg(c, (t) => t.teamworkBonus);
+    return {
+      label: short(c),
+      name: `${c.label} · average per team`,
+      values: {
+        score: memberPoints + teamworkBonus,
+        memberPoints,
+        teamworkBonus,
+        ...c.avgPerTeam,
+      },
+    };
+  });
   const all = (k: keyof CohortStats['avgPerTeam']) =>
     fmtCompact(cohorts.reduce((a, c) => a + c.totals[k], 0));
+  const allPoints = cohorts.reduce(
+    (a, c) => a + c.teams.reduce((b, t) => b + overallScore(t), 0),
+    0
+  );
   return {
     rows,
     metrics: [
+      {
+        key: 'score',
+        label: 'Overall',
+        total: fmtCompact(allPoints),
+        unit: 'pts',
+        parts: [
+          { key: 'memberPoints', label: 'Member points' },
+          { key: 'teamworkBonus', label: 'Teamwork bonus' },
+        ],
+      },
       { key: 'commits', label: 'Commits', total: all('commits') },
       { key: 'prsMerged', label: 'Merged PRs', total: all('prsMerged') },
       { key: 'reviews', label: 'Reviews', total: all('reviews') },

@@ -271,7 +271,16 @@ export default function Overview() {
       <Grid className='lg:grid-cols-5'>
         <MetricBarChart
           title='Cohorts side by side'
-          description={`Every cohort since ${[...cohorts].sort(byTermStart)[0]?.label}. ${current ? ` ${current.label} is still in progress.` : ''}`}
+          description={
+            <>
+              Average per team, every cohort since{' '}
+              {[...cohorts].sort(byTermStart)[0]?.label}.
+              {current && ` ${current.label} is still in progress.`}
+              <div className='mt-1 -ml-2'>
+                <ScoreInfo weights={s.scoreWeights} bonus={s.teamworkBonus} />
+              </div>
+            </>
+          }
           {...cohortBars(s)}
           switcher='buttons'
           height='h-72'
