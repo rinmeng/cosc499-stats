@@ -283,12 +283,22 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       cards: [
         card(
           {
-            icon: Users,
-            title: 'All hands on deck',
-            description: 'Most people committing since Sunday',
+            icon: Handshake,
+            title: 'Most collaborative this week',
+            description:
+              'Commits since Sunday shared most evenly across the team (100 = everyone equal)',
           },
-          topTeams(c, (t) => (t.thisWeekContributors ?? 0) + t.thisWeekCommits / 1e6, 3),
-          (t) => ({ value: fmt(t.thisWeekContributors ?? 0), unit: 'people' })
+          topTeams(
+            c,
+            (t) => (t.thisWeekEvenness ?? 0) + t.thisWeekCommits / 1e6,
+            3,
+            (t) => (t.thisWeekContributors ?? 0) >= 3
+          ),
+          (t) => ({
+            value: `${Math.round((t.thisWeekEvenness ?? 0) * 100)}`,
+            unit: '/ 100',
+            sub: `${t.thisWeekContributors} people`,
+          })
         ),
         card(
           {

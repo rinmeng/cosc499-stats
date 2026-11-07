@@ -290,7 +290,8 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     let witchingCommits = 0;
     /** lines changed on the default branch this week (outlier commits skipped) */
     let thisWeekLines = 0;
-    const thisWeekAuthors = new Set<string>();
+    /** commits since Sunday per author key (merged with the people map below) */
+    const thisWeekByAuthor = new Map<string, number>();
     let thisWeekIssuesClosed = 0;
     let thisWeekNight = 0;
     let thisWeekEarly = 0;
@@ -337,7 +338,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
         const { dow, hour } = localSlot(c.date);
         punch[dow][hour]++;
         if (w === nowWeek) {
-          thisWeekAuthors.add(key);
+          thisWeekByAuthor.set(key, (thisWeekByAuthor.get(key) ?? 0) + 1);
           if (hour >= 22 || hour < 4) thisWeekNight++;
           if (hour >= 5 && hour < 9) thisWeekEarly++;
           if (dow === 0 || dow === 6) thisWeekWeekend++;
@@ -448,6 +449,12 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       match.holidayCommits += p.holidayCommits;
       match.biggestCommit = Math.max(match.biggestCommit, p.biggestCommit);
       p.weeks.forEach((w) => match.weeks.add(w));
+      const mk = [...people].find(([, q]) => q === match)![0];
+      thisWeekByAuthor.set(
+        mk,
+        (thisWeekByAuthor.get(mk) ?? 0) + (thisWeekByAuthor.get(key) ?? 0)
+      );
+      thisWeekByAuthor.delete(key);
       people.delete(key);
     }
 
@@ -572,7 +579,11 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
       thisWeekLines,
       thisWeekPrsMerged: weekly.get(nowWeek)?.prs ?? 0,
       thisWeekReviews: weekly.get(nowWeek)?.reviews ?? 0,
-      thisWeekContributors: thisWeekAuthors.size,
+      thisWeekContributors: [...thisWeekByAuthor.values()].filter((n) => n > 0).length,
+      // Evenness across every member (0 for anyone who didn't commit this week).
+      thisWeekEvenness: round(
+        1 - gini([...people.keys()].map((k) => thisWeekByAuthor.get(k) ?? 0))
+      ),
       thisWeekIssuesClosed,
       thisWeekNightCommits: thisWeekNight,
       thisWeekEarlyCommits: thisWeekEarly,

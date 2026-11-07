@@ -6,7 +6,9 @@ import { Check, Copy, Share2 } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Bubble, BubbleContent } from '@/components/ui/bubble';
+import { useBanner } from '@/components/banner-provider';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import {
   Dialog,
   DialogContent,
@@ -184,10 +186,17 @@ export function ShareDialog({
  */
 export function ShareButton({ item }: { item: ShareItem }) {
   const [open, setOpen] = useState(false);
+  // The announcement strip sits inside the fixed navbar; drop below it while it shows.
+  const { dismissed } = useBanner();
   return (
     <>
       {/* Same width and gutters as the page, so the button lines up with the content. */}
-      <div className='pointer-events-none fixed inset-x-0 top-16 z-40'>
+      <div
+        className={cn(
+          'pointer-events-none fixed inset-x-0 z-40 transition-[top]',
+          dismissed ? 'top-16' : 'top-28'
+        )}
+      >
         <div className='page-container flex justify-end'>
           <Button
             size='sm'

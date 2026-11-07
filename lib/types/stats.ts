@@ -198,6 +198,8 @@ export interface TeamStats {
   thisWeekReviews: number;
   /** People who committed since Sunday */
   thisWeekContributors: number;
+  /** How evenly this week's commits were split across members, 0–1 (1 − Gini) */
+  thisWeekEvenness: number;
   /** Issues closed since Sunday */
   thisWeekIssuesClosed: number;
   /** This week's commits 10 pm–4 am, 5–9 am, and on Saturday or Sunday (local time) */
