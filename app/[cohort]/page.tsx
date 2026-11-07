@@ -232,7 +232,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     {
       icon: Sparkles,
       title: 'Most active this week',
-      description: 'Commits, pull requests, reviews and issues since last Sunday',
+      description: 'All activity since Sunday',
     },
     topTeams(c, (t) => t.thisWeekActivity ?? 0, 3),
     (t) => ({ value: fmt(t.thisWeekActivity ?? 0), unit: 'actions' })
@@ -241,7 +241,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     {
       icon: FileDiff,
       title: 'Most lines this week',
-      description: 'Lines added and deleted on the main branch since last Sunday',
+      description: 'Lines changed on main since Sunday',
     },
     topTeams(c, (t) => t.thisWeekLines ?? 0, 3),
     (t) => ({ value: fmtCompact(t.thisWeekLines ?? 0), unit: 'lines' })
@@ -267,7 +267,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     {
       icon: Flag,
       title: 'Strongest finish',
-      description: 'Commits in the last 4 weeks of term',
+      description: 'Commits in the last 4 weeks',
     },
     topTeams(c, (t) => t.finishCommits ?? 0, 3),
     (t) => ({ value: fmt(t.finishCommits ?? 0), unit: 'commits' })
@@ -276,7 +276,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     {
       icon: Rocket,
       title: 'Fastest start',
-      description: 'Commits in the first 4 weeks of term',
+      description: 'Commits in the first 4 weeks',
     },
     topTeams(c, (t) => t.startCommits, 3),
     (t) => ({ value: fmt(t.startCommits), unit: 'commits' })
@@ -298,7 +298,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: Handshake,
             title: 'Most collaborative this week',
-            description: 'Points since last Sunday shared most evenly across the team',
+            description: 'Most evenly shared points since Sunday',
           },
           topTeams(
             c,
@@ -316,7 +316,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: MessageSquareCode,
             title: 'Most reviews this week',
-            description: 'Teammate reviews submitted since last Sunday',
+            description: 'Teammate reviews since Sunday',
           },
           topTeams(c, (t) => t.thisWeekReviews ?? 0, 3),
           (t) => ({ value: fmt(t.thisWeekReviews ?? 0), unit: 'reviews' })
@@ -339,7 +339,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: Moon,
             title: 'Night owls this week',
-            description: 'Activity between 10 pm and 4 am since last Sunday',
+            description: '10 pm–4 am, since Sunday',
           },
           topTeams(c, (t) => t.thisWeekNightActivity ?? 0, 3),
           (t) => ({ value: fmt(t.thisWeekNightActivity ?? 0), unit: 'actions' })
@@ -348,7 +348,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: Sunrise,
             title: 'Early birds this week',
-            description: 'Activity between 5 am and 9 am since last Sunday',
+            description: '5–9 am, since Sunday',
             empty: 'No teams were early birds this week.',
           },
           topTeams(c, (t) => t.thisWeekEarlyActivity ?? 0, 3),
@@ -358,7 +358,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: CalendarDays,
             title: 'Weekend warriors this week',
-            description: 'Activity on Saturday or Sunday this week',
+            description: 'This Saturday and Sunday',
           },
           topTeams(c, (t) => t.thisWeekWeekendActivity ?? 0, 3),
           (t) => ({ value: fmt(t.thisWeekWeekendActivity ?? 0), unit: 'actions' })
@@ -379,7 +379,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: Zap,
             title: 'Speed demon',
-            description: 'Fastest single PR from opened to merged',
+            description: 'Fastest PR from opened to merged',
           },
           c.teams
             .filter((t) => t.fastestPr)
@@ -394,7 +394,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: Hourglass,
             title: 'Patience award',
-            description: 'Longest a PR stayed open before finally being merged',
+            description: 'Longest wait from PR opened to merged',
           },
           topTeams(c, (t) => t.slowestPr?.value ?? 0, 3),
           (t) => ({
@@ -406,7 +406,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: Ghost,
             title: 'Witching hour',
-            description: 'Activity between 3 and 4 am',
+            description: 'Between 3 and 4 am',
           },
           topTeams(c, (t) => t.witchingActivity, 3),
           (t) => ({ value: fmt(t.witchingActivity), unit: 'actions' })
@@ -417,8 +417,8 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             title: 'Holiday heroes',
             description:
               c.session === 'summer'
-                ? 'Activity on Victoria Day, Canada Day or BC Day'
-                : 'Activity on Thanksgiving, over Christmas and New Year, or in reading week',
+                ? 'Victoria Day, Canada Day and BC Day'
+                : 'Thanksgiving, winter break and reading week',
           },
           topTeams(c, (t) => t.holidayActivity, 3),
           (t) => ({ value: fmt(t.holidayActivity), unit: 'actions' })
@@ -427,7 +427,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: NotebookPen,
             title: 'Exam-season grinders',
-            description: 'Activity during the December and April exam periods',
+            description: 'December and April exams',
           },
           topTeams(c, (t) => t.examActivity, 3),
           (t) => ({ value: fmt(t.examActivity), unit: 'actions' })
@@ -436,7 +436,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: Boxes,
             title: 'Mega PR',
-            description: 'Most files changed in a single merged PR',
+            description: 'Most files changed in one merged PR',
           },
           topTeams(c, (t) => t.megaPr?.value ?? 0, 3),
           (t) => ({
@@ -455,7 +455,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: Moon,
             title: 'Night owls',
-            description: 'Share of activity between 10 pm and 4 am',
+            description: 'Share of activity, 10 pm–4 am',
           },
           topTeams(c, (t) => t.nightOwlShare, 3, enough),
           (t) => ({ value: pct(t.nightOwlShare), unit: 'of activity' })
@@ -464,7 +464,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: Sunrise,
             title: 'Early birds',
-            description: 'Share of activity between 5 am and 9 am',
+            description: 'Share of activity, 5–9 am',
           },
           topTeams(c, (t) => t.earlyBirdShare, 3, enough),
           (t) => ({ value: pct(t.earlyBirdShare), unit: 'of activity' })
@@ -473,7 +473,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: CalendarDays,
             title: 'Weekend warriors',
-            description: 'Share of activity on Saturday or Sunday',
+            description: 'Share of activity on weekends',
           },
           topTeams(c, (t) => t.weekendShare, 3, enough),
           (t) => ({ value: pct(t.weekendShare), unit: 'of activity' })
@@ -490,7 +490,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: Handshake,
             title: 'Most collaborative',
-            description: 'Points shared most evenly across the team',
+            description: 'Most evenly shared points',
           },
           topTeams(
             c,
@@ -658,7 +658,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     <div id='tracking' className='scroll-mt-20'>
       <CohortTrendChart
         title={live ? 'How this cohort is tracking' : 'How this cohort tracked'}
-        description={`Average cumulative points per team by week of term.`}
+        description='Average running points per team, by week of term.'
         series={trendSeries(summary, c.slug)}
         action={<ScoreInfo weights={summary.scoreWeights} />}
         highlight={c.slug}
@@ -866,7 +866,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
       <Section
         className={next()}
         title='Top contributors'
-        description={`Top 10 across the cohort, or the top ${summary.topN} on each team.`}
+        description={`Top 10 overall, or top ${summary.topN} per team.`}
         action={<ScoreInfo weights={summary.scoreWeights} />}
       >
         <TopContributors
@@ -879,7 +879,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         title='Team output'
         description={
           <>
-            The top half of teams, or every team highest first.
+            Top half of teams, or all of them.
             <div className='mt-1 -ml-2'>
               <ScoreInfo weights={summary.scoreWeights} bonus={summary.teamworkBonus} />
             </div>

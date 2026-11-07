@@ -292,7 +292,7 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
         <Section
           className={next()}
           title='Who reviews whom'
-          description='Each arrow is a teammate reviewing someone’s pull requests, counted once per PR.'
+          description='Arrows point from reviewer to PR author, once per PR.'
         >
           <ReviewNetwork
             members={t.members.map((m) => ({
@@ -310,8 +310,7 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
           <div className={next()}>
             <h2 className='font-heading text-lg font-semibold'>Contribution profiles</h2>
             <p className='text-sm text-muted-foreground'>
-              Each axis is scaled to the team’s best on that measure, so the shape shows
-              where each person shines.
+              Each axis is scaled to the team’s best.
             </p>
           </div>
           <MemberRadars members={radars} />
@@ -320,7 +319,7 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
 
       <CohortTrendChart
         title={c.isCurrent ? 'How this team is tracking' : 'How this team tracked'}
-        description={`Points from week 0, next to every other team in ${c.label} (faded) and the cohort's average team. Doesn't include the teamwork bonus.`}
+        description={`Points by week, next to other ${c.label} teams (faded) and the average team. No teamwork bonus.`}
         legendHint='Click a name to bring its line forward'
         series={teamPointsSeries(summary, c, t)}
         action={<ScoreInfo weights={summary.scoreWeights} />}

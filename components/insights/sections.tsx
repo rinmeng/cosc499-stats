@@ -110,7 +110,7 @@ export function AiToolsChart({ view }: { view: InsightsView }) {
       )}
       <HorizontalShareChart
         title='Which AI tools get named'
-        description='Agentic era (2024 onward), by the tool named in a Co-authored-by line. Only tools that sign their commits show up, so this undercounts. Hover a bar for the commit and team counts.'
+        description='Agentic era, by the tool named in a Co-authored-by line. Only tools that sign commits show up, so this undercounts.'
         why={WHY.tools}
         slices={view.tools[0]?.slices ?? []}
         nTeams={view.toolSample.nTeams}
@@ -131,7 +131,7 @@ export function TrendCharts({ view }: { view: InsightsView }) {
         markerLabel='Halfway'
         xUnit='term'
         title='When the work lands'
-        description={`How each cohort’s early-term commits built up: the first ${view.curveSpan}% of its term, or about ${view.windowWeek} weeks of a full year. Summer is scaled to match.`}
+        description={`Running share of each cohort’s commits over the first ${view.curveSpan}% of term (about ${view.windowWeek} weeks). Summer is scaled to match.`}
         valueLabel={view.curveLabel}
         action={<WhyDialog title='When the work lands' why={WHY.curves} />}
       />

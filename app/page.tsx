@@ -116,7 +116,7 @@ export default function Overview() {
     {
       icon: Moon,
       title: 'Night owls',
-      description: 'Biggest share of their activity between 10 pm and 4 am',
+      description: 'Biggest share of activity, 10 pm–4 am',
       items: top3(regulars, (p) => share(p.m.nightActivity, p.m.activity)).map((p) =>
         personItem(p, pct(share(p.m.nightActivity, p.m.activity)), 'of activity')
       ),
@@ -124,7 +124,7 @@ export default function Overview() {
     {
       icon: Sunrise,
       title: 'Early birds',
-      description: 'Biggest share of their activity between 5 am and 9 am',
+      description: 'Biggest share of activity, 5–9 am',
       items: top3(regulars, (p) => share(p.m.earlyActivity, p.m.activity)).map((p) =>
         personItem(p, pct(share(p.m.earlyActivity, p.m.activity)), 'of activity')
       ),
@@ -132,7 +132,7 @@ export default function Overview() {
     {
       icon: Ghost,
       title: '3 am regulars',
-      description: 'Most activity between 3 and 4 am',
+      description: 'Most activity, 3–4 am',
       items: top3(people, (p) => p.m.witchingActivity).map((p) =>
         personItem(p, fmt(p.m.witchingActivity), 'actions')
       ),
@@ -140,8 +140,7 @@ export default function Overview() {
     {
       icon: FileCode2,
       title: 'Biggest single commit',
-      description:
-        'Most lines changed in one commit (vendored code over 20,000 lines left out)',
+      description: 'Most lines changed in one commit, vendored code excluded',
       items: top3(people, (p) => p.m.biggestCommit).map((p) =>
         personItem(p, fmtCompact(p.m.biggestCommit), 'lines')
       ),
@@ -157,7 +156,7 @@ export default function Overview() {
     {
       icon: GitPullRequestClosed,
       title: 'Back to the drawing board',
-      description: 'Most pull requests opened and then closed without merging',
+      description: 'Most PRs closed without merging',
       items: top3(people, (p) => p.m.prsClosed ?? 0).map((p) =>
         personItem(p, fmt(p.m.prsClosed ?? 0), 'closed PRs')
       ),
@@ -270,8 +269,7 @@ export default function Overview() {
           title='Cohorts side by side'
           description={
             <>
-              Average per team, every cohort since{' '}
-              {[...cohorts].sort(byTermStart)[0]?.label}.
+              Average per team.
               {current && ` ${current.label} is still in progress.`}
               <div className='mt-1 -ml-2'>
                 <ScoreInfo weights={s.scoreWeights} bonus={s.teamworkBonus} />

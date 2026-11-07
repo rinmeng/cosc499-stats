@@ -17,9 +17,8 @@ export default function TrendsPage() {
       share={trendsSeo()}
       intro={
         <p>
-          Same course, different rhythm. See how fast teams get going, how much of their
-          work goes through pull requests, and whether they code late at night or on
-          weekends.
+          How fast teams get going, how much goes through pull requests, and when they
+          code.
         </p>
       }
       notes={[

@@ -56,8 +56,8 @@ export default function GradesPage() {
         title='How COSC 499 classes finished'
       >
         <p>
-          Final grades for every COSC 499 session since {t.since}, from UBC’s public grade
-          reports: how big each class was, how it finished and who taught it.
+          Final grades, class sizes and instructors for every COSC 499 session since{' '}
+          {t.since}, from UBC’s public grade reports.
         </p>
         <div className='mt-4 space-y-1.5'>
           <div className='text-xs font-medium tracking-wider uppercase'>
