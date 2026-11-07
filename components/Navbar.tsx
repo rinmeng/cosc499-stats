@@ -195,7 +195,10 @@ export function Navbar() {
               fadeLeft(4 + groups.length)
             )}
           />
-          <ModeToggle className={cn('size-9 lg:size-8', fadeLeft(5 + groups.length))} />
+          {/* On mobile the theme toggle lives in the menu sheet instead. */}
+          <ModeToggle
+            className={cn('hidden size-8 lg:inline-flex', fadeLeft(5 + groups.length))}
+          />
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger
               render={
@@ -216,6 +219,7 @@ export function Navbar() {
                 </SheetTitle>
               </SheetHeader>
               <div className={cn('flex flex-col items-center gap-2 px-4 pb-6')}>
+                <ModeToggle className='mb-2 size-9' />
                 {items(
                   () => setOpen(false),
                   'w-full justify-center',
