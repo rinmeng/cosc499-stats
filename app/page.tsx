@@ -230,7 +230,8 @@ export default function Overview() {
         title='UBCO COSC 499 capstone stats, every cohort'
       >
         Contribution highlights from the last {TOTALS_YEARS} years of UBCO COSC 499
-        capstone cohorts on GitHub. Older cohorts are in the Full year and Summer menus.
+        capstone cohorts on GitHub. Older cohorts and summer sessions are in the Years
+        menu.
       </PageHeader>
 
       <div className='space-y-4'>

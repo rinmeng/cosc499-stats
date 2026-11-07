@@ -41,10 +41,6 @@ const toLink = (c: (typeof cohorts)[number]) => ({
 
 type NavLink = ReturnType<typeof toLink>;
 
-const winter = cohorts
-  .filter((c) => c.session !== 'summer')
-  .sort((a, b) => b.year - a.year);
-
 /** Tabs: overview and about. Insights and the year selectors are dropdowns. */
 const links: NavLink[] = [
   { href: '/', label: 'Overview', live: false },
@@ -55,20 +51,24 @@ const insightLinks: NavLink[] = [
   { href: '/insights', label: 'AI impact', live: false },
   { href: '/insights/trends', label: 'Trends', live: false },
 ];
-const yearLinks = winter.map((c) => {
-  const link = toLink(c);
-  return link.live ? { ...link, label: 'This year' } : link;
-});
-const summerLinks = cohorts
-  .filter((c) => c.session === 'summer')
-  .sort((a, b) => b.year - a.year)
-  .map(toLink);
+/**
+ * Every cohort in one list, newest term first: a summer session (May) sorts just
+ * below the year-long cohort that starts that September. Summers read "S2025".
+ */
+const yearLinks: NavLink[] = [...cohorts]
+  .sort(
+    (a, b) =>
+      b.year - a.year ||
+      (a.session === 'summer' ? 1 : 0) - (b.session === 'summer' ? 1 : 0)
+  )
+  .map((c) => {
+    const link = toLink(c);
+    if (link.live) return { ...link, label: 'This year' };
+    return c.session === 'summer' ? { ...link, label: `S${c.year}` } : link;
+  });
 
-/** Dropdowns after the tabs (desktop) and labelled sections (mobile menu). */
-const groups = [
-  { key: 'older', label: 'Full year', heading: 'Full year', links: yearLinks },
-  { key: 'summer', label: 'Summer', heading: 'Summer sessions', links: summerLinks },
-].filter((g) => g.links.length > 0);
+/** One dropdown after the tabs (desktop), one folding section (mobile menu). */
+const groups = [{ key: 'years', label: 'Years', heading: 'Years', links: yearLinks }];
 
 function NavDropdown({
   label,
@@ -172,10 +172,7 @@ export function Navbar() {
             )}
             {groups.map((g, i) => {
               const selected = g.links.find((l) => isActive(l.href));
-              const shown =
-                g.key === 'older'
-                  ? (selected ?? yearLinks.find((l) => l.live))
-                  : undefined;
+              const shown = selected ?? yearLinks.find((l) => l.live);
               return (
                 <NavDropdown
                   key={g.key}
@@ -234,8 +231,7 @@ export function Navbar() {
                   'w-full justify-center',
                   links.filter((l) => l.href === '/about')
                 )}
-                {/* Full year and Summer are long lists, so they fold away. The one holding
-                    the page you're on starts open. */}
+                {/* Years is a long list, so it folds away; it starts open on a cohort page. */}
                 {groups.map((g) => (
                   <Collapsible
                     key={g.key}
