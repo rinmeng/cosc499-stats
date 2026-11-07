@@ -13,6 +13,7 @@ import {
   MessageSquareCode,
   Trophy,
   Users,
+  AlertCircle,
 } from 'lucide-react';
 
 import { CohortTrendChart } from '@/components/charts/CohortTrendChart';
@@ -43,6 +44,7 @@ import {
   currentWeek,
   trendSeries,
 } from '@/lib/views';
+import { LiveDot } from '@/components/LiveDot';
 
 /** Headline totals cover this many cohort years, newest first (summer included). */
 const TOTALS_YEARS = 5;
@@ -178,46 +180,43 @@ export default function Overview() {
         size='sm'
         className='h-full py-3 transition-colors group-hover:bg-muted/50 md:py-4'
       >
-        <CardHeader className='px-3 md:px-4'>
+        <CardHeader className='gap-1 px-3 md:px-4'>
           <CardTitle className='flex items-center gap-2 text-sm md:text-base'>
             <span
-              className='size-2.5'
+              className='size-2.5 shrink-0'
               style={{
                 background: cohortColor(c.year, s.currentYear, c.session),
               }}
             />
-            {c.label}
-            {c.isCurrent && <Badge>Week {currentWeek(c)}</Badge>}
-            {c.session === 'summer' && !isSmallCohort(c) && (
-              <Badge variant='secondary'>Summer</Badge>
+            <span className='truncate'>
+              {c.isCurrent
+                ? 'This year'
+                : c.session === 'summer'
+                  ? `S${c.year}`
+                  : c.label}
+            </span>
+            {c.isCurrent && (
+              <Badge>
+                Week {currentWeek(c)} <LiveDot />
+              </Badge>
             )}
-            {isSmallCohort(c) && <Badge variant='outline'>Incomplete</Badge>}
+            {isSmallCohort(c) && (
+              <Badge variant='outline'>
+                <AlertCircle /> Incomplete
+              </Badge>
+            )}
             <ArrowRight
-              className='ml-auto size-4 text-muted-foreground transition-transform
-                group-hover:translate-x-0.5'
+              aria-label='View leaderboard'
+              className='ml-auto size-4 shrink-0 text-muted-foreground
+                transition-transform group-hover:translate-x-0.5'
             />
           </CardTitle>
+          <p className='font-mono text-xs tabular-nums text-muted-foreground'>
+            {c.teams.length
+              ? `${fmt(c.totals.teams)} teams · ${fmtCompact(c.totals.commits)} commits · ${fmt(c.totals.prsMerged)} PRs`
+              : 'No visible repos yet'}
+          </p>
         </CardHeader>
-        <CardContent className='grid grid-cols-3 gap-2 px-3 text-sm md:px-4'>
-          <div>
-            <div className='font-mono text-sm font-semibold tabular-nums md:text-base'>
-              {c.totals.teams.toLocaleString()}
-            </div>
-            <div className='text-[11px] text-muted-foreground md:text-xs'>teams</div>
-          </div>
-          <div>
-            <div className='font-mono text-sm font-semibold tabular-nums md:text-base'>
-              {fmtCompact(c.totals.commits)}
-            </div>
-            <div className='text-[11px] text-muted-foreground md:text-xs'>commits</div>
-          </div>
-          <div>
-            <div className='font-mono text-sm font-semibold tabular-nums md:text-base'>
-              {fmt(c.totals.prsMerged)}
-            </div>
-            <div className='text-[11px] text-muted-foreground md:text-xs'>PRs</div>
-          </div>
-        </CardContent>
       </Card>
     </Link>
   );

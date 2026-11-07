@@ -242,6 +242,21 @@ export function currentWeek(c: CohortStats, now = Date.now()) {
   return Math.floor((now - Date.parse(c.termStart)) / (7 * 86_400_000));
 }
 
+/** Last day of classes: April 30 (year-long) or August 15 (summer), as YYYY-MM-DD. */
+export function termEnd(c: CohortStats) {
+  return c.session === 'summer' ? `${c.year}-08-15` : `${c.year + 1}-04-30`;
+}
+
+/** First day of classes (the Monday after `termStart`), as YYYY-MM-DD. */
+export function termFirstDay(c: CohortStats) {
+  return new Date(Date.parse(c.termStart) + 86_400_000).toISOString().slice(0, 10);
+}
+
+/** Number of the term's last week, on the same scale as `currentWeek`. */
+export function termWeeks(c: CohortStats) {
+  return currentWeek(c, Date.parse(termEnd(c)));
+}
+
 /** Every contributor across all cohorts, with where they were (for all-time records). */
 export function everyone(s: Summary) {
   return s.cohorts.flatMap((c) =>

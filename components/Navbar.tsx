@@ -28,6 +28,7 @@ import { Banner } from '@/components/banner-provider';
 import { cn } from '@/lib/utils';
 import { cohortSlug, cohorts, currentCohort } from '@/sync.config';
 
+import { LiveDot } from './LiveDot';
 import { ModeToggle } from './ModeToggle';
 import { PeopleSearch } from './PeopleSearch';
 
@@ -68,19 +69,6 @@ const groups = [
   { key: 'summer', label: 'Summer', heading: 'Summer sessions', links: summerLinks },
 ].filter((g) => g.links.length > 0);
 
-/** Pulsing dot marking the cohort that's still in progress. */
-function LiveDot() {
-  return (
-    <span className='relative ml-1 flex size-2' aria-label='in progress'>
-      <span
-        className='absolute inline-flex size-full animate-ping rounded-full bg-chart-1
-          opacity-60'
-      />
-      <span className='relative inline-flex size-2 rounded-full bg-chart-1' />
-    </span>
-  );
-}
-
 function NavDropdown({
   label,
   links,
@@ -98,14 +86,14 @@ function NavDropdown({
         render={<Button variant={active ? 'secondary' : 'ghost'} size='sm' />}
       >
         {label}
-        {live && <LiveDot />}
+        {live && <LiveDot className='ml-1' />}
         <ChevronDown className='size-3.5' />
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end'>
         {links.map((l) => (
           <DropdownMenuItem key={l.href} render={<Link href={l.href} />}>
             {l.label}
-            {l.live && <LiveDot />}
+            {l.live && <LiveDot className='ml-1' />}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
@@ -144,7 +132,7 @@ export function Navbar() {
         render={<Link href={l.href} onClick={onClick} />}
       >
         {l.label}
-        {l.live && <LiveDot />}
+        {l.live && <LiveDot className='ml-1' />}
       </Button>
     ));
 
@@ -231,7 +219,7 @@ export function Navbar() {
                         hover:text-foreground'
                     >
                       {g.heading}
-                      {g.links.some((l) => l.live) && <LiveDot />}
+                      {g.links.some((l) => l.live) && <LiveDot className='ml-1' />}
                       <ChevronDown
                         className='size-3.5 transition-transform
                           group-data-[panel-open]/trigger:rotate-180'
