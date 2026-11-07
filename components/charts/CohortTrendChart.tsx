@@ -38,6 +38,11 @@ export interface TrendSeries {
   isCurrent: boolean;
   /** `week` is the x position: week of term, or % of term when xUnit is 'term' */
   points: { week: number; value: number }[];
+  /**
+   * Background context (e.g. the other teams in a cohort): a thin faded line with no
+   * marker, header tile, tooltip row or legend button of its own.
+   */
+  faint?: boolean;
 }
 
 const SUMMER_DASH = '6 4';
@@ -103,9 +108,10 @@ const keyOf = (s: TrendSeries) => `c_${s.slug.replace(/[^a-z0-9]/gi, '_')}`;
  * Year-long cohorts are solid lines on the lime ramp; summer sessions (a shorter,
  * May–August term) are dashed on a neutral ramp. Header buttons show each cohort's
  * value at the comparison week; clicking one brings that cohort's line forward.
+ * `faint` series sit underneath as context and share one legend key (`faintLabel`).
  */
 export function CohortTrendChart({
-  series,
+  series: all,
   currentWeek,
   title,
   description,
@@ -114,6 +120,7 @@ export function CohortTrendChart({
   valueLabel = 'avg commits per team',
   markerLabel = 'Today',
   xUnit = 'week',
+  faintLabel = 'Others',
   action,
 }: {
   series: TrendSeries[];
@@ -130,8 +137,12 @@ export function CohortTrendChart({
   markerLabel?: string;
   /** What the x axis counts: weeks of term, or % of each cohort's own term */
   xUnit?: 'week' | 'term';
+  /** Legend key for the faint series */
+  faintLabel?: string;
   action?: React.ReactNode;
 }) {
+  const faint = all.filter((s) => s.faint);
+  const series = all.filter((s) => !s.faint);
   const shapeOf = new Map(series.map((s, i) => [s.slug, SHAPES[i % SHAPES.length]]));
   const lastWeekOf = new Map(series.map((s) => [s.slug, s.points.at(-1)?.week]));
   const main =
@@ -141,16 +152,16 @@ export function CohortTrendChart({
   const [focus, setFocus] = useState(main?.slug ?? '');
 
   const config: ChartConfig = Object.fromEntries(
-    series.map((s) => [keyOf(s), { label: s.label, color: s.color }])
+    all.map((s) => [keyOf(s), { label: s.label, color: s.color }])
   );
 
   const weeks = new Set<number>();
-  series.forEach((s) => s.points.forEach((p) => weeks.add(p.week)));
+  all.forEach((s) => s.points.forEach((p) => weeks.add(p.week)));
   const rows = [...weeks]
     .sort((a, b) => a - b)
     .map((week) => {
       const row: Record<string, number> = { week };
-      for (const s of series) {
+      for (const s of all) {
         const p = s.points.find((x) => x.week === week);
         if (p) row[keyOf(s)] = p.value;
       }
@@ -280,6 +291,22 @@ export function CohortTrendChart({
               />
             }
           />
+          {/* Faint context lines first, so everything else draws on top. */}
+          {faint.map((s) => (
+            <Line
+              key={s.slug}
+              dataKey={keyOf(s)}
+              type='monotone'
+              stroke='var(--muted-foreground)'
+              strokeWidth={1.25}
+              strokeOpacity={0.3}
+              dot={false}
+              activeDot={false}
+              tooltipType='none'
+              isAnimationActive={false}
+              connectNulls
+            />
+          ))}
           {[...series]
             .sort((a, b) => Number(a.slug === focus) - Number(b.slug === focus))
             .map((s) => {
@@ -362,6 +389,23 @@ export function CohortTrendChart({
             {s.label}
           </button>
         ))}
+        {faint.length > 0 && (
+          <span className='flex items-center gap-1.5 px-2 py-1 text-muted-foreground'>
+            <svg width='18' height='4' aria-hidden>
+              <line
+                x1='1'
+                y1='2'
+                x2='17'
+                y2='2'
+                stroke='var(--muted-foreground)'
+                strokeOpacity='0.5'
+                strokeWidth='1.5'
+                strokeLinecap='round'
+              />
+            </svg>
+            {faintLabel}
+          </span>
+        )}
       </div>
     </ChartCard>
   );

@@ -778,7 +778,8 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         title='Team output'
         description={
           <>
-            Highest first. Overall weighs commits, merged PRs, reviews and issues.
+            The top half of teams, or every team highest first. Overall weighs commits,
+            merged PRs, reviews and issues.
             <div className='mt-1 -ml-2'>
               <ScoreInfo weights={summary.scoreWeights} />
             </div>
@@ -786,6 +787,8 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         }
         {...teamBars(c)}
         sortDesc
+        // Podium covers the top half of the cohort's teams.
+        podium={Math.ceil(c.teams.length / 2)}
       />
 
       <HighlightSections sections={sections} />

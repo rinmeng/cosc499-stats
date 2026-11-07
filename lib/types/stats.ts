@@ -116,6 +116,8 @@ export interface WeekPoint {
   commits: number;
   prs: number;
   reviews: number;
+  /** contribution points earned that week (same weights as PersonStats.score) */
+  score: number;
 }
 
 export interface PrHighlight {
@@ -237,6 +239,8 @@ export interface CohortStats {
   weekly: WeekPoint[];
   /** average cumulative commits per team by term week */
   cumulative: { week: number; value: number }[];
+  /** average cumulative points (score) per team by term week */
+  cumulativeScore: { week: number; value: number }[];
   punch: number[][];
   languages: { name: string; bytes: number }[];
   thisWeek: { commits: number; prsMerged: number; reviews: number };

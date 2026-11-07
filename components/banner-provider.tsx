@@ -29,7 +29,15 @@ export const useBanner = () => React.useContext(BannerContext);
 
 const listeners = new Set<() => void>();
 
+/**
+ * On `pnpm dev` the banner always comes back on reload: dismissing only hides it until
+ * the next page load, and nothing is written to localStorage.
+ */
+const DEV = process.env.NODE_ENV === 'development';
+let devDismissed = false;
+
 function read(): boolean {
+  if (DEV) return devDismissed;
   try {
     return localStorage.getItem(STORAGE_KEY) === '1';
   } catch {
@@ -38,11 +46,13 @@ function read(): boolean {
 }
 
 function write() {
-  try {
-    localStorage.setItem(STORAGE_KEY, '1');
-  } catch {
-    // Private mode or blocked storage: the banner just comes back next visit.
-  }
+  if (DEV) devDismissed = true;
+  else
+    try {
+      localStorage.setItem(STORAGE_KEY, '1');
+    } catch {
+      // Private mode or blocked storage: the banner just comes back next visit.
+    }
   listeners.forEach((fn) => fn());
 }
 

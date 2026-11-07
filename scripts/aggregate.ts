@@ -270,7 +270,14 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     const weekly = new Map<number, WeekPoint>();
     const wp = (w: number) => {
       if (!weekly.has(w))
-        weekly.set(w, { week: w, start: weekStart(w), commits: 0, prs: 0, reviews: 0 });
+        weekly.set(w, {
+          week: w,
+          start: weekStart(w),
+          commits: 0,
+          prs: 0,
+          reviews: 0,
+          score: 0,
+        });
       return weekly.get(w)!;
     };
     const punch = emptyPunch();
@@ -326,6 +333,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
           thisWeekLines += c.additions + c.deletions;
         p.weeks.add(w);
         wp(w).commits++;
+        wp(w).score += scoreWeights.commits;
         const { dow, hour } = localSlot(c.date);
         punch[dow][hour]++;
         if (w === nowWeek) {
@@ -357,7 +365,10 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
           const p = person(pr.login.toLowerCase(), pr.login, null);
           p.prsOpened++;
           p.weeks.add(weekOf(pr.createdAt));
-          if (pr.mergedAt && inWindow(pr.mergedAt)) p.prsMerged++;
+          if (pr.mergedAt && inWindow(pr.mergedAt)) {
+            p.prsMerged++;
+            wp(weekOf(pr.mergedAt)).score += scoreWeights.prsMerged;
+          }
           if (pr.state === 'CLOSED' && !pr.mergedAt) p.prsClosed++;
         }
         if (pr.mergedAt && inWindow(pr.mergedAt)) {
@@ -392,6 +403,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
           if (r.submittedAt) {
             p.weeks.add(weekOf(r.submittedAt));
             wp(weekOf(r.submittedAt)).reviews++;
+            wp(weekOf(r.submittedAt)).score += scoreWeights.reviews;
             touch(r.submittedAt);
           }
         }
@@ -404,11 +416,16 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
         if (is.state === 'CLOSED') issuesClosedCount++;
         if (is.state === 'CLOSED' && is.closedAt && weekOf(is.closedAt) === nowWeek)
           thisWeekIssuesClosed++;
-        if (is.login && !skip(is.login))
+        if (is.login && !skip(is.login)) {
           person(is.login.toLowerCase(), is.login, null).issuesOpened++;
+          wp(weekOf(is.createdAt)).score += scoreWeights.issuesOpened;
+        }
         if (is.state === 'CLOSED')
           for (const a of is.assignees)
-            if (a && !skip(a)) person(a.toLowerCase(), a, null).issuesClosed++;
+            if (a && !skip(a)) {
+              person(a.toLowerCase(), a, null).issuesClosed++;
+              if (is.closedAt) wp(weekOf(is.closedAt)).score += scoreWeights.issuesClosed;
+            }
       }
     }
 
@@ -490,8 +507,15 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     );
 
     for (const w of weeklyArr) {
-      const c = cohortWeekly.get(w.week) ?? { ...w, commits: 0, prs: 0, reviews: 0 };
+      const c = cohortWeekly.get(w.week) ?? {
+        ...w,
+        commits: 0,
+        prs: 0,
+        reviews: 0,
+        score: 0,
+      };
       c.commits += w.commits;
+      c.score += w.score;
       c.prs += w.prs;
       c.reviews += w.reviews;
       cohortWeekly.set(w.week, c);
@@ -585,10 +609,17 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
   // Average cumulative commits per team, by term week (for "on track" comparison).
   const lastWeek = isCurrent ? nowWeek : Math.max(...weeklyAll.map((w) => w.week), 0);
   const cumulative: { week: number; value: number }[] = [];
+  const cumulativeScore: { week: number; value: number }[] = [];
   let running = 0;
+  let runningScore = 0;
   for (let w = -termLeadWeeks; w <= lastWeek; w++) {
     running += cohortWeekly.get(w)?.commits ?? 0;
+    runningScore += cohortWeekly.get(w)?.score ?? 0;
     cumulative.push({ week: w, value: round(running / Math.max(teams.length, 1), 1) });
+    cumulativeScore.push({
+      week: w,
+      value: round(runningScore / Math.max(teams.length, 1), 1),
+    });
   }
 
   const weekTotals = (w: number) => ({
@@ -629,6 +660,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     },
     weekly: weeklyAll,
     cumulative,
+    cumulativeScore,
     punch: cohortPunch,
     languages: [...cohortLang]
       .map(([name, bytes]) => ({ name, bytes }))

@@ -101,6 +101,7 @@ export function teamBars(c: CohortStats): { rows: BarRow[]; metrics: BarMetric[]
   const rows = c.teams.map((t) => ({
     label: `T${t.team}`,
     name: t.name,
+    href: teamHref(c.slug, t),
     values: {
       score: t.score,
       commits: t.commits,
@@ -221,21 +222,46 @@ export function trendSeries(s: Summary, include?: string): TrendSeries[] {
     }));
 }
 
-/** One team's cumulative commits by term week, on the same weeks as its cohort's line. */
-export function teamTrend(c: CohortStats, t: TeamStats): TrendSeries {
-  const byWeek = new Map(t.weekly.map((w) => [w.week, w.commits]));
-  let running = 0;
-  return {
-    slug: `team-${t.key}`,
-    session: c.session,
-    year: c.year,
-    label: t.name,
-    color: 'var(--foreground)',
-    isCurrent: false,
-    points: c.cumulative
-      .map((p) => ({ week: p.week, value: (running += byWeek.get(p.week) ?? 0) }))
-      .filter((p) => p.week <= 34),
+/**
+ * Points (score) by term week for a team page: this team, every other team in its
+ * cohort (faint, for context) and the cohort's average team. Ends at the latest week
+ * synced for a live cohort.
+ */
+export function teamPointsSeries(
+  s: Summary,
+  c: CohortStats,
+  t: TeamStats
+): TrendSeries[] {
+  const weeks = c.cumulativeScore.filter((p) => p.week <= 34);
+  const line = (team: TeamStats): TrendSeries => {
+    const byWeek = new Map(team.weekly.map((w) => [w.week, w.score]));
+    let running = 0;
+    return {
+      slug: `team-${team.key}`,
+      session: c.session,
+      year: c.year,
+      label: team.name,
+      color: 'var(--foreground)',
+      isCurrent: false,
+      points: weeks.map((p) => ({
+        week: p.week,
+        value: (running += byWeek.get(p.week) ?? 0),
+      })),
+    };
   };
+  return [
+    ...c.teams.filter((o) => o.key !== t.key).map((o) => ({ ...line(o), faint: true })),
+    {
+      slug: c.slug,
+      session: c.session,
+      year: c.year,
+      label: `${c.label} average`,
+      color: cohortColor(c.year, s.currentYear, c.session),
+      isCurrent: false,
+      points: weeks,
+    },
+    line(t),
+  ];
 }
 
 export function currentWeek(c: CohortStats, now = Date.now()) {

@@ -32,13 +32,7 @@ import { getCohort, getSummary, getTeam } from '@/lib/data';
 import { pageMetadata, teamSeo } from '@/lib/seo';
 import { displayName, fmt, fmtDate, fmtHours, pct } from '@/lib/format';
 import type { PersonStats } from '@/lib/types/stats';
-import {
-  currentWeek,
-  teamHabits,
-  teamTopViews,
-  teamTrend,
-  trendSeries,
-} from '@/lib/views';
+import { currentWeek, teamHabits, teamTopViews, teamPointsSeries } from '@/lib/views';
 import { fadeUp, stagger } from '@/utils/animations';
 import { cn } from '@/lib/utils';
 
@@ -220,11 +214,12 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
 
       <CohortTrendChart
         title={c.isCurrent ? 'How this team is tracking' : 'How this team tracked'}
-        description={`Cumulative commits by week of term, next to the average team in ${c.label} and every other ${c.session === 'summer' ? 'summer' : 'year-long'} cohorts. Click a line to bring it forward.`}
-        series={[...trendSeries(summary, c.slug), teamTrend(c, t)]}
+        description={`Points by week of term, next to every other team in ${c.label} (faded) and the cohort's average team. Points weigh commits, merged PRs, reviews and issues, like Overall. Click a line to bring it forward.`}
+        series={teamPointsSeries(summary, c, t)}
+        faintLabel={`Other teams in ${c.label}`}
         highlight={`team-${t.key}`}
         compareTo={c.slug}
-        valueLabel='commits'
+        valueLabel='points'
         currentWeek={c.isCurrent ? currentWeek(c) : undefined}
       />
 
