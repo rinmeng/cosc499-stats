@@ -156,22 +156,24 @@ export function Banner() {
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger
             render={
-              <Button variant='ghost' size='sm' className='h-7 shrink-0 gap-1 px-2'>
+              <Button variant='ghost' size='sm'>
                 What’s new
                 <ChevronDown />
               </Button>
             }
           />
-          <PopoverContent align='end' className='w-80'>
+          <PopoverContent align='end' className='w-80 gap-4'>
             <PopoverHeader>
               <PopoverTitle>What’s new</PopoverTitle>
             </PopoverHeader>
-            <div className='gap-2 flex flex-col'>
+            <div className='flex flex-col'>
               <Separator />
               {/* Fixed height so a long list scrolls here; the title and buttons stay put.
-                  Edge to edge (-mx-4) so the scrollbar sits at the popover's edge. */}
+                  Edge to edge (-mx-4) so the scrollbar sits at the popover's edge. The
+                  vertical padding is on the list, not the viewport, so it scrolls away
+                  with the items and they clip right at the separators. */}
               <ScrollArea className='-mx-4 h-64'>
-                <ul className='space-y-3 px-4'>
+                <ul className='space-y-3 px-4 py-3'>
                   {CHANGES.map((c) => (
                     <li key={c.title} className='flex gap-3'>
                       <c.icon className='mt-0.5 size-4 shrink-0 text-muted-foreground' />
