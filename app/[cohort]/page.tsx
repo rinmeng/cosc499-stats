@@ -664,28 +664,28 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     ? [...weeklySections, ...termSections.map((sec) => ({ ...sec, more: true }))]
     : termSections;
   // The live term leads with who's doing the work (contributors, team output, this
-  // week); the term-long trend charts follow the team list. Past terms keep them up top.
-  const trendCharts = (
-    <>
-      <div id='tracking' className='scroll-mt-20'>
-        <CohortTrendChart
-          title={live ? 'How this cohort is tracking' : 'How this cohort tracked'}
-          description={`Average cumulative points per team by week of term.`}
-          series={trendSeries(summary, c.slug)}
-          action={<ScoreInfo weights={summary.scoreWeights} />}
-          highlight={c.slug}
-          currentWeek={live ? week : undefined}
-        />
-      </div>
-
-      <ActivityChart
-        info={activityInfo}
-        data={c.weekly}
-        termStart={c.termStart}
-        session={c.session}
-        description='Every commit, pull request, review and issue across the cohort, by week. Narrow the time range above.'
+  // week); its tracking chart follows the team list. Past terms keep the tracking chart
+  // up top. Activity by week sits below the team list either way.
+  const trackingChart = (
+    <div id='tracking' className='scroll-mt-20'>
+      <CohortTrendChart
+        title={live ? 'How this cohort is tracking' : 'How this cohort tracked'}
+        description={`Average cumulative points per team by week of term.`}
+        series={trendSeries(summary, c.slug)}
+        action={<ScoreInfo weights={summary.scoreWeights} />}
+        highlight={c.slug}
+        currentWeek={live ? week : undefined}
       />
-    </>
+    </div>
+  );
+  const activityChart = (
+    <ActivityChart
+      info={activityInfo}
+      data={c.weekly}
+      termStart={c.termStart}
+      session={c.session}
+      description='Every commit, pull request, review and issue across the cohort, by week. Narrow the time range above.'
+    />
   );
 
   return (
@@ -878,7 +878,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         )}
       </Grid>
 
-      {!live && trendCharts}
+      {!live && trackingChart}
 
       <Section
         className={next()}
@@ -926,7 +926,8 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
         </Reveal>
       )}
 
-      {live && trendCharts}
+      {live && trackingChart}
+      {activityChart}
 
       <Grid className='lg:grid-cols-5'>
         <Section
