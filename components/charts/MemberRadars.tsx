@@ -29,7 +29,7 @@ const config = {
  */
 export function MemberRadars({ members }: { members: RadarMember[] }) {
   return (
-    <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+    <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
       {members.map((m) => (
         <Card key={m.id} size='sm'>
           <CardHeader>

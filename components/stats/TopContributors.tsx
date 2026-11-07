@@ -164,7 +164,7 @@ export function TopContributors({
     );
 
   const byTeam = (
-    <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-3'>
+    <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3'>
       {teams.map((t) => (
         <Card key={t.key} size='sm'>
           <CardHeader>

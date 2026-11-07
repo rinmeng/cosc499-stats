@@ -22,7 +22,8 @@ export function ArrowLink({
       href={href}
       className={cn(
         buttonVariants({ variant: 'link' }),
-        'group h-auto w-fit gap-1 rounded-none p-0 text-[length:inherit]',
+        'group h-auto w-fit max-w-full shrink gap-1 rounded-none p-0 text-left',
+        'text-[length:inherit] whitespace-normal wrap-anywhere',
         className
       )}
     >

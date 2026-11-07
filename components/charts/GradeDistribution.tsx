@@ -81,7 +81,7 @@ export function GradeDistribution({
         </CardDescription>
         {action && <CardAction>{action}</CardAction>}
       </CardHeader>
-      <CardContent className='grid gap-6 lg:grid-cols-[minmax(0,14rem)_1fr]'>
+      <CardContent className='grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,14rem)_1fr]'>
         <dl className='grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3 lg:grid-cols-1'>
           {stats.map((s) => (
             <div key={s.label} className='space-y-0.5'>

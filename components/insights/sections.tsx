@@ -22,7 +22,7 @@ export function Findings({ items, className }: { items: string[]; className?: st
         <CardTitle>Here’s what we found</CardTitle>
       </CardHeader>
       <CardContent>
-        <ul className='grid gap-x-8 gap-y-3 text-sm text-muted-foreground md:grid-cols-2'>
+        <ul className='grid grid-cols-1 gap-x-8 gap-y-3 text-sm text-muted-foreground md:grid-cols-2'>
           {items.map((item) => (
             <li key={item} className='flex gap-2.5'>
               <span
@@ -45,7 +45,7 @@ export function Findings({ items, className }: { items: string[]; className?: st
 export function ImpactCharts({ view }: { view: InsightsView }) {
   // Two cards per row on desktop so the era bars stay close enough to compare.
   return (
-    <div className='grid gap-4 lg:grid-cols-2'>
+    <div className='grid grid-cols-1 gap-4 lg:grid-cols-2'>
       <EraCompareChart
         compact
         title='Commit size'

@@ -50,7 +50,7 @@ export function PageHeader({
       )}
       <h1
         className={cn(
-          'font-heading text-3xl font-bold tracking-tight md:text-4xl',
+          'font-heading text-3xl font-bold tracking-tight wrap-break-word md:text-4xl',
           fadeUp(start + 1)
         )}
       >
@@ -373,5 +373,5 @@ export function Grid({
   className?: string;
   children: React.ReactNode;
 }) {
-  return <div className={cn('grid gap-4', className)}>{children}</div>;
+  return <div className={cn('grid grid-cols-1 gap-4', className)}>{children}</div>;
 }
