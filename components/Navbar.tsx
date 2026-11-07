@@ -24,6 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Banner } from '@/components/banner-provider';
 import { cn } from '@/lib/utils';
 import { cohortSlug, cohorts, currentCohort } from '@/sync.config';
@@ -98,13 +99,22 @@ function NavDropdown({
         {live && <LiveDot className='ml-1' />}
         <ChevronDown className='size-3.5' />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align='end'>
-        {links.map((l) => (
-          <DropdownMenuItem key={l.href} render={<Link href={l.href} />}>
-            {l.label}
-            {l.live && <LiveDot className='ml-1' />}
-          </DropdownMenuItem>
-        ))}
+      {/* The ScrollArea scrolls instead of the popup, so long lists (Years) get the
+          site's scrollbar. The viewport needs the root's max-height, or it grows past it. */}
+      <DropdownMenuContent align='end' className='overflow-hidden p-0'>
+        <ScrollArea
+          className='max-h-[min(20rem,var(--available-height))]
+            [&>[data-slot=scroll-area-viewport]]:max-h-[inherit]'
+        >
+          <div className='p-1'>
+            {links.map((l) => (
+              <DropdownMenuItem key={l.href} render={<Link href={l.href} />}>
+                {l.label}
+                {l.live && <LiveDot className='ml-1' />}
+              </DropdownMenuItem>
+            ))}
+          </div>
+        </ScrollArea>
       </DropdownMenuContent>
     </DropdownMenu>
   );
