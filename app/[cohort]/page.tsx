@@ -228,7 +228,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     {
       icon: Sparkles,
       title: 'Most active this week',
-      description: 'Commits, pull requests, reviews and issues since Sunday',
+      description: 'Commits, pull requests, reviews and issues since last Sunday',
     },
     topTeams(c, (t) => t.thisWeekActivity ?? 0, 3),
     (t) => ({ value: fmt(t.thisWeekActivity ?? 0), unit: 'actions' })
@@ -237,7 +237,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     {
       icon: FileDiff,
       title: 'Most lines this week',
-      description: 'Lines added and deleted on the main branch since Sunday',
+      description: 'Lines added and deleted on the main branch since last Sunday',
     },
     topTeams(c, (t) => t.thisWeekLines ?? 0, 3),
     (t) => ({ value: fmtCompact(t.thisWeekLines ?? 0), unit: 'lines' })
@@ -246,7 +246,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     {
       icon: GitMerge,
       title: 'Most PRs merged this week',
-      description: 'Pull requests merged since Sunday',
+      description: 'Pull requests merged since last Sunday',
     },
     topTeams(c, (t) => t.thisWeekPrsMerged ?? 0, 3),
     (t) => ({ value: fmt(t.thisWeekPrsMerged ?? 0), unit: 'PRs' })
@@ -291,14 +291,14 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
     },
     {
       title: 'Weekly teamwork',
-      description: 'Teams pitching in together since Sunday.',
+      description: 'Teams pitching in together since last Sunday.',
       cards: [
         card(
           {
             icon: Handshake,
             title: 'Most collaborative this week',
             description:
-              'Commits since Sunday shared most evenly across the team (100 = everyone equal)',
+              'Commits since last Sunday shared most evenly across the team (100 = everyone equal)',
           },
           topTeams(
             c,
@@ -316,7 +316,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: MessageSquareCode,
             title: 'Most reviews this week',
-            description: 'Teammate reviews submitted since Sunday',
+            description: 'Teammate reviews submitted since last Sunday',
           },
           topTeams(c, (t) => t.thisWeekReviews ?? 0, 3),
           (t) => ({ value: fmt(t.thisWeekReviews ?? 0), unit: 'reviews' })
@@ -325,7 +325,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: CircleCheckBig,
             title: 'Most issues closed this week',
-            description: 'Issues closed since Sunday',
+            description: 'Issues closed since last Sunday',
           },
           topTeams(c, (t) => t.thisWeekIssuesClosed ?? 0, 3),
           (t) => ({ value: fmt(t.thisWeekIssuesClosed ?? 0), unit: 'issues' })
@@ -341,7 +341,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: Moon,
             title: 'Night owls this week',
-            description: 'Actions between 10 pm and 4 am since Sunday',
+            description: 'Actions between 10 pm and 4 am since last Sunday',
           },
           topTeams(c, (t) => t.thisWeekNightActivity ?? 0, 3),
           (t) => ({ value: fmt(t.thisWeekNightActivity ?? 0), unit: 'actions' })
@@ -350,7 +350,7 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           {
             icon: Sunrise,
             title: 'Early birds this week',
-            description: 'Actions between 5 am and 9 am since Sunday',
+            description: 'Actions between 5 am and 9 am since last Sunday',
             empty: 'No teams were early birds this week.',
           },
           topTeams(c, (t) => t.thisWeekEarlyActivity ?? 0, 3),
