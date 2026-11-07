@@ -34,7 +34,7 @@ export const dynamicParams = false;
 export async function generateMetadata({ params }: PageProps<'/u/[login]'>) {
   const { login } = await params;
   const p = getPerson(login);
-  if (!p) return { title: 'Person not found' };
+  if (!p) return { title: 'Person not found', robots: { index: false } };
   return {
     ...pageMetadata(personSeo(p)),
     // Share previews work, but the page is kept out of search engines: it's found

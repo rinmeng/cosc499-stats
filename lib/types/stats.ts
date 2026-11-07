@@ -1,3 +1,4 @@
+import type { CohortGrades } from './grades';
 import type { Insights } from './insights';
 
 /* ---------- Raw data written by scripts/sync.ts (data/raw/<org>/<repo>.json) ---------- */
@@ -250,6 +251,8 @@ export interface CohortStats {
   medianMergeHours: number | null;
   reviewCoverage: number;
   staffExcluded: string[];
+  /** Final course grades from UBC PAIR; null when PAIR has no data for the session */
+  grades: CohortGrades | null;
 }
 
 export interface Summary {

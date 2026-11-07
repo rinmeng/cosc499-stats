@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: PageProps<'/[cohort]/[team]'>
   const { cohort, team } = await params;
   const c = getCohort(cohort);
   const t = c?.teams.find((x) => x.team === Number(team));
-  if (!c || !t) return { title: 'Team not found' };
+  if (!c || !t) return { title: 'Team not found', robots: { index: false } };
   return pageMetadata(teamSeo(c, t));
 }
 

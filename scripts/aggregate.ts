@@ -31,6 +31,7 @@ import {
   weeksSince,
 } from '../lib/dates';
 
+import type { CohortGrades, GradeBucket, RawPairFile } from '../lib/types/grades';
 import type {
   CohortStats,
   PersonStats,
@@ -163,6 +164,79 @@ function authorKey(login: string | null, email: string | null, name: string | nu
   if (email && !email.endsWith('noreply.github.com'))
     return `email:${email.toLowerCase()}`;
   return `name:${(name ?? 'unknown').toLowerCase()}`;
+}
+
+/* --------------------------------- Grades --------------------------------- */
+
+/** PAIR buckets merged into one "under 55" bar, so no single low result stands out. */
+const LOW_BUCKETS = new Set(['<50%', '50-54%']);
+
+/** The cohort's COSC 499 grades from data/raw/pair/<yearsession>.json, if present. */
+function loadGrades(cfg: (typeof cohorts)[number]): CohortGrades | null {
+  const ys = `${cfg.year}${cfg.session === 'summer' ? 'S' : 'W'}`;
+  const file = path.join(RAW_DIR, 'pair', `${ys}.json`);
+  if (!existsSync(file)) return null;
+  const raw = JSON.parse(readFileSync(file, 'utf8')) as RawPairFile;
+
+  const sections = raw.sections.filter((s) => s.section !== 'OVERALL');
+  // Use the OVERALL roll-up when there is one, otherwise the only section.
+  const row =
+    raw.sections.find((s) => s.section === 'OVERALL') ??
+    (sections.length === 1 ? sections[0] : null);
+  if (!row) return null;
+
+  const instructors = [
+    ...new Set(
+      sections.flatMap((s) =>
+        (s.educators ?? '')
+          .split(';')
+          .map((n) => n.trim())
+          .filter(Boolean)
+      )
+    ),
+  ];
+
+  // PAIR hides (null) any range with fewer than 6 students.
+  let under55: number | null = null;
+  const buckets: GradeBucket[] = [];
+  for (const [range, count] of Object.entries(row.grades)) {
+    if (LOW_BUCKETS.has(range)) {
+      if (count !== null) under55 = (under55 ?? 0) + count;
+      continue;
+    }
+    const [from, to] = range.replace('%', '').split('-').map(Number);
+    buckets.push({ label: `${from}–${to}`, from, count });
+  }
+  buckets.push({ label: '<55', from: 0, count: under55 });
+  buckets.sort((a, b) => a.from - b.from);
+
+  const shown = buckets.reduce((a, b) => a + (b.count ?? 0), 0);
+  const students = row.enrolled ?? row.reported ?? shown;
+  const at80 = buckets
+    .filter((b) => b.from >= 80)
+    .reduce((a, b) => a + (b.count ?? 0), 0);
+  // Section rows carry the median and percentiles; OVERALL rows don't.
+  const single = sections.length === 1 ? sections[0] : null;
+  const pick = (k: 'median' | 'percentile_25' | 'percentile_75') =>
+    row[k] ?? single?.[k] ?? null;
+
+  return {
+    yearsession: ys,
+    instructors,
+    students,
+    hidden: Math.max(students - shown, 0),
+    sections: sections.length,
+    average: round(row.average, 1),
+    median: pick('median'),
+    p25: pick('percentile_25'),
+    p75: pick('percentile_75'),
+    high: row.high,
+    stdev: row.stdev == null ? null : round(row.stdev, 1),
+    share80: students ? round(at80 / students) : 0,
+    share80IsMin: buckets.some((b) => b.from >= 80 && b.count === null),
+    buckets,
+    source: { dataset: raw.source.dataset, fetchedAt: raw.source.fetchedAt },
+  };
 }
 
 /* ---------------------------------- Main ---------------------------------- */
@@ -705,6 +779,7 @@ function buildCohort(cfg: (typeof cohorts)[number], now: Date): CohortStats | nu
     })(),
     reviewCoverage: cohortMerged ? round(cohortReviewed / cohortMerged) : 0,
     staffExcluded: [...staff].sort(),
+    grades: loadGrades(cfg),
   };
 }
 

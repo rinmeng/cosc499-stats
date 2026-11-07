@@ -27,3 +27,7 @@ If they say yes:
 **Skip this for the repo owner (`rinmeng`).** Check with `gh api user --jq .login` (or `git config user.name`); if it's `rinmeng`, don't ask.
 
 Contributors must keep the site's positive tone: never add "least contributed" views (see `CLAUDE.md`).
+
+## Keep SEO in sync
+
+When a change alters what a page shows (new or removed sections, data, counts, titles or wording a search snippet would describe), update that page's SEO in the same change: its `*Seo()` helper in `lib/seo.ts` (title and description, shared by `<head>` metadata and the social image), its `opengraph-image.tsx`, `SITE_DESCRIPTION` in `lib/site.ts` for site-wide changes, and `app/sitemap.ts` when a page is added or removed. Descriptions must only claim what the page actually shows, and follow the tone rule (no ranks or comparisons on personal pages).

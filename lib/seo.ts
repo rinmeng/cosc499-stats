@@ -49,12 +49,20 @@ export const aboutSeo = (): PageSeo => ({
 });
 
 export function cohortSeo(c: CohortStats): PageSeo {
-  const kind = c.session === 'summer' ? 'summer session' : 'year-long cohort';
+  // Summer labels already say "Summer 2024".
+  const kind = c.session === 'summer' ? 'session' : 'year-long cohort';
+  const teams = `${c.totals.teams} capstone ${c.totals.teams === 1 ? 'team' : 'teams'}`;
+  const g = c.grades;
+  const names = g?.instructors ?? [];
+  const taught = names.length
+    ? ` Taught by ${names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : names[0]}.`
+    : '';
+  const grades = g ? `final grades for the class of ${fmt(g.students)}` : '';
   return {
     title: `${c.label} cohort`,
     description: c.teams.length
-      ? `UBCO COSC 499 ${c.label} ${kind}: top contributors, team highlights and weekly activity across ${c.totals.teams} capstone teams, with ${fmt(c.totals.commits)} commits and ${fmt(c.totals.prsMerged)} merged PRs.`
-      : `UBCO COSC 499 ${c.label} ${kind}. No team repositories are visible on GitHub yet, so help add your team.`,
+      ? `UBCO COSC 499 ${c.label} ${kind}: ${teams}, ${fmt(c.totals.commits)} commits and ${fmt(c.totals.prsMerged)} merged PRs. Top contributors, team highlights, weekly activity${g ? ` and ${grades}` : ''}.${taught}`
+      : `UBCO COSC 499 ${c.label} ${kind}. No team repositories are visible on GitHub yet${g ? `, but the ${grades} are here` : ''}. Help add your team.${taught}`,
     path: `/${c.slug}`,
   };
 }
@@ -76,7 +84,7 @@ export function personSeo(p: Person): PageSeo & { stats: OgStat[]; subtitle: str
   const m = latest.stats;
   const where = `${latest.team.name}, ${latest.cohort.label}`;
   const more =
-    p.capstones.length > 1 ? ` One of ${p.capstones.length} COSC 499 capstones.` : '';
+    p.capstones.length > 1 ? ` Part of ${p.capstones.length} COSC 499 capstones.` : '';
   return {
     title: p.name,
     subtitle: `${where}${latest.cohort.isCurrent ? ' (in progress)' : ''}`,

@@ -30,6 +30,7 @@ import {
 
 import { ActivityChart } from '@/components/charts/ActivityChart';
 import { CohortTrendChart } from '@/components/charts/CohortTrendChart';
+import { GradeDistribution } from '@/components/charts/GradeDistribution';
 import { LanguageDonut } from '@/components/charts/LanguageDonut';
 import { MetricBarChart } from '@/components/charts/MetricBarChart';
 import { Punchcard } from '@/components/charts/Punchcard';
@@ -58,7 +59,7 @@ import { Badge } from '@/components/ui/badge';
 import { getCohort, getSummary } from '@/lib/data';
 import type { TeamStats } from '@/lib/types/stats';
 import { cohortSeo, pageMetadata } from '@/lib/seo';
-import { fmt, fmtCompact, fmtDate, fmtHours, pct } from '@/lib/format';
+import { cohortColor, fmt, fmtCompact, fmtDate, fmtHours, pct } from '@/lib/format';
 import {
   cohortTopView,
   currentWeek,
@@ -108,7 +109,7 @@ const NOT_PROGRAMMING = new Set([
 export async function generateMetadata({ params }: PageProps<'/[cohort]'>) {
   const { cohort } = await params;
   const c = getCohort(cohort);
-  if (!c) return { title: 'Cohort not found' };
+  if (!c) return { title: 'Cohort not found', robots: { index: false } };
   return pageMetadata(cohortSeo(c));
 }
 
@@ -125,6 +126,16 @@ function OrgLink({ org }: { org?: string }) {
       {org} <ExternalLink className='size-3.5' />
     </a>
   );
+}
+
+/** "Taught by A", "Taught by A and B": the instructors PAIR lists, if any. */
+function taughtBy(names: string[] | undefined) {
+  if (!names?.length) return null;
+  const list =
+    names.length === 1
+      ? names[0]
+      : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+  return `Taught by ${list}`;
 }
 
 export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
@@ -150,10 +161,22 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           }
           eyebrow='COSC 499 capstone'
           title={`${c.label} cohort`}
-          meta={[c.hasOrg && <OrgLink org={c.org} />]}
+          meta={[
+            c.hasOrg && <OrgLink org={c.org} />,
+            taughtBy(c.grades?.instructors),
+            c.grades && `${fmt(c.grades.students)} students`,
+          ]}
         >
           No team repositories from this session are visible on GitHub yet.
         </PageHeader>
+        {c.grades && (
+          <Reveal className={fadeUp(3)}>
+            <GradeDistribution
+              grades={c.grades}
+              color={cohortColor(c.year, summary.currentYear, c.session)}
+            />
+          </Reveal>
+        )}
         <Reveal className={fadeUp(3)}>
           <HelpComplete
             label={c.label}
@@ -670,6 +693,8 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
             : [
                 c.hasOrg && <OrgLink org={c.org} />,
                 c.session === 'summer' && 'Summer session, May to August',
+                taughtBy(c.grades?.instructors),
+                c.grades && `${fmt(c.grades.students)} students`,
                 `${c.totals.teams} teams`,
                 `${fmt(c.totals.contributors)} contributors`,
                 `Started ${fmtDate(c.termStart)}`,
@@ -782,6 +807,15 @@ export default async function CohortPage({ params }: PageProps<'/[cohort]'>) {
           </>
         )}
       </Grid>
+
+      {c.grades && (
+        <Reveal className={next()}>
+          <GradeDistribution
+            grades={c.grades}
+            color={cohortColor(c.year, summary.currentYear, c.session)}
+          />
+        </Reveal>
+      )}
 
       <div id='tracking' className='scroll-mt-20'>
         <CohortTrendChart

@@ -25,6 +25,8 @@ export const SITE_KEYWORDS = [
   'COSC_O 499',
   'COSC_O499',
   'COSC 499 capstone',
+  'COSC 499 grades',
+  'COSC 499 average',
   'capstone',
   'capstone project',
   'software engineering capstone',
