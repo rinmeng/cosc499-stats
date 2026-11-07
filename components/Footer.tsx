@@ -1,13 +1,17 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { getYear } from 'date-fns';
-import { ExternalLink, BarChart3 } from 'lucide-react';
+import { BarChart3 } from 'lucide-react';
 
+import { ExternalLink } from '@/components/ExternalLink';
 import { getSummary } from '@/lib/data';
 import { fmtDate } from '@/lib/format';
 import { repoUrl } from '@/sync.config';
 
 const START_YEAR = 2026;
+
+/** Footer links keep the muted footer color and size instead of the primary link color. */
+const footerLink = 'inline-flex font-normal text-muted-foreground hover:text-foreground';
 
 /** Site footer, in the same style as web8th: centered, muted, credit logo at the bottom. */
 export function Footer() {
@@ -33,25 +37,16 @@ export function Footer() {
           A student-made project for COSC 499 (COSC_O 499), the UBC Okanagan (UBCO)
           capstone. Not affiliated with UBC. Built from GitHub activity
           {syncedAt && `, last synced ${fmtDate(syncedAt)}`}.{' '}
-          <a
-            href={repoUrl}
-            target='_blank'
-            rel='noreferrer'
-            className='inline-flex items-center gap-0.5 underline-offset-4
-              hover:underline'
-          >
-            Source on GitHub <ExternalLink className='size-3' />
-          </a>{' '}
+          <ExternalLink href={repoUrl} className={footerLink}>
+            Source on GitHub
+          </ExternalLink>{' '}
           ·{' '}
-          <a
+          <ExternalLink
             href={`${repoUrl}/blob/main/CONTRIBUTING.md`}
-            target='_blank'
-            rel='noreferrer'
-            className='inline-flex items-center gap-0.5 underline-offset-4
-              hover:underline'
+            className={footerLink}
           >
-            Add your cohort <ExternalLink className='size-3' />
-          </a>
+            Add your cohort
+          </ExternalLink>
         </p>
 
         <p className='text-muted-foreground'>brought to you by</p>

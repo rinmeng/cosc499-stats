@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ExternalLink } from 'lucide-react';
-
 import { ArrowLink } from '@/components/ArrowLink';
+import { ExternalLink } from '@/components/ExternalLink';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Card,
@@ -105,17 +104,14 @@ export function TopList({
           <div className='min-w-0 flex-1'>
             <div className='flex items-baseline justify-between gap-2'>
               {e.login ? (
-                <a
+                <ExternalLink
                   href={`https://github.com/${e.login}`}
-                  target='_blank'
-                  rel='noreferrer'
-                  className='inline-flex min-w-0 items-center gap-1 text-sm font-medium
-                    hover:underline'
+                  className='min-w-0 shrink text-sm text-foreground'
+                  iconClassName='size-3 text-muted-foreground'
                   title={e.login}
                 >
                   <span className='truncate'>{e.name}</span>
-                  <ExternalLink className='size-3 shrink-0 text-muted-foreground' />
-                </a>
+                </ExternalLink>
               ) : (
                 <span className='truncate text-sm font-medium'>{e.name}</span>
               )}

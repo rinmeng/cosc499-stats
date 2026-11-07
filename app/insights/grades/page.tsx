@@ -1,6 +1,7 @@
 import Link from 'next/link';
-import { CalendarRange, ExternalLink, GraduationCap, Trophy, Users } from 'lucide-react';
+import { CalendarRange, GraduationCap, Trophy, Users } from 'lucide-react';
 
+import { ExternalLink } from '@/components/ExternalLink';
 import { GradeExplorer } from '@/components/charts/GradeExplorer';
 import { GradeTrendChart } from '@/components/charts/GradeTrendChart';
 import { Reveal } from '@/components/Reveal';
@@ -161,25 +162,11 @@ export default function GradesPage() {
 
       <p className={`text-sm text-muted-foreground ${fadeUp(12)}`}>
         Source: the{' '}
-        <a
-          href={PAIR_URL}
-          target='_blank'
-          rel='noreferrer'
-          className='inline-flex items-center gap-1 font-medium text-foreground'
-        >
-          UBC PAIR grade distribution report
-          <ExternalLink className='size-3.5' />
-        </a>
-        , via the{' '}
-        <a
-          href='https://github.com/DonneyF/ubc-pair-grade-data'
-          target='_blank'
-          rel='noreferrer'
-          className='inline-flex items-center gap-1 font-medium text-foreground'
-        >
+        <ExternalLink href={PAIR_URL}>UBC PAIR grade distribution report</ExternalLink>,
+        via the{' '}
+        <ExternalLink href='https://github.com/DonneyF/ubc-pair-grade-data'>
           ubc-pair-grade-data
-          <ExternalLink className='size-3.5' />
-        </a>{' '}
+        </ExternalLink>{' '}
         dataset. It is updated about once a year, so the newest session may be missing.
       </p>
     </div>

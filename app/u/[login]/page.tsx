@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
 import {
-  ExternalLink,
   CalendarDays,
   CircleDot,
   FileCode2,
@@ -10,6 +9,7 @@ import {
 } from 'lucide-react';
 
 import { ArrowLink } from '@/components/ArrowLink';
+import { ExternalLink } from '@/components/ExternalLink';
 import { ShareButton } from '@/components/ShareDialog';
 import { Grid, PageHeader, Section, StatTile } from '@/components/stats/Blocks';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -166,15 +166,9 @@ export default async function PersonPage({ params }: PageProps<'/u/[login]'>) {
           </span>
         }
         meta={[
-          <a
-            key='gh'
-            href={`https://github.com/${p.login}`}
-            target='_blank'
-            rel='noreferrer'
-            className='inline-flex items-center gap-1 underline-offset-2 hover:underline'
-          >
-            @{p.login} <ExternalLink className='size-3.5' />
-          </a>,
+          <ExternalLink key='gh' href={`https://github.com/${p.login}`}>
+            @{p.login}
+          </ExternalLink>,
           `${n === 1 ? '1 capstone' : `${n} capstones`}: ${p.capstones
             .map((c) => c.cohort.label)
             .join(', ')}`,

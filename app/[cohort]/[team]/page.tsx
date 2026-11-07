@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 import {
   ArrowLeft,
   Clock,
-  ExternalLink,
   GitMerge,
   GitPullRequest,
   Lock,
@@ -12,6 +11,7 @@ import {
   Users,
 } from 'lucide-react';
 
+import { ExternalLink } from '@/components/ExternalLink';
 import { ShareButton } from '@/components/ShareDialog';
 import { MemberRadars, type RadarMember } from '@/components/charts/MemberRadars';
 import { ActivityChart } from '@/components/charts/ActivityChart';
@@ -115,18 +115,10 @@ export default async function TeamPage({ params }: PageProps<'/[cohort]/[team]'>
         title={t.name}
         meta={[
           ...t.repos.map((r) => (
-            <a
-              key={r.name}
-              href={r.url}
-              target='_blank'
-              rel='noreferrer'
-              className='inline-flex items-center gap-1 hover:text-foreground
-                hover:underline'
-            >
+            <ExternalLink key={r.name} href={r.url}>
               {r.isPrivate && <Lock className='size-3' />}
               {r.name}
-              <ExternalLink className='size-3' />
-            </a>
+            </ExternalLink>
           )),
           `Last activity ${fmtDate(t.lastActivity)}`,
         ]}

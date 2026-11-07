@@ -1,5 +1,4 @@
-import { ExternalLink } from 'lucide-react';
-
+import { ExternalLink } from '@/components/ExternalLink';
 import { ShareButton } from '@/components/ShareDialog';
 import { SmallCohortsDialog } from '@/components/insights/SmallCohortsDialog';
 import { PageHeader } from '@/components/stats/Blocks';
@@ -84,17 +83,8 @@ export function InsightsPage({
           {view.faded.length === 1 ? 'is' : 'are'} too small to move the medians, so{' '}
           {view.faded.length === 1 ? 'it is' : 'they are'} drawn faded and left out of
           every era median. Repositories that were deleted or made private are missing.
-          Click{' '}
-          <a
-            href={contributingUrl}
-            target='_blank'
-            rel='noreferrer'
-            className='inline-flex items-center gap-1 font-medium text-foreground'
-          >
-            here
-            <ExternalLink className='size-3.5' />
-          </a>{' '}
-          to add a missing team.
+          Click <ExternalLink href={contributingUrl}>here</ExternalLink> to add a missing
+          team.
         </p>
       )}
 

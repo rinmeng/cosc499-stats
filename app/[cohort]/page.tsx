@@ -6,7 +6,6 @@ import {
   Handshake,
   MessageSquareCode,
   CalendarDays,
-  ExternalLink,
   FileDiff,
   CircleCheckBig,
   Flag,
@@ -29,6 +28,7 @@ import {
 } from 'lucide-react';
 
 import { ArrowLink } from '@/components/ArrowLink';
+import { ExternalLink } from '@/components/ExternalLink';
 import { ActivityChart } from '@/components/charts/ActivityChart';
 import { CohortTrendChart } from '@/components/charts/CohortTrendChart';
 import { LanguageDonut } from '@/components/charts/LanguageDonut';
@@ -116,16 +116,7 @@ export async function generateMetadata({ params }: PageProps<'/[cohort]'>) {
 /** The cohort's GitHub organization, linked; nothing for sessions that had no org. */
 function OrgLink({ org }: { org?: string }) {
   if (!org) return null;
-  return (
-    <a
-      href={`https://github.com/${org}`}
-      target='_blank'
-      rel='noreferrer'
-      className='inline-flex items-center gap-1 underline-offset-2 hover:underline'
-    >
-      {org} <ExternalLink className='size-3.5' />
-    </a>
-  );
+  return <ExternalLink href={`https://github.com/${org}`}>{org}</ExternalLink>;
 }
 
 /** Opens this session on the Grades page (its grade spread and the year-by-year view). */

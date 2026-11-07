@@ -1,8 +1,8 @@
 'use client';
 
-import { ExternalLink } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from 'recharts';
 
+import { ExternalLink } from '@/components/ExternalLink';
 import {
   Card,
   CardContent,
@@ -140,14 +140,7 @@ export function GradeDistribution({
       </CardContent>
       <CardFooter className='flex-wrap gap-x-1 text-xs text-muted-foreground'>
         Source:
-        <a
-          href={PAIR_URL}
-          target='_blank'
-          rel='noreferrer'
-          className='inline-flex items-center gap-1 underline-offset-2 hover:underline'
-        >
-          UBC PAIR <ExternalLink className='size-3' />
-        </a>
+        <ExternalLink href={PAIR_URL}>UBC PAIR</ExternalLink>
         <span>
           ({g.yearsession}).
           {g.hidden > 0 &&

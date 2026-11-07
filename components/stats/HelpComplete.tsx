@@ -1,5 +1,6 @@
-import { ExternalLink, BookOpen, HandHeart, MessageSquarePlus } from 'lucide-react';
+import { BookOpen, ExternalLinkIcon, HandHeart, MessageSquarePlus } from 'lucide-react';
 
+import { ExternalLink } from '@/components/ExternalLink';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -62,13 +63,10 @@ export function HelpComplete({
             >
               {contributors.length === 1 ? 'Recent contributor:' : 'Recent contributors:'}
               {contributors.map((login) => (
-                <a
+                <ExternalLink
                   key={login}
                   href={`https://github.com/${login}`}
-                  target='_blank'
-                  rel='noreferrer'
-                  className='inline-flex items-center gap-1.5 font-medium text-foreground
-                    underline-offset-2 hover:underline'
+                  className='gap-1.5 text-foreground'
                 >
                   <Avatar className='size-5'>
                     <AvatarImage src={`https://github.com/${login}.png?size=40`} alt='' />
@@ -77,8 +75,7 @@ export function HelpComplete({
                     </AvatarFallback>
                   </Avatar>
                   @{login}
-                  <ExternalLink className='size-3.5' />
-                </a>
+                </ExternalLink>
               ))}
             </p>
           )}
@@ -88,14 +85,14 @@ export function HelpComplete({
             nativeButton={false}
             render={<a href={contributingUrl} target='_blank' rel='noreferrer' />}
           >
-            <BookOpen /> How to contribute <ExternalLink />
+            <BookOpen /> How to contribute <ExternalLinkIcon />
           </Button>
           <Button
             variant='outline'
             nativeButton={false}
             render={<a href={issueUrl(label)} target='_blank' rel='noreferrer' />}
           >
-            <MessageSquarePlus /> Share a link <ExternalLink />
+            <MessageSquarePlus /> Share a link <ExternalLinkIcon />
           </Button>
         </div>
       </CardContent>
@@ -153,7 +150,7 @@ export function MissingTeam({
       >
         {live ? <MessageSquarePlus /> : <BookOpen />}
         {live ? 'Open an issue' : 'How to contribute'}
-        <ExternalLink />
+        <ExternalLinkIcon />
       </Button>
     </div>
   );

@@ -1,15 +1,8 @@
-import {
-  ExternalLink,
-  Award,
-  Ghost,
-  Archive,
-  Scale,
-  Target,
-  HeartHandshake,
-} from 'lucide-react';
+import { Award, Ghost, Archive, Scale, Target, HeartHandshake } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 import { ArrowLink } from '@/components/ArrowLink';
+import { ExternalLink } from '@/components/ExternalLink';
 import { PageHeader } from '@/components/stats/Blocks';
 import { getSummary } from '@/lib/data';
 import { aboutSeo, pageMetadata } from '@/lib/seo';
@@ -21,10 +14,6 @@ export const metadata = pageMetadata(aboutSeo());
 
 const contributingUrl = `${repoUrl}/blob/main/CONTRIBUTING.md`;
 const issuesUrl = `${repoUrl}/issues/new`;
-
-const linkClass =
-  'inline-flex items-center gap-1 font-medium underline underline-offset-4 ' +
-  'decoration-border hover:decoration-foreground';
 
 function Reason({
   icon: Icon,
@@ -154,17 +143,8 @@ export default function AboutPage() {
           data I can&apos;t, and adding it takes about 15 minutes with no coding.
         </p>
         <p className='flex flex-wrap gap-x-5 gap-y-2'>
-          <a
-            href={contributingUrl}
-            target='_blank'
-            rel='noreferrer'
-            className={linkClass}
-          >
-            Add your cohort <ExternalLink className='size-4' />
-          </a>
-          <a href={issuesUrl} target='_blank' rel='noreferrer' className={linkClass}>
-            Ask for your page to be removed <ExternalLink className='size-4' />
-          </a>
+          <ExternalLink href={contributingUrl}>Add your cohort</ExternalLink>
+          <ExternalLink href={issuesUrl}>Ask for your page to be removed</ExternalLink>
         </p>
       </Reason>
 

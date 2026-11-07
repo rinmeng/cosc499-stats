@@ -66,6 +66,8 @@ Personal pages (`/u/<login>`) show only that person's own output: no ranks, team
 
 Any link or link-style button that takes you to another page ends with a lucide icon: `ArrowRight` for pages on this site, `ExternalLink` (box with the up-right arrow) for anything that leaves the site (GitHub, docs), including names that link to GitHub. Back links use a leading `ArrowLeft`. Internal names inside lists and tables (team names) don't need one.
 
+For text links use the components, not hand-rolled `<a>`/`<Link>`: `ArrowLink` (`components/ArrowLink.tsx`) for in-site pages and `ExternalLink` (`components/ExternalLink.tsx`, opens a new tab) for off-site ones. Both are the shadcn `link` button variant; pass `className` to change color or size. Real buttons that leave the site keep `<Button render={<a …/>}>` with lucide's `ExternalLinkIcon`.
+
 ## Charts
 
 Use shadcn `ChartContainer` + Recharts. Colors come from `--chart-1..8` (validated categorical palette) and `--seq-0..6` (sequential, for heatmaps) in `app/globals.css`. A cohort keeps the same color everywhere (`cohortColor` in `lib/format.ts`).
